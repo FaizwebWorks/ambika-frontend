@@ -124,3 +124,14 @@
   font-weight: 400;
   font-style: normal;
 }
+
+.font-medium{
+  font-weight: 500;
+}
+
+.font-semibold{
+  font-weight: 600;
+}
+.font-bold{
+  font-weight: 700;
+}
