@@ -92,7 +92,7 @@ const Home = () => {
   };
   
   return (
-    <div className="home-page w-full">
+    <div className="home-page w-full z-30">
       <ScrollToTop />
       
       {/* Enhanced Hero Section with background */}

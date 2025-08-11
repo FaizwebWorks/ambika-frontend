@@ -286,12 +286,12 @@ const Contact = () => {
           </div>
 
           {/* Direction links with minimal modern styling */}
-          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+          <div className="mt-8 flex flex-col items-center sm:flex-row justify-center gap-4">
             <a
               href="https://www.google.com/maps/dir/Surat+International+Airport+(STV),+Surat,+Gujarat/Nayara+Petrol+Pump,+Laskana-Kholvad+Rd,+near+Shyam+Vatika+residency,+Bhada,+Gujarat+394190/@21.2641294,72.9330132,21z"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-blue-50 rounded-md text-blue-600 font-medium hover:bg-blue-100 transition-all group border-noneflex-1 sm:flex-initial"
+              className="inline-flex w-fit items-center justify-center px-5 py-2.5 bg-blue-50 rounded-md text-blue-600 font-medium hover:bg-blue-100 transition-all group border-noneflex-1 sm:flex-initial"
 
             >
               <MapPin size={16} className="text-blue-600 mr-2" />
@@ -301,7 +301,7 @@ const Contact = () => {
               href="https://www.google.com/maps/dir/Surat+Junction,+Railway+Station+Circle,+Railway+Station+Area,+Varachha,+Surat,+Gujarat/Nayara+Petrol+Pump,+Laskana-Kholvad+Rd,+near+Shyam+Vatika+residency,+Bhada,+Gujarat+394190/@21.2641294,72.9330132,21z/data=!4m13!4m12!1m5!1m1!1s0x3be04fb2a64a922f:0xf5c5fbd871f68587!2m2!1d72.8406794!2d21.2050439!1m5!1m1!1s0x3be04796e884b3cb:0x43a7a434f2ec23d3!2m2!1d72.932989!2d21.2642274?entry=ttu"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-blue-50 rounded-md text-blue-600 font-medium hover:bg-blue-100 transition-all group border-noneflex-1 sm:flex-initial"
+              className="inline-flex w-fit items-center justify-center px-5 py-2.5 bg-blue-50 rounded-md text-blue-600 font-medium hover:bg-blue-100 transition-all group border-noneflex-1 sm:flex-initial"
             >
               <MapPin size={16} className="text-blue-600 mr-2" />
               Directions from Surat Junction
