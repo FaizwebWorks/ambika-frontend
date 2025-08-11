@@ -5,7 +5,8 @@ import Footer from "./Footer";
 const Layout = () => (
   <div className="flex flex-col min-h-screen">
     <Navbar />
-    <main className="flex-1 flex px-4 bg-white">
+    {/* Added pt-20 to account for fixed navbar height */}
+    <main className="flex-1 flex pt-20 bg-white">
       <Outlet />
     </main>
     <Footer />
