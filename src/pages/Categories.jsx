@@ -460,10 +460,10 @@ const Categories = () => {
 						{/* Clear filters button */}
 						<div className="pt-2 border-t border-neutral-100">
 							<button 
-								className={`mt-4 w-full text-sm py-2.5 px-4 rounded-lg transition-colors ${
+								className={`mt-4 w-full text-sm py-2.5 px-4 rounded-lg shadow-sm transition-colors ${
 									selectedCategory !== "All Products" || selectedColor || selectedSize
-										? "bg-neutral-800 text-white hover:bg-neutral-700"
-										: "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+										? "bg-blue-600 hover:bg-blue-700 text-white"
+										: "bg-blue-50 text-neutral-400 cursor-not-allowed"
 								}`}
 								onClick={() => {
 									setSelectedCategory("All Products");
