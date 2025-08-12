@@ -6,12 +6,12 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLoginMutation } from '../store/api/authApiSlice';
 import { setCredentials } from '../store/slices/authSlice';
+import toast from 'react-hot-toast';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -23,10 +23,9 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
 
         if (!email || !password) {
-            setError('Please fill in all fields');
+            toast.error('Please fill in all fields');
             return;
         }
 
@@ -38,11 +37,12 @@ const Login = () => {
                     user: result.user,
                     token: result.token
                 }));
+                toast.success(`Welcome back, ${result.user?.name || result.user?.username || 'User'}! 👋`);
                 navigate('/'); // Redirect to home page
             }
         } catch (err) {
             console.error('Login error:', err);
-            setError(err.data?.message || 'Login failed. Please try again.');
+            toast.error(err.data?.message || 'Login failed. Please try again.');
         }
     };
 
@@ -67,13 +67,6 @@ const Login = () => {
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Error Message */}
-                        {error && (
-                            <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                                <p className="text-sm text-red-600">{error}</p>
-                            </div>
-                        )}
-
                         {/* Email Field */}
                         <div>
                             <label 

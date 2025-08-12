@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectIsAuthenticated, selectCurrentUser, logout } from "../store/slices/authSlice";
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,6 +25,7 @@ const Navbar = () => {
 
     const confirmLogout = () => {
         dispatch(logout());
+        toast.success('Logged out successfully! 👋');
         navigate('/');
         setMobileOpen(false);
         setProfileDropdownOpen(false);

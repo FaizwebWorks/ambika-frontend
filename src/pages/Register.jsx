@@ -6,10 +6,10 @@ import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { useRegisterMutation } from '../store/api/authApiSlice';
 import { setCredentials } from '../store/slices/authSlice';
+import toast from 'react-hot-toast';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -33,15 +33,14 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
     if (!formData.username || !formData.email || !formData.password) {
-      setError('Please fill in all fields');
+      toast.error('Please fill in all fields');
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      toast.error('Password must be at least 6 characters long');
       return;
     }
 
@@ -53,11 +52,12 @@ const Register = () => {
           user: result.user,
           token: result.token
         }));
+        toast.success(`Welcome, ${result.user?.name || result.user?.username || 'User'}! Account created successfully. 🎉`);
         navigate('/'); // Redirect to home page
       }
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.data?.message || 'Registration failed. Please try again.');
+      toast.error(err.data?.message || 'Registration failed. Please try again.');
     }
   };
 
@@ -78,13 +78,6 @@ const Register = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error Message */}
-            {error && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
-
             {/* Username Field */}
             <div>
               <label 
