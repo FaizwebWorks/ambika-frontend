@@ -1,14 +1,38 @@
-import { ShoppingCart, UserCircle2, LogIn, X, Menu, Truck, Home, ArrowRight, Phone, Mail, Building2, MessageSquare, ShoppingBag } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { ShoppingCart, UserCircle2, LogIn, X, Menu, Truck, Home, ArrowRight, Phone, Mail, Building2, MessageSquare, ShoppingBag, LogOut, ChevronDown } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectIsAuthenticated, selectCurrentUser, logout } from "../store/slices/authSlice";
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    
+    // Get authentication state from Redux
+    const isLoggedIn = useSelector(selectIsAuthenticated);
+    const user = useSelector(selectCurrentUser);
 
-    // Replace this with your actual authentication logic
-    const isLoggedIn = false;
+    // Handle logout
+    const handleLogout = () => {
+        setShowLogoutDialog(true);
+    };
+
+    const confirmLogout = () => {
+        dispatch(logout());
+        navigate('/');
+        setMobileOpen(false);
+        setProfileDropdownOpen(false);
+        setShowLogoutDialog(false);
+    };
+
+    const cancelLogout = () => {
+        setShowLogoutDialog(false);
+    };
 
     // Handle scroll effect for navbar
     useEffect(() => {
@@ -23,26 +47,45 @@ const Navbar = () => {
     // Close mobile menu when route changes
     useEffect(() => {
         setMobileOpen(false);
+        setProfileDropdownOpen(false);
     }, [location]);
 
     // Check if link is active
     const isActive = (path) => location.pathname === path;
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.profile-dropdown')) {
+                setProfileDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     // Prevent body scroll when mobile menu is open
     useEffect(() => {
         if (mobileOpen) {
             document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
         } else {
             document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
         }
 
         return () => {
             document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
         };
     }, [mobileOpen]);
 
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+        <header className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ${scrolled
                 ? "bg-white/95 shadow-md backdrop-blur-md py-3"
                 : "bg-white py-4"
             }`}>
@@ -88,9 +131,40 @@ const Navbar = () => {
                         </Link>
 
                         {isLoggedIn ? (
-                            <Link to="/profile" className="ml-2 p-2 text-neutral-600 hover:text-blue-600 transition-colors">
-                                <UserCircle2 className="h-5 w-5" />
-                            </Link>
+                            <div className="relative profile-dropdown">
+                                <button
+                                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                                    className="ml-2 flex items-center gap-2 py-1.5 px-4 font-medium text-sm rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"
+                                >
+                                    <span className="hidden sm:flex items-center gap-1">
+                                        <span className="animate-wave">👋🏻</span>
+                                        {user?.username || user?.name || 'User'}
+                                    </span>
+                                    <UserCircle2 className="h-4 w-4" />
+                                    <ChevronDown className={`h-3 w-3 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                {profileDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 py-1 z-[100]">
+                                        <Link
+                                            to="/profile"
+                                            className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                            onClick={() => setProfileDropdownOpen(false)}
+                                        >
+                                            <UserCircle2 className="h-4 w-4 mr-3" />
+                                            Profile
+                                        </Link>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        >
+                                            <LogOut className="h-4 w-4 mr-3" />
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <Link to="/login" className="ml-2 flex items-center gap-2 py-1.5 px-4 font-medium text-sm rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all">
                                 <LogIn className="h-4 w-4" />
@@ -103,16 +177,26 @@ const Navbar = () => {
 
             {/* Mobile Menu Overlay - reduced blur */}
             <div className={`
-                fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300
+                fixed inset-0 bg-black/20 backdrop-blur-sm z-[998] md:hidden transition-opacity duration-300
                 ${mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
-            `} onClick={() => setMobileOpen(false)} />
+            `} 
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+            onClick={() => setMobileOpen(false)} />
 
             {/* Mobile Navigation - full screen with better alignment */}
             <div className={`
-                fixed top-0 left-0 bottom-0 w-[70%] bg-white z-50 transform transition-transform duration-300 ease-in-out shadow-2xl
+                w-[70%] bg-white z-[999] transform transition-transform duration-300 ease-in-out shadow-2xl
                 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
                 md:hidden overflow-y-auto flex flex-col
-            `}>
+            `}
+            style={{ 
+                position: 'fixed', 
+                top: 0, 
+                left: 0, 
+                height: '100vh',
+                height: '100dvh'
+            }}
+            >
                 {/* Mobile header with logo and close button */}
                 <div className="p-4 border-b border-neutral-100 flex items-center justify-between">
                     <Link to="/" className="flex items-center" onClick={() => setMobileOpen(false)}>
@@ -152,7 +236,9 @@ const Navbar = () => {
 
                     {/* Account section */}
                     <div className="mt-2">
-                        <h3 className="text-sm font-medium text-neutral-500 px-4 mb-3">Account</h3>
+                        <h3 className="text-sm font-medium text-neutral-500 px-4 mb-3">
+                            {isLoggedIn ? `Hello, ${user?.username || user?.user}` : 'Account'}
+                        </h3>
                         {isLoggedIn ? (
                             <>
                                 <MobileNavLink to="/profile" onClick={() => setMobileOpen(false)}>
@@ -163,6 +249,13 @@ const Navbar = () => {
                                     <Truck className="h-5 w-5 mr-3 text-blue-600" />
                                     My Orders
                                 </MobileNavLink>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                >
+                                    <LogOut className="h-5 w-5 mr-3" />
+                                    Logout
+                                </button>
                             </>
                         ) : (
                             <Link
@@ -221,6 +314,39 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Logout Confirmation Dialog */}
+            {showLogoutDialog && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg shadow-xl border border-neutral-200 p-6 w-full max-w-md mx-auto">
+                        <div className="flex items-center mb-4">
+                            <div className="bg-red-50 rounded-full p-2 mr-3">
+                                <LogOut className="h-5 w-5 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-neutral-800">Confirm Logout</h3>
+                        </div>
+                        
+                        <p className="text-neutral-600 mb-6">
+                            Are you sure you want to logout? You will need to login again to access your account.
+                        </p>
+                        
+                        <div className="flex space-x-3">
+                            <button
+                                onClick={cancelLogout}
+                                className="flex-1 px-4 py-2 text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg font-medium transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmLogout}
+                                className="flex-1 px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </header>
     );
 };

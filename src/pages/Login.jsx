@@ -1,27 +1,49 @@
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useLoginMutation } from '../store/api/authApiSlice';
+import { setCredentials } from '../store/slices/authSlice';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [login, { isLoading }] = useLoginMutation();
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            // Handle login logic
-        }, 1500);
+        setError('');
+
+        if (!email || !password) {
+            setError('Please fill in all fields');
+            return;
+        }
+
+        try {
+            const result = await login({ email, password }).unwrap();
+            
+            if (result.success) {
+                dispatch(setCredentials({
+                    user: result.user,
+                    token: result.token
+                }));
+                navigate('/'); // Redirect to home page
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError(err.data?.message || 'Login failed. Please try again.');
+        }
     };
 
     return (
@@ -45,6 +67,13 @@ const Login = () => {
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Error Message */}
+                        {error && (
+                            <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                                <p className="text-sm text-red-600">{error}</p>
+                            </div>
+                        )}
+
                         {/* Email Field */}
                         <div>
                             <label 

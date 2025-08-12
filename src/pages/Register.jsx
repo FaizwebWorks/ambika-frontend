@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { useRegisterMutation } from '../store/api/authApiSlice';
+import { setCredentials } from '../store/slices/authSlice';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: ''
   });
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [register, { isLoading }] = useRegisterMutation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -24,14 +31,34 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Handle registration logic
-    }, 1500);
+    setError('');
+
+    if (!formData.username || !formData.email || !formData.password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      const result = await register(formData).unwrap();
+      
+      if (result.success) {
+        dispatch(setCredentials({
+          user: result.user,
+          token: result.token
+        }));
+        navigate('/'); // Redirect to home page
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError(err.data?.message || 'Registration failed. Please try again.');
+    }
   };
 
   return (
@@ -51,6 +78,13 @@ const Register = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
             {/* Username Field */}
             <div>
               <label 
