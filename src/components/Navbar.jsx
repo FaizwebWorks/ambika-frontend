@@ -1,4 +1,4 @@
-import { ShoppingCart, UserCircle2, LogIn, X, Menu, Truck, Home, ArrowRight, Phone, Mail, Building2, MessageSquare, ShoppingBag, LogOut, ChevronDown } from "lucide-react";
+import { ShoppingCart, UserCircle2, LogIn, X, Menu, Truck, Home, ArrowRight, Phone, Mail, Building2, MessageSquare, ShoppingBag, LogOut, ChevronDown, Settings } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -86,11 +86,25 @@ const Navbar = () => {
         };
     }, [mobileOpen]);
 
+    // Prevent body scroll when logout dialog is open
+    useEffect(() => {
+        if (showLogoutDialog) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [showLogoutDialog]);
+
     return (
-        <header className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ${scrolled
-                ? "bg-white/95 shadow-md backdrop-blur-md py-3"
-                : "bg-white py-4"
-            }`}>
+        <>
+            <header className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ${scrolled
+                    ? "bg-white/95 shadow-md backdrop-blur-md py-3"
+                    : "bg-white py-4"
+                }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav className="flex items-center justify-between">
                     {/* Logo and mobile menu button */}
@@ -148,18 +162,26 @@ const Navbar = () => {
 
                                 {/* Dropdown Menu */}
                                 {profileDropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 py-1 z-[100]">
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg border border-neutral-200 py-1 z-[100] px-2">
                                         <Link
                                             to="/profile"
-                                            className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                            className="flex items-center px-2 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-md"
                                             onClick={() => setProfileDropdownOpen(false)}
                                         >
                                             <UserCircle2 className="h-4 w-4 mr-3" />
                                             Profile
                                         </Link>
+                                        <Link
+                                            to="/admin"
+                                            className="flex items-center px-2 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-md"
+                                            onClick={() => setProfileDropdownOpen(false)}
+                                        >
+                                            <Settings className="h-4 w-4 mr-3" />
+                                            Admin Panel
+                                        </Link>
                                         <button
                                             onClick={handleLogout}
-                                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                            className="flex items-center w-full px-2 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-md"
                                         >
                                             <LogOut className="h-4 w-4 mr-3" />
                                             Logout
@@ -196,7 +218,7 @@ const Navbar = () => {
                 top: 0, 
                 left: 0, 
                 height: '100vh',
-                height: '100dvh'
+                // height: '100dvh'
             }}
             >
                 {/* Mobile header with logo and close button */}
@@ -316,40 +338,54 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
+        </header>
 
-            {/* Logout Confirmation Dialog */}
-            {showLogoutDialog && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl border border-neutral-200 p-6 w-full max-w-md mx-auto">
-                        <div className="flex items-center mb-4">
-                            <div className="bg-red-50 rounded-full p-2 mr-3">
-                                <LogOut className="h-5 w-5 text-red-600" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-neutral-800">Confirm Logout</h3>
+        {/* Logout Confirmation Dialog - Rendered outside header */}
+        {showLogoutDialog && (
+            <div 
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                style={{ 
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 999999
+                }}
+            >
+                <div 
+                    className="bg-white rounded-lg shadow-2xl border border-neutral-200 p-6 w-full max-w-md mx-auto transform scale-100"
+                    style={{ zIndex: 1000000 }}
+                >
+                    <div className="flex items-center mb-4">
+                        <div className="bg-red-50 rounded-full p-2 mr-3">
+                            <LogOut className="h-5 w-5 text-red-600" />
                         </div>
-                        
-                        <p className="text-neutral-600 mb-6">
-                            Are you sure you want to logout? You will need to login again to access your account.
-                        </p>
-                        
-                        <div className="flex space-x-3">
-                            <button
-                                onClick={cancelLogout}
-                                className="flex-1 px-4 py-2 text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg font-medium transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmLogout}
-                                className="flex-1 px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors"
-                            >
-                                Logout
-                            </button>
-                        </div>
+                        <h3 className="text-lg font-semibold text-neutral-800">Confirm Logout</h3>
+                    </div>
+                    
+                    <p className="text-neutral-600 mb-6">
+                        Are you sure you want to logout? You will need to login again to access your account.
+                    </p>
+                    
+                    <div className="flex space-x-3">
+                        <button
+                            onClick={cancelLogout}
+                            className="flex-1 px-4 py-2 text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg font-medium transition-colors cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={confirmLogout}
+                            className="flex-1 px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors cursor-pointer"
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
-            )}
-        </header>
+            </div>
+        )}
+        </>
     );
 };
 

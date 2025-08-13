@@ -2,6 +2,8 @@ import { Button } from "../components/ui/button";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight, Star, Quote } from "lucide-react";
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { selectIsAuthenticated } from "../store/slices/authSlice";
 
 // Custom ScrollToTop component to reset scroll position on navigation
 const ScrollToTop = () => {
@@ -84,6 +86,7 @@ const brands = ["brand1.svg", "brand2.svg", "brand3.svg", "brand4.svg", "brand5.
 
 const Home = () => {
   const navigate = useNavigate();
+  const isLoggedIn = useSelector(selectIsAuthenticated);
   
   // Function to navigate to category page and ensure scroll to top
   const navigateToCategory = (link) => {
@@ -206,7 +209,28 @@ const Home = () => {
                   <div className="p-6">
                     <span className="text-sm text-blue-600">{product.category}</span>
                     <h3 className="font-medium text-lg text-neutral-800 mt-1">{product.name}</h3>
-                    <p className="text-neutral-900 font-semibold mt-3">₹{product.price}</p>
+                    {isLoggedIn ? (
+                      <div className="mt-3 flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                        <div>
+                          <p className="text-emerald-800 text-xl font-semibold">₹{product.price}</p>
+                          <p className="text-emerald-600 text-xs">Wholesale Price</p>
+                        </div>
+                        <div className="bg-green-100 px-2 py-1 rounded-full">
+                          <span className="text-green-700 text-xs font-medium">💰 Best Rate</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                        <Link to="/login" className="block text-center group">
+                          <p className="text-blue-700 font-medium text-sm group-hover:text-blue-800 transition-colors">
+                            🔒 Sign in to view price
+                          </p>
+                          <p className="text-blue-500 text-xs mt-1 group-hover:text-blue-600 transition-colors">
+                            Get exclusive wholesale rates
+                          </p>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Link>

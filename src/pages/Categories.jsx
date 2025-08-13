@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectIsAuthenticated } from "../store/slices/authSlice";
 import ProductCard from "../components/ProductCard";
 import { ChevronDown, Filter, X, Search, ArrowUpDown } from "lucide-react";
 
@@ -193,10 +195,9 @@ const productsData = [
 	}
 ];
 
-const isLoggedIn = false; // Replace with your auth logic
-
 const Categories = () => {
 	const location = useLocation();
+	const isLoggedIn = useSelector(selectIsAuthenticated);
 	
 	// Get the category from URL query parameters
 	const urlParams = new URLSearchParams(location.search);
