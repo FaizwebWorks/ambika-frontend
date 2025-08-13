@@ -2,198 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated } from "../store/slices/authSlice";
+import { useGetCategoriesQuery, useGetProductsQuery } from "../store/api/publicApiSlice";
 import ProductCard from "../components/ProductCard";
-import { ChevronDown, Filter, X, Search, ArrowUpDown } from "lucide-react";
-
-// Example data (replace with API data)
-const categoriesData = [
-    { name: "All Products" },
-    { name: "Cleaning Essentials" },
-    { name: "Room Supplies" },
-    { name: "Security" },
-    { name: "Electronics" },
-    { name: "Waste Management" },
-];
-
-const productsData = [
-	// Cleaning Essentials
-	{
-		id: 1,
-		name: "Professional Cleaning Spray",
-		description: "Industrial-strength cleaning formula for all surfaces",
-		img: "https://media.istockphoto.com/id/1331969039/photo/cleaning-supplies-are-placed-on-a-wooden-table-for-cleaning.jpg?s=612x612&w=0&k=20&c=YOUKOOTxT6440GnMzYXNns6Ah88D-mKlx6qlyngdbnM=",
-		category: "Cleaning Essentials",
-		size: ["500ml", "1L", "5L"],
-		inStock: true,
-		price: 99,
-	},
-	{
-		id: 2,
-		name: "Disinfectant Wipes (200 Pack)",
-		description: "Hospital-grade disinfecting wipes for high-touch surfaces",
-		img: "https://media.istockphoto.com/id/1207809608/photo/wet-wipes-pouch-on-white.jpg?s=612x612&w=0&k=20&c=DKxFQADkQSWuO7TDF67IJ7sEXMLw_wB4L1pZ9fSxmCk=",
-		category: "Cleaning Essentials",
-		size: ["200ct", "500ct"],
-		inStock: true,
-		price: 75,
-	},
-	{
-		id: 3,
-		name: "Room Freshener Concentrate",
-		description: "Long-lasting scent for guest rooms and public areas",
-		img: "https://media.istockphoto.com/id/1344673936/photo/automatic-home-air-freshner-next-to-pink-hydrangea-flowers-on-white-background-house.jpg?s=612x612&w=0&k=20&c=vuZrpN2Q1-IhZabfdNdsMKg5eAsU4S_MwDsz68LB4p8=",
-		category: "Cleaning Essentials",
-		size: ["250ml", "1L"],
-		color: ["Lavender", "Citrus", "Ocean Breeze"],
-		inStock: true,
-		price: 65,
-	},
-	{
-		id: 4,
-		name: "Premium Hand Sanitizer",
-		description: "70% alcohol formula with moisturizing agents",
-		img: "https://plus.unsplash.com/premium_photo-1661591285003-9abbde56bf8a?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8SGFuZCUyMFNhbml0aXplcnxlbnwwfHwwfHx8MA%3D%3D",
-		category: "Cleaning Essentials",
-		size: ["100ml", "500ml", "1L"],
-		inStock: true,
-		price: 45,
-	},
-	{
-		id: 5,
-		name: "Commercial Vacuum Cleaner",
-		description: "Quiet operation with HEPA filtration for hotel use",
-		img: "https://media.istockphoto.com/id/940972300/photo/vacuum-cleaner-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=26k4IJ6hQjPrfdHcqeztw-ao-u2vfEEaS8XZoMcHOns=",
-		category: "Cleaning Essentials",
-		inStock: true,
-		price: 1299,
-	},
-	
-	// Room Supplies
-	{
-		id: 6,
-		name: "Luxury Bath Towel Set",
-		description: "600 GSM cotton towels with hotel logo embroidery option",
-		img: "https://media.istockphoto.com/id/1205011453/photo/clean-terry-towels-on-wooden-chair-with-brick-wall-background-copy-space.jpg?s=612x612&w=0&k=20&c=Y-AFkM-p0amwdFAsvmODJNchLQu8sV_D_ht6XkiVxak=",
-		category: "Room Supplies",
-		size: ["Standard", "Large"],
-		color: ["White", "Beige", "Light Grey"],
-		inStock: true,
-		price: 149,
-	},
-	{
-		id: 7,
-		name: "Premium Cotton Bed Sheets",
-		description: "300 thread count with deep pockets for hotel mattresses",
-		img: "https://media.istockphoto.com/id/2178798254/photo/pastel-light-soft-baby-pale-powder-dusty-gray-silver-blue-white-abstract-background-silk.jpg?s=612x612&w=0&k=20&c=r30-mcd6Yq2yqwvdYUM-lYZNlBdgluCo31SLaxSDNz4=",
-		category: "Room Supplies",
-		size: ["Twin", "Queen", "King"],
-		color: ["White", "Ivory"],
-		inStock: true,
-		price: 125,
-	},
-	{
-		id: 8,
-		name: "Hotel Quality Pillows",
-		description: "Hypoallergenic fill with antimicrobial cover",
-		img: "https://media.istockphoto.com/id/2104361288/photo/white-pillow-floating-in-mid-air-on-white-background-in-minimalism-and-monochrome.jpg?s=612x612&w=0&k=20&c=_BTu_KvBADXgPwBj_PihDi5kon_D7XGBTz1GMIBV1Ak=",
-		category: "Room Supplies",
-		size: ["Standard", "King"],
-		inStock: true,
-		price: 79,
-	},
-	{
-		id: 9,
-		name: "Bathroom Amenity Kit",
-		description: "Complete set of guest toiletries in eco-friendly packaging",
-		img: "https://media.istockphoto.com/id/1214484831/photo/dental-products-and-bath-towels.jpg?s=612x612&w=0&k=20&c=s3cC_trDxVp8g4OUMPh5jqPymKZvCo-pvKkbnVTFRp0=",
-		category: "Room Supplies",
-		size: ["Basic", "Premium", "Luxury"],
-		inStock: true,
-		price: 55,
-	},
-	
-	// Security
-	{
-		id: 11,
-		name: "Electronic Door Lock System",
-		description: "RFID card access with smartphone app integration",
-		img: "/door-lock2.jpg",
-		category: "Security",
-		inStock: true,
-		price: 349,
-	},
-	{
-		id: 12,
-		name: "In-Room Safe",
-		description: "Digital combination lock with emergency master key",
-		img: "/room-safe.jpg",
-		category: "Security",
-		size: ["Small", "Medium", "Large"],
-		inStock: true,
-		price: 225,
-	},
-	{
-		id: 13,
-		name: "HD Security Camera",
-		description: "Night vision with cloud recording capabilities",
-		img: "https://plus.unsplash.com/premium_photo-1675016457613-2291390d1bf6?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8U2VjdXJpdHklMjBDYW1lcmF8ZW58MHx8MHx8fDA%3D",
-		category: "Security",
-		inStock: true,
-		price: 175,
-	},
-	{
-		id: 15,
-		name: "Emergency Exit Signs",
-		description: "LED illuminated with battery backup",
-		img: "https://images.unsplash.com/photo-1602208857890-150387aec0be?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-		category: "Security",
-		inStock: true,
-		price: 85,
-	},
-	
-	// Electronics
-	{
-		id: 16,
-		name: "Professional Hair Dryer",
-		description: "Wall-mountable with multiple heat settings",
-		img: "https://media.istockphoto.com/id/2038108570/photo/white-hairdryer-in-hotel-bathroom.jpg?s=612x612&w=0&k=20&c=jbImDy1qjljIqbPKP1yXXkulFuef4pYL2nNsGTCWwz0=",
-		category: "Electronics",
-		color: ["Black", "White"],
-		inStock: true,
-		price: 119,
-	},
-	{
-		id: 17,
-		name: "In-Room Coffee Maker",
-		description: "Single-serve with auto shutoff feature",
-		img: "https://media.istockphoto.com/id/1421796949/photo/modern-electric-coffee-machine-with-cup-isolated-on-white.jpg?s=612x612&w=0&k=20&c=DnBKx1dEUvD6iSJQjSL-Hz7wVpQ8riZ90wNOwCkRIYM=",
-		category: "Electronics",
-		color: ["Black", "Silver"],
-		inStock: true,
-		price: 135,
-	},
-	{
-		id: 18,
-		name: "Mini Refrigerator",
-		description: "Energy-efficient and quiet operation",
-		img: "https://media.istockphoto.com/id/1031623722/photo/can-and-water-bottle-in-a-mini-fridge.jpg?s=612x612&w=0&k=20&c=-plCpIozRb6ftVjLRUxQOJrmYbdsMWnMTKupqLfmwSk=",
-		category: "Electronics",
-		size: ["30L", "45L", "60L"],
-		inStock: true,
-		price: 299,
-	},
-	{
-		id: 19,
-		name: "Electric Kettle",
-		description: "Rapid boil with auto shutoff safety feature",
-		img: "https://media.istockphoto.com/id/617354074/photo/electric-kettle-in-hand-on-the-background-of-the-kitchen.jpg?s=612x612&w=0&k=20&c=irCSU8ZvjnIKpqAe13C1Q_TzSpNsfjLG_zr2NADLuuk=",
-		category: "Electronics",
-		size: ["0.5L", "1L", "1.5L"],
-		color: ["White", "Black", "Stainless Steel"],
-		inStock: true,
-		price: 85,
-	}
-];
+import { ChevronDown, Filter, X, Search, ArrowUpDown, Loader2 } from "lucide-react";
 
 const Categories = () => {
 	const location = useLocation();
@@ -203,11 +14,26 @@ const Categories = () => {
 	const urlParams = new URLSearchParams(location.search);
 	const categoryFromUrl = urlParams.get('category');
 	
+	// Fetch categories and products from backend
+	const { 
+		data: categoriesResponse, 
+		isLoading: categoriesLoading, 
+		error: categoriesError 
+	} = useGetCategoriesQuery();
+	
+	const categories = categoriesResponse?.data?.categories || [];
+	
+	// Add "All Products" option to categories
+	const categoriesData = [
+		{ _id: 'all', name: "All Products" },
+		...categories
+	];
+	
 	// Set initial category based on URL or default to "All Products"
 	const [selectedCategory, setSelectedCategory] = useState(
 		categoryFromUrl && categoriesData.some(cat => cat.name === categoryFromUrl) 
 			? categoryFromUrl 
-			: categoriesData[0].name
+			: "All Products"
 	);
 	const [selectedColor, setSelectedColor] = useState("");
 	const [selectedSize, setSelectedSize] = useState("");
@@ -216,6 +42,23 @@ const Categories = () => {
 	const filterSheetRef = useRef(null);
 	const startYRef = useRef(0);
 	const currentYRef = useRef(0);
+	
+	// Build query parameters for products API
+	const productQueryParams = {
+		...(selectedCategory !== "All Products" && { 
+			category: categories.find(cat => cat.name === selectedCategory)?._id 
+		}),
+		...(searchTerm && { search: searchTerm }),
+		limit: 50 // Get more products for frontend filtering
+	};
+	
+	const { 
+		data: productsResponse, 
+		isLoading: productsLoading, 
+		error: productsError 
+	} = useGetProductsQuery(productQueryParams);
+	
+	const products = productsResponse?.data?.products || [];
 	
 	// Scroll to top with smooth animation
 	const scrollToTop = () => {
@@ -239,20 +82,18 @@ const Categories = () => {
 		scrollToTop();
 	};
 	
-	// Filter products by selected category and variants
-	const filteredProducts = productsData.filter(
+	// Filter products by selected variants (frontend filtering for variants not handled by backend)
+	const filteredProducts = products.filter(
 		(p) =>
-			(selectedCategory === "All Products" || p.category === selectedCategory) &&
-			(!selectedColor || (p.color && p.color.includes(selectedColor))) &&
-			(!selectedSize || (p.size && p.size.includes(selectedSize))) &&
-			(searchTerm === "" || 
-				p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-				p.description.toLowerCase().includes(searchTerm.toLowerCase()))
+			(!selectedColor || (p.variants?.color && p.variants.color.includes(selectedColor))) &&
+			(!selectedSize || (p.variants?.size && p.variants.size.includes(selectedSize)))
 	);
 
-	// Get variants for selected category
-	const currentVariants =
-		categoriesData.find((c) => c.name === selectedCategory)?.variants || {};
+	// Get variants for selected category from filtered products
+	const currentVariants = {
+		color: [...new Set(filteredProducts.flatMap(p => p.variants?.color || []))],
+		size: [...new Set(filteredProducts.flatMap(p => p.variants?.size || []))]
+	};
 
 	// Touch event handlers for drag to close
 	const handleTouchStart = (e) => {
@@ -332,7 +173,16 @@ const Categories = () => {
 					<div className="flex flex-wrap items-center justify-between mt-6 gap-4">
 						<div className="flex items-center gap-2">
 							<p className="text-sm font-medium text-neutral-500">
-								<span className="hidden md:inline">Showing</span> {filteredProducts.length} products
+								{productsLoading ? (
+									<span className="flex items-center gap-2">
+										<Loader2 size={16} className="animate-spin" />
+										Loading products...
+									</span>
+								) : (
+									<>
+										<span className="hidden md:inline">Showing</span> {filteredProducts.length} products
+									</>
+								)}
 							</p>
 							
 							{/* Selected filters pills */}
@@ -397,47 +247,56 @@ const Categories = () => {
 					{/* Desktop Sidebar with enhanced design */}
 					<aside className="hidden md:block md:w-72 bg-white rounded-xl border border-neutral-100 shadow-sm p-6 flex-shrink-0 self-start sticky top-44 max-h-[calc(100vh-8rem)] overflow-y-auto">
 						<h3 className="font-semibold mb-4 text-neutral-800">Categories</h3>
-						<ul className="mb-8 space-y-1.5">
-							{categoriesData.map((cat) => (
-								<li key={cat.name}>
-									<button
-										className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all ${
-											selectedCategory === cat.name
-												? "bg-blue-50 font-medium text-blue-700 shadow-sm"
-												: "text-neutral-600 hover:bg-neutral-50"
-										}`}
-										onClick={() => handleCategoryChange(cat.name)}
-									>
-										{cat.name}
-									</button>
-								</li>
-							))}
-						</ul>
+						{categoriesLoading ? (
+							<div className="flex items-center justify-center py-8">
+								<Loader2 size={24} className="animate-spin text-neutral-400" />
+							</div>
+						) : categoriesError ? (
+							<div className="text-red-500 text-sm">Failed to load categories</div>
+						) : (
+							<ul className="mb-8 space-y-1.5">
+								{categoriesData.map((cat) => (
+									<li key={cat._id}>
+										<button
+											className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all ${
+												selectedCategory === cat.name
+													? "bg-blue-50 font-medium text-blue-700 shadow-sm"
+													: "text-neutral-600 hover:bg-neutral-50"
+											}`}
+											onClick={() => handleCategoryChange(cat.name)}
+										>
+											{cat.name}
+										</button>
+									</li>
+								))}
+							</ul>
+						)}
 						
 						{/* Color filter with better visualization */}
-						{currentVariants.color && (
+						{currentVariants.color && currentVariants.color.length > 0 && (
 							<div className="mb-8">
 								<h4 className="font-medium mb-3 text-sm text-neutral-800">Colors</h4>
 								<div className="flex gap-3 flex-wrap">
 									{currentVariants.color.map((color) => (
 										<button
 											key={color}
-											className={`h-10 w-10 rounded-full border transition-transform ${
+											className={`px-3 py-1.5 rounded-full border text-xs transition-all ${
 												selectedColor === color
-													? "ring-2 ring-offset-2 ring-blue-500 scale-110 shadow-md"
-													: "hover:scale-105 hover:shadow-sm"
+													? "bg-blue-600 text-white border-blue-600 shadow-sm"
+													: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
 											}`}
-											style={{ background: color.toLowerCase() }}
 											onClick={() => setSelectedColor(color === selectedColor ? "" : color)}
 											title={color}
-										/>
+										>
+											{color}
+										</button>
 									))}
 								</div>
 							</div>
 						)}
 						
 						{/* Size filter with better buttons */}
-						{currentVariants.size && (
+						{currentVariants.size && currentVariants.size.length > 0 && (
 							<div className="mb-8">
 								<h4 className="font-medium mb-3 text-sm text-neutral-800">Size</h4>
 								<div className="flex gap-2 flex-wrap">
@@ -481,10 +340,39 @@ const Categories = () => {
 
 					{/* Products grid with enhanced empty state */}
 					<main className="flex-1">
-						{filteredProducts.length > 0 ? (
+						{productsLoading ? (
+							<div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+								<Loader2 size={48} className="animate-spin text-blue-600 mb-4" />
+								<h3 className="text-lg font-medium text-neutral-800 mb-2">Loading products...</h3>
+								<p className="text-neutral-500">Please wait while we fetch the latest products.</p>
+							</div>
+						) : productsError ? (
+							<div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-xl border border-neutral-100">
+								<div className="w-16 h-16 mb-4 rounded-full bg-red-100 flex items-center justify-center">
+									<X size={24} className="text-red-500" />
+								</div>
+								<h3 className="text-lg font-medium text-neutral-800 mb-2">Failed to load products</h3>
+								<p className="text-neutral-500 mb-6">There was an error loading products. Please try again.</p>
+								<button 
+									className="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+									onClick={() => window.location.reload()}
+								>
+									Retry
+								</button>
+							</div>
+						) : filteredProducts.length > 0 ? (
 							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
 								{filteredProducts.map((product) => (
-									<ProductCard key={product.id} product={product} isLoggedIn={isLoggedIn} />
+									<ProductCard 
+										key={product._id} 
+										product={{
+											...product,
+											id: product._id,
+											name: product.title,
+											img: product.images?.[0] || '/placeholder-product.jpg'
+										}} 
+										isLoggedIn={isLoggedIn} 
+									/>
 								))}
 							</div>
 						) : (
@@ -538,28 +426,74 @@ const Categories = () => {
 							</div>
 							
 							<h3 className="font-medium mb-4">Categories</h3>
-							<ul className="mb-8 space-y-2">
-								{categoriesData.map((cat) => (
-									<li key={cat.name}>
-										<button
-											className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-colors ${
-												selectedCategory === cat.name
-													? "bg-blue-50 font-medium text-blue-700"
-													: "text-neutral-600 hover:bg-neutral-50"
-											}`}
-											onClick={() => {
-												handleCategoryChange(cat.name);
-												setMobileFiltersOpen(false);
-											}}
-										>
-											{cat.name}
-										</button>
-									</li>
-								))}
-							</ul>
+							{categoriesLoading ? (
+								<div className="flex items-center justify-center py-8">
+									<Loader2 size={24} className="animate-spin text-neutral-400" />
+								</div>
+							) : (
+								<ul className="mb-8 space-y-2">
+									{categoriesData.map((cat) => (
+										<li key={cat._id}>
+											<button
+												className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-colors ${
+													selectedCategory === cat.name
+														? "bg-blue-50 font-medium text-blue-700"
+														: "text-neutral-600 hover:bg-neutral-50"
+												}`}
+												onClick={() => {
+													handleCategoryChange(cat.name);
+													setMobileFiltersOpen(false);
+												}}
+											>
+												{cat.name}
+											</button>
+										</li>
+									))}
+								</ul>
+							)}
 							
-							{/* Mobile color and size filters with same design as desktop */}
-							{/* ... */}
+							{/* Mobile color and size filters */}
+							{currentVariants.color && currentVariants.color.length > 0 && (
+								<div className="mb-8">
+									<h4 className="font-medium mb-3 text-sm text-neutral-800">Colors</h4>
+									<div className="flex gap-3 flex-wrap">
+										{currentVariants.color.map((color) => (
+											<button
+												key={color}
+												className={`px-3 py-1.5 rounded-full border text-xs transition-all ${
+													selectedColor === color
+														? "bg-blue-600 text-white border-blue-600 shadow-sm"
+														: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
+												}`}
+												onClick={() => setSelectedColor(color === selectedColor ? "" : color)}
+											>
+												{color}
+											</button>
+										))}
+									</div>
+								</div>
+							)}
+							
+							{currentVariants.size && currentVariants.size.length > 0 && (
+								<div className="mb-8">
+									<h4 className="font-medium mb-3 text-sm text-neutral-800">Size</h4>
+									<div className="flex gap-2 flex-wrap">
+										{currentVariants.size.map((size) => (
+											<button
+												key={size}
+												className={`px-4 py-2 rounded-lg border text-sm transition-all ${
+													selectedSize === size
+														? "bg-blue-600 text-white border-blue-600 shadow-sm"
+														: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
+												}`}
+												onClick={() => setSelectedSize(size === selectedSize ? "" : size)}
+											>
+												{size}
+											</button>
+										))}
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 					
