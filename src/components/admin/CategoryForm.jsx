@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
@@ -102,9 +103,18 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">
-        {initialData ? 'Edit Category' : 'Add New Category'}
-      </h2>
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex items-center justify-center w-10 h-10 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors"
+        >
+          <ArrowLeft size={20} className="text-neutral-600" />
+        </button>
+        <h2 className="text-2xl font-bold">
+          {initialData ? 'Edit Category' : 'Add New Category'}
+        </h2>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Category Name */}

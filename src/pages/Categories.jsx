@@ -369,7 +369,9 @@ const Categories = () => {
 											...product,
 											id: product._id,
 											name: product.title,
-											img: product.images?.[0] || '/placeholder-product.jpg'
+											img: product.images?.[0] || '/placeholder-product.jpg',
+											inStock: product.stock > 0,
+											stockCount: product.stock
 										}} 
 										isLoggedIn={isLoggedIn} 
 									/>

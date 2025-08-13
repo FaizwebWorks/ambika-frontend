@@ -20,6 +20,8 @@ import {
   useGetAdminCategoriesQuery
 } from '../../store/api/adminApiSlice';
 import ProductForm from '../../components/admin/ProductForm';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import CustomDropdown from '../../components/ui/CustomDropdown';
 import toast from 'react-hot-toast';
 
 const AdminProducts = () => {
@@ -29,6 +31,8 @@ const AdminProducts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   // API queries
   const { 
@@ -132,17 +136,27 @@ const AdminProducts = () => {
   };
 
   const handleDeleteProduct = async (productId, productName) => {
-    if (!window.confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
-      return;
-    }
+    setProductToDelete({ id: productId, name: productName });
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
 
     try {
-      await deleteProduct(productId).unwrap();
+      await deleteProduct(productToDelete.id).unwrap();
       toast.success('Product deleted successfully!');
+      setShowDeleteConfirm(false);
+      setProductToDelete(null);
       refetchProducts();
     } catch (error) {
       toast.error(error?.data?.message || 'Failed to delete product');
     }
+  };
+
+  const cancelDeleteProduct = () => {
+    setShowDeleteConfirm(false);
+    setProductToDelete(null);
   };
 
   const handleEditProduct = (product) => {
@@ -239,10 +253,20 @@ const AdminProducts = () => {
         
         <button 
           onClick={handleAddProduct}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          disabled={isCreating || isUpdating}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Plus size={20} />
-          Add Product
+          {isCreating ? (
+            <>
+              <RefreshCw size={20} className="animate-spin" />
+              Adding...
+            </>
+          ) : (
+            <>
+              <Plus size={20} />
+              Add Product
+            </>
+          )}
         </button>
       </div>
 
@@ -264,30 +288,22 @@ const AdminProducts = () => {
           </div>
 
           {/* Category Filter */}
-          <select
+          <CustomDropdown
+            options={categoryOptions}
             value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
-          >
-            {categoryOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onChange={setFilterCategory}
+            placeholder="All Categories"
+            className="min-w-[160px]"
+          />
 
           {/* Status Filter */}
-          <select
+          <CustomDropdown
+            options={statusOptions}
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
-          >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onChange={setFilterStatus}
+            placeholder="All Status"
+            className="min-w-[140px]"
+          />
 
           <button 
             onClick={refetchProducts}
@@ -419,10 +435,20 @@ const AdminProducts = () => {
             </p>
             <button 
               onClick={handleAddProduct}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium mx-auto"
+              disabled={isCreating || isUpdating}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus size={20} />
-              Add Your First Product
+              {isCreating ? (
+                <>
+                  <RefreshCw size={20} className="animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus size={20} />
+                  Add Your First Product
+                </>
+              )}
             </button>
           </div>
         )}
@@ -481,6 +507,23 @@ const AdminProducts = () => {
         onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
         product={editingProduct}
         isLoading={isCreating || isUpdating}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={cancelDeleteProduct}
+        onConfirm={confirmDeleteProduct}
+        title="Delete Product"
+        message={
+          productToDelete 
+            ? `Are you sure you want to delete "${productToDelete.name}"? This action cannot be undone and will permanently remove all product data.`
+            : "Are you sure you want to delete this product?"
+        }
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isDeleting}
       />
     </div>
   );

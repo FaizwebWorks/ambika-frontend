@@ -12,6 +12,8 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import CategoryForm from '../../components/admin/CategoryForm';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import CustomDropdown from '../../components/ui/CustomDropdown';
 import {
   useGetAdminCategoriesQuery,
   useCreateCategoryMutation,
@@ -25,6 +27,7 @@ const AdminCategories = () => {
   const [sortBy, setSortBy] = useState('name');
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ show: false, category: null });
 
   // API hooks
   const { data: categoriesResponse, isLoading, error, refetch } = useGetAdminCategoriesQuery();
@@ -72,13 +75,19 @@ const AdminCategories = () => {
   };
 
   const handleDeleteCategory = async (categoryId) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      try {
-        await deleteCategory(categoryId).unwrap();
-      } catch (error) {
-        console.error('Error deleting category:', error);
-        alert(error?.data?.message || 'Failed to delete category');
-      }
+    const category = categories.find(cat => cat._id === categoryId);
+    setDeleteModal({ show: true, category });
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!deleteModal.category) return;
+    
+    try {
+      await deleteCategory(deleteModal.category._id).unwrap();
+      setDeleteModal({ show: false, category: null });
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert(error?.data?.message || 'Failed to delete category');
     }
   };
 
@@ -93,6 +102,13 @@ const AdminCategories = () => {
       year: 'numeric'
     });
   };
+
+  // Sort options for dropdown
+  const sortOptions = [
+    { value: 'name', label: 'Sort by Name' },
+    { value: 'products', label: 'Sort by Products' },
+    { value: 'recent', label: 'Sort by Recent' }
+  ];
 
   const filteredCategories = Array.isArray(categories) ? categories.filter(category => 
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -169,15 +185,13 @@ const AdminCategories = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <select 
+          <CustomDropdown
+            options={sortOptions}
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
-          >
-            <option value="name">Sort by Name</option>
-            <option value="products">Sort by Products</option>
-            <option value="recent">Sort by Recent</option>
-          </select>
+            onChange={setSortBy}
+            placeholder="Sort by Name"
+            className="min-w-[160px]"
+          />
           
           <button 
             onClick={handleAddCategory}
@@ -337,6 +351,19 @@ const AdminCategories = () => {
           </button>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.show}
+        onClose={() => setDeleteModal({ show: false, category: null })}
+        onConfirm={confirmDeleteCategory}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${deleteModal.category?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };
