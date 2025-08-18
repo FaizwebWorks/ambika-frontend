@@ -9,7 +9,8 @@ import {
   Package,
   TrendingUp,
   TrendingDown,
-  MoreHorizontal
+  MoreHorizontal,
+  RefreshCw
 } from 'lucide-react';
 import CategoryForm from '../../components/admin/CategoryForm';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
@@ -195,10 +196,20 @@ const AdminCategories = () => {
           
           <button 
             onClick={handleAddCategory}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={isCreating || isUpdating}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Add Category</span>
+            {isCreating ? (
+              <>
+                <RefreshCw size={20} className="animate-spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <Plus size={20} />
+                <span className="hidden sm:inline">Add Category</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -345,9 +356,20 @@ const AdminCategories = () => {
           </p>
           <button 
             onClick={handleAddCategory}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={isCreating || isUpdating}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
           >
-            Add Your First Category
+            {isCreating ? (
+              <>
+                <RefreshCw size={20} className="animate-spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <Plus size={20} />
+                Add Your First Category
+              </>
+            )}
           </button>
         </div>
       )}

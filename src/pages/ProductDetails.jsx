@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '../store/slices/authSlice';
 import { useGetPublicProductByIdQuery, useGetProductsQuery } from '../store/api/publicApiSlice';
+import { useAddToCartMutation } from '../store/api/authApiSlice';
 import { 
   ArrowLeft, 
   ShoppingCart, 
@@ -23,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ProductCard from '../components/ProductCard';
+import toast from 'react-hot-toast';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -47,6 +49,9 @@ const ProductDetails = () => {
   );
   
   const relatedProducts = relatedProductsResponse?.data?.products?.filter(p => p._id !== id) || [];
+  
+  // Cart mutation
+  const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
   
   // Local state
   const [selectedImage, setSelectedImage] = useState(0);
@@ -114,22 +119,62 @@ const ProductDetails = () => {
   };
   
   // Handle add to cart
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isLoggedIn) {
       navigate('/login');
       return;
     }
     
-    // Add to cart logic here
-    console.log('Adding to cart:', {
-      productId: product._id,
-      quantity,
-      size: selectedSize,
-      color: selectedColor
-    });
+    // Validate required selections
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      toast.error('Please select a size before adding to cart', {
+        duration: 3000,
+        position: 'top-center',
+      });
+      return;
+    }
     
-    // Show success message or redirect to cart
-    alert('Product added to cart!');
+    try {
+      const cartData = {
+        productId: product._id,
+        quantity: quantity,
+        ...(selectedSize && { size: selectedSize }),
+        ...(selectedColor && { color: selectedColor })
+      };
+      
+      await addToCart(cartData).unwrap();
+      
+      // Show success toast
+      toast.success(`${product.title} added to cart successfully!`, {
+        duration: 3000,
+        position: 'top-center',
+      });
+      
+      // Optional: Navigate to cart page
+      // navigate('/cart');
+      
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      
+      // Show error toast
+      if (error?.data?.message) {
+        toast.error(`Error: ${error.data.message}`, {
+          duration: 4000,
+          position: 'top-center',
+        });
+      } else if (error?.status === 401) {
+        toast.error('Please sign in to add items to cart', {
+          duration: 4000,
+          position: 'top-center',
+        });
+        navigate('/login');
+      } else {
+        toast.error('Failed to add product to cart. Please try again.', {
+          duration: 4000,
+          position: 'top-center',
+        });
+      }
+    }
   };
   
   // Handle wishlist toggle
@@ -143,17 +188,32 @@ const ProductDetails = () => {
   };
   
   // Handle share
-  const handleShare = () => {
+  const handleShare = async () => {
     if (navigator.share) {
-      navigator.share({
-        title: product.title,
-        text: product.description,
-        url: window.location.href,
-      });
+      try {
+        await navigator.share({
+          title: product.title,
+          text: product.description,
+          url: window.location.href,
+        });
+      } catch (error) {
+        // User cancelled sharing or error occurred
+        console.log('Sharing cancelled or failed');
+      }
     } else {
       // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Product link copied to clipboard!');
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Product link copied to clipboard!', {
+          duration: 2000,
+          position: 'top-center',
+        });
+      } catch (error) {
+        toast.error('Failed to copy link to clipboard', {
+          duration: 2000,
+          position: 'top-center',
+        });
+      }
     }
   };
 
@@ -350,24 +410,34 @@ const ProductDetails = () => {
               {!isLoggedIn ? (
                 <Button 
                   onClick={() => navigate('/login')}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white py-3"
                 >
                   Sign in to purchase
                 </Button>
               ) : !inStock ? (
                 <Button 
                   disabled
-                  className="w-full bg-neutral-100 text-neutral-400 py-3 cursor-not-allowed"
+                  className="w-full h-12 bg-neutral-100 text-neutral-400 py-3 cursor-not-allowed"
                 >
                   Out of Stock
                 </Button>
               ) : (
                 <Button 
                   onClick={handleAddToCart}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 flex items-center justify-center gap-2"
+                  disabled={isAddingToCart}
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ShoppingCart size={20} />
-                  Add to Cart
+                  {isAddingToCart ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Adding to Cart...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart size={20} />
+                      Add to Cart
+                    </>
+                  )}
                 </Button>
               )}
             </div>

@@ -52,9 +52,9 @@ const AdminLayout = () => {
       `}>
         {/* Sidebar header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-200">
-          <div className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img src="/logo.svg" alt="Ambika International" className="h-8 w-auto" />
-          </div>
+          </Link>
           <button 
             onClick={() => setSidebarOpen(false)}
             className="p-1.5 rounded-lg hover:bg-neutral-100 lg:hidden"

@@ -57,7 +57,7 @@ const AdminProducts = () => {
 
   const products = productsData?.data?.products || [];
   const totalProducts = productsData?.data?.total || 0;
-  const totalPages = productsData?.data?.totalPages || 1;
+  const totalPages = productsData?.data?.totalPages || 1;``
   const categories = categoriesData?.data?.categories || [];
 
   // Create category options for filter

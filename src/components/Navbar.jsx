@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectIsAuthenticated, selectCurrentUser, logout } from "../store/slices/authSlice";
+import { useGetCartQuery } from "../store/api/authApiSlice";
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
@@ -17,6 +18,13 @@ const Navbar = () => {
     // Get authentication state from Redux
     const isLoggedIn = useSelector(selectIsAuthenticated);
     const user = useSelector(selectCurrentUser);
+    
+    // Get cart data
+    const { data: cartResponse } = useGetCartQuery(undefined, {
+        skip: !isLoggedIn
+    });
+    
+    const cartItemsCount = cartResponse?.data?.cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
     // Handle logout
     const handleLogout = () => {
@@ -143,7 +151,11 @@ const Navbar = () => {
                     <div className="flex items-center space-x-1">
                         <Link to="/cart" className="p-2 text-neutral-600 hover:text-blue-600 transition-colors relative">
                             <ShoppingCart className="h-5 w-5" />
-                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full shadow-sm">0</span>
+                            {isLoggedIn && cartItemsCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs min-w-[16px] h-4 flex items-center justify-center rounded-full shadow-sm px-1">
+                                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                                </span>
+                            )}
                         </Link>
 
                         {isLoggedIn ? (

@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { selectIsAuthenticated } from "../store/slices/authSlice";
 import { useGetCategoriesQuery, useGetProductsQuery } from "../store/api/publicApiSlice";
 import ProductCard from "../components/ProductCard";
-import { ChevronDown, Filter, X, Search, ArrowUpDown, Loader2 } from "lucide-react";
+import { ChevronDown, Filter, X, Search, Loader2 } from "lucide-react";
 
 const Categories = () => {
 	const location = useLocation();
@@ -215,15 +215,6 @@ const Categories = () => {
 						</div>
 						
 						<div className="flex gap-3 items-center">
-							{/* Sort dropdown */}
-							<div className="relative">
-								<button className="hidden md:flex items-center text-sm gap-2 bg-white border border-neutral-200 px-3 py-2 rounded-lg hover:border-neutral-300 transition-colors">
-									<ArrowUpDown size={16} />
-									Sort by
-									<ChevronDown size={16} className="text-neutral-500" />
-								</button>
-							</div>
-							
 							{/* Mobile filter toggle with badge if filters active */}
 							<button 
 								className="md:hidden flex items-center text-sm gap-2 bg-white border border-neutral-200 px-3 py-2 rounded-lg relative"
