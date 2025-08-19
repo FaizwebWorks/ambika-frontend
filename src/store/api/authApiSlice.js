@@ -90,6 +90,31 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Cart'],
     }),
+
+    // Wishlist endpoints
+    getWishlist: builder.query({
+      query: () => ({
+        url: '/users/wishlist',
+        method: 'GET',
+      }),
+      providesTags: ['Wishlist'],
+    }),
+    
+    addToWishlist: builder.mutation({
+      query: (productId) => ({
+        url: `/users/wishlist/add/${productId}`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Wishlist'],
+    }),
+    
+    removeFromWishlist: builder.mutation({
+      query: (productId) => ({
+        url: `/users/wishlist/remove/${productId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Wishlist'],
+    }),
   }),
 });
 
@@ -105,4 +130,7 @@ export const {
   useUpdateCartItemMutation,
   useRemoveFromCartMutation,
   useClearCartMutation,
+  useGetWishlistQuery,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation,
 } = authApiSlice;

@@ -34,6 +34,18 @@ export const publicApiSlice = apiSlice.injectEndpoints({
     getPublicProductById: builder.query({
       query: (id) => `/products/${id}`,
       providesTags: (result, error, id) => [{ type: 'Product', id }]
+    }),
+
+    // Products by Category API
+    getProductsByCategory: builder.query({
+      query: (categoryId, params = {}) => {
+        const searchParams = new URLSearchParams({
+          category: categoryId,
+          ...params
+        });
+        return `/products?${searchParams.toString()}`;
+      },
+      providesTags: ['Product']
     })
   })
 });
@@ -41,5 +53,6 @@ export const publicApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetCategoriesQuery,
   useGetProductsQuery,
-  useGetPublicProductByIdQuery
+  useGetPublicProductByIdQuery,
+  useGetProductsByCategoryQuery
 } = publicApiSlice;

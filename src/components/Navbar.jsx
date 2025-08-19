@@ -1,9 +1,9 @@
-import { ShoppingCart, UserCircle2, LogIn, X, Menu, Truck, Home, ArrowRight, Phone, Mail, Building2, MessageSquare, ShoppingBag, LogOut, ChevronDown, Settings } from "lucide-react";
+import { ShoppingCart, Heart, UserCircle2, LogIn, X, Menu, Truck, Home, ArrowRight, Phone, Mail, Building2, MessageSquare, ShoppingBag, LogOut, ChevronDown, Settings } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectIsAuthenticated, selectCurrentUser, logout } from "../store/slices/authSlice";
-import { useGetCartQuery } from "../store/api/authApiSlice";
+import { useGetCartQuery, useGetWishlistQuery } from "../store/api/authApiSlice";
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
@@ -24,7 +24,13 @@ const Navbar = () => {
         skip: !isLoggedIn
     });
     
+    // Get wishlist data
+    const { data: wishlistResponse } = useGetWishlistQuery(undefined, {
+        skip: !isLoggedIn
+    });
+    
     const cartItemsCount = cartResponse?.data?.cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+    const wishlistItemsCount = wishlistResponse?.data?.items?.length || 0;
 
     // Handle logout
     const handleLogout = () => {
@@ -110,7 +116,7 @@ const Navbar = () => {
     return (
         <>
             <header className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-300 ${scrolled
-                    ? "bg-white/95 shadow-md backdrop-blur-md py-3"
+                    ? "bg-white/95 backdrop-blur-xl py-3 "
                     : "bg-white py-4"
                 }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,6 +155,18 @@ const Navbar = () => {
 
                     {/* Right Icons */}
                     <div className="flex items-center space-x-1">
+                        {/* Wishlist Icon - Only show if logged in */}
+                        {isLoggedIn && (
+                            <Link to="/wishlist" className="p-2 text-neutral-600 hover:text-red-600 transition-colors relative">
+                                <Heart className="h-5 w-5" />
+                                {wishlistItemsCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[16px] h-4 flex items-center justify-center rounded-full shadow-sm px-1">
+                                        {wishlistItemsCount > 99 ? '99+' : wishlistItemsCount}
+                                    </span>
+                                )}
+                            </Link>
+                        )}
+                        
                         <Link to="/cart" className="p-2 text-neutral-600 hover:text-blue-600 transition-colors relative">
                             <ShoppingCart className="h-5 w-5" />
                             {isLoggedIn && cartItemsCount > 0 && (
@@ -264,6 +282,30 @@ const Navbar = () => {
                         <MobileNavLink to="/contact" onClick={() => setMobileOpen(false)}>
                             <MessageSquare className="h-5 w-5 mr-3 text-blue-600" />
                             Contact
+                        </MobileNavLink>
+                        {isLoggedIn && (
+                            <MobileNavLink to="/wishlist" onClick={() => setMobileOpen(false)}>
+                                <Heart className="h-5 w-5 mr-3 text-blue-600" />
+                                <span className="flex items-center">
+                                    Wishlist
+                                    {wishlistItemsCount > 0 && (
+                                        <span className="ml-2 bg-blue-600 text-white text-xs min-w-[18px] h-5 flex items-center justify-center rounded-full px-1.5">
+                                            {wishlistItemsCount > 99 ? '99+' : wishlistItemsCount}
+                                        </span>
+                                    )}
+                                </span>
+                            </MobileNavLink>
+                        )}
+                        <MobileNavLink to="/cart" onClick={() => setMobileOpen(false)}>
+                            <ShoppingCart className="h-5 w-5 mr-3 text-blue-600" />
+                            <span className="flex items-center">
+                                Cart
+                                {isLoggedIn && cartItemsCount > 0 && (
+                                    <span className="ml-2 bg-blue-600 text-white text-xs min-w-[18px] h-5 flex items-center justify-center rounded-full px-1.5">
+                                        {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                                    </span>
+                                )}
+                            </span>
                         </MobileNavLink>
                     </div>
 

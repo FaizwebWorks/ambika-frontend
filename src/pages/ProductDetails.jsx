@@ -3,7 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '../store/slices/authSlice';
 import { useGetPublicProductByIdQuery, useGetProductsQuery } from '../store/api/publicApiSlice';
-import { useAddToCartMutation } from '../store/api/authApiSlice';
+import { 
+  useAddToCartMutation,
+  useGetWishlistQuery,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation
+} from '../store/api/authApiSlice';
 import { 
   ArrowLeft, 
   ShoppingCart, 
@@ -53,12 +58,23 @@ const ProductDetails = () => {
   // Cart mutation
   const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
   
+  // Wishlist API hooks
+  const { data: wishlistResponse } = useGetWishlistQuery(undefined, {
+    skip: !isLoggedIn
+  });
+  const [addToWishlist, { isLoading: isAddingToWishlist }] = useAddToWishlistMutation();
+  const [removeFromWishlist, { isLoading: isRemovingFromWishlist }] = useRemoveFromWishlistMutation();
+  
+  // Check if current product is in wishlist
+  const wishlistItems = wishlistResponse?.data?.items || [];
+  const wishlistProductIds = wishlistItems.map(item => item.product?._id || item.productId);
+  const isProductInWishlist = wishlistProductIds.includes(product?._id);
+  
   // Local state
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
-  const [isInWishlist, setIsInWishlist] = useState(false);
   
   // Reset states when product changes
   useEffect(() => {
@@ -67,7 +83,6 @@ const ProductDetails = () => {
       setQuantity(1);
       setSelectedSize(product.sizes?.[0] || "");
       setSelectedColor("");
-      setIsInWishlist(false);
     }
   }, [product]);
   
@@ -178,13 +193,33 @@ const ProductDetails = () => {
   };
   
   // Handle wishlist toggle
-  const handleWishlistToggle = () => {
+  const handleWishlistToggle = async () => {
     if (!isLoggedIn) {
       navigate('/login');
       return;
     }
     
-    setIsInWishlist(!isInWishlist);
+    try {
+      if (isProductInWishlist) {
+        await removeFromWishlist(product._id).unwrap();
+        toast.success(`${product.title} removed from wishlist`, {
+          duration: 2000,
+          position: 'bottom-center',
+        });
+      } else {
+        await addToWishlist(product._id).unwrap();
+        toast.success(`${product.title} added to wishlist`, {
+          duration: 2000,
+          position: 'bottom-center',
+        });
+      }
+    } catch (error) {
+      console.error('Wishlist error:', error);
+      toast.error('Failed to update wishlist. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
+    }
   };
   
   // Handle share
@@ -235,11 +270,19 @@ const ProductDetails = () => {
             <div className="flex items-center gap-2">
               <button 
                 onClick={handleWishlistToggle}
-                className={`p-2 rounded-full transition-colors ${
-                  isInWishlist ? 'bg-red-50 text-red-600' : 'hover:bg-neutral-100'
+                disabled={isAddingToWishlist || isRemovingFromWishlist}
+                className={`p-2 rounded-full transition-all duration-300 disabled:opacity-50 ${
+                  isProductInWishlist 
+                    ? 'bg-red-50 text-red-600 hover:bg-red-100' 
+                    : 'hover:bg-neutral-100 text-neutral-600 hover:text-red-500'
                 }`}
               >
-                <Heart size={20} fill={isInWishlist ? 'currentColor' : 'none'} />
+                <Heart 
+                  size={20} 
+                  className={`transition-all duration-300 ${
+                    isProductInWishlist ? 'fill-red-500' : ''
+                  }`}
+                />
               </button>
               <button 
                 onClick={handleShare}
@@ -406,7 +449,7 @@ const ProductDetails = () => {
             )}
 
             {/* Add to Cart Button */}
-            <div className="pt-4">
+            <div className="pt-4 space-y-3">
               {!isLoggedIn ? (
                 <Button 
                   onClick={() => navigate('/login')}
@@ -422,23 +465,48 @@ const ProductDetails = () => {
                   Out of Stock
                 </Button>
               ) : (
-                <Button 
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
-                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isAddingToCart ? (
-                    <>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                    className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-lg transition-all duration-300"
+                  >
+                    {isAddingToCart ? (
+                      <>
+                        <Loader2 size={20} className="animate-spin" />
+                        Adding to Cart...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart size={20} />
+                        Add to Cart
+                      </>
+                    )}
+                  </Button>
+                  
+                  {/* Wishlist Button */}
+                  <Button
+                    onClick={handleWishlistToggle}
+                    disabled={isAddingToWishlist || isRemovingFromWishlist}
+                    variant="outline"
+                    className={`h-12 px-4 border-2 transition-all duration-300 disabled:opacity-50 ${
+                      isProductInWishlist
+                        ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'border-neutral-300 hover:border-red-500 hover:text-red-500'
+                    }`}
+                  >
+                    {isAddingToWishlist || isRemovingFromWishlist ? (
                       <Loader2 size={20} className="animate-spin" />
-                      Adding to Cart...
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart size={20} />
-                      Add to Cart
-                    </>
-                  )}
-                </Button>
+                    ) : (
+                      <Heart 
+                        size={20} 
+                        className={`transition-all duration-300 ${
+                          isProductInWishlist ? 'fill-red-500' : ''
+                        }`}
+                      />
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
 

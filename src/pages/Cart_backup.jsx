@@ -529,7 +529,7 @@ const Cart = () => {
                       <p className="text-xs sm:text-sm md:text-base text-slate-400 line-through">₹3,499</p>
                       <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-full text-xs sm:text-sm font-semibold">14% OFF</span>
                     </div>
-                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl lg:rounded-2xl text-xs sm:text-sm md:text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 w-full">
+                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl lg:rounded-2xl text-xs sm:text-sm md:text-base font-semibold shadow-lg transition-all duration-300 w-full">
                       Add to Cart
                     </Button>
                   </div>
@@ -549,7 +549,7 @@ const Cart = () => {
                       <p className="text-xs sm:text-sm md:text-base text-slate-400 line-through">₹1,799</p>
                       <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-full text-xs sm:text-sm font-semibold">17% OFF</span>
                     </div>
-                    <Button className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl lg:rounded-2xl text-xs sm:text-sm md:text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 w-full">
+                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl lg:rounded-2xl text-xs sm:text-sm md:text-base font-semibold shadow-lg transition-all duration-300 w-full">
                       Add to Cart
                     </Button>
                   </div>
@@ -569,7 +569,7 @@ const Cart = () => {
                       <p className="text-xs sm:text-sm md:text-base text-slate-400 line-through">₹1,199</p>
                       <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-full text-xs sm:text-sm font-semibold">25% OFF</span>
                     </div>
-                    <Button className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl lg:rounded-2xl text-xs sm:text-sm md:text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 w-full">
+                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl lg:rounded-2xl text-xs sm:text-sm md:text-base font-semibold shadow-lg transition-all duration-300 w-full">
                       Add to Cart
                     </Button>
                   </div>

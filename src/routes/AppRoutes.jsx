@@ -10,6 +10,7 @@ import Profile from "../pages/Profile";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
 import Cart from "../pages/Cart";
+import Wishlist from "../pages/Wishlist";
 import ScrollToTop from "../components/ScrollToTop";
 
 // Admin Components
@@ -39,6 +40,11 @@ const AppRoutes = () => (
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="cart" element={<Cart />} />
+        <Route path="wishlist" element={
+          <ProtectedRoute>
+            <Wishlist />
+          </ProtectedRoute>
+        } />
       </Route>
       
       {/* Admin Routes */}

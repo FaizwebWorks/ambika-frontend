@@ -1,9 +1,15 @@
 import { Button } from "../components/ui/button";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowRight, Star, Quote } from "lucide-react";
+import { ArrowRight, Star, Quote, Heart } from "lucide-react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated } from "../store/slices/authSlice";
+import { useGetProductsQuery } from "../store/api/publicApiSlice";
+import { 
+  useGetWishlistQuery, 
+  useAddToWishlistMutation, 
+  useRemoveFromWishlistMutation 
+} from "../store/api/authApiSlice";
 
 // Custom ScrollToTop component to reset scroll position on navigation
 const ScrollToTop = () => {
@@ -41,29 +47,29 @@ const categories = [
 ];
 
 // Example featured products
-const featuredProducts = [
-    {
-        id: 1,
-        name: "Premium Luxury Towel Set",
-        price: 149,
-        img: "https://media.istockphoto.com/id/1205011453/photo/clean-terry-towels-on-wooden-chair-with-brick-wall-background-copy-space.jpg?s=612x612&w=0&k=20&c=Y-AFkM-p0amwdFAsvmODJNchLQu8sV_D_ht6XkiVxak=",
-        category: "Room Supplies"
-    },
-    {
-        id: 2,
-        name: "Electronic Door Lock System",
-        price: 349,
-        img: "/door-lock2.jpg",
-        category: "Security"
-    },
-    {
-        id: 3,
-        name: "Professional Cleaning Spray",
-        price: 99,
-        img: "https://media.istockphoto.com/id/1331969039/photo/cleaning-supplies-are-placed-on-a-wooden-table-for-cleaning.jpg?s=612x612&w=0&k=20&c=YOUKOOTxT6440GnMzYXNns6Ah88D-mKlx6qlyngdbnM=",
-        category: "Cleaning Essentials"
-    }
-];
+// const featuredProducts = [
+//     {
+//         id: 1,
+//         name: "Premium Luxury Towel Set",
+//         price: 149,
+//         img: "https://media.istockphoto.com/id/1205011453/photo/clean-terry-towels-on-wooden-chair-with-brick-wall-background-copy-space.jpg?s=612x612&w=0&k=20&c=Y-AFkM-p0amwdFAsvmODJNchLQu8sV_D_ht6XkiVxak=",
+//         category: "Room Supplies"
+//     },
+//     {
+//         id: 2,
+//         name: "Electronic Door Lock System",
+//         price: 349,
+//         img: "/door-lock2.jpg",
+//         category: "Security"
+//     },
+//     {
+//         id: 3,
+//         name: "Professional Cleaning Spray",
+//         price: 99,
+//         img: "https://media.istockphoto.com/id/1331969039/photo/cleaning-supplies-are-placed-on-a-wooden-table-for-cleaning.jpg?s=612x612&w=0&k=20&c=YOUKOOTxT6440GnMzYXNns6Ah88D-mKlx6qlyngdbnM=",
+//         category: "Cleaning Essentials"
+//     }
+// ];
 
 // Example testimonials
 const testimonials = [
@@ -88,9 +94,62 @@ const Home = () => {
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsAuthenticated);
   
+  // Fetch top 3 products from API
+  const { data: productsResponse, isLoading: productsLoading, error: productsError } = useGetProductsQuery({
+    limit: 3,
+    sort: 'createdAt',
+    order: 'desc'
+  });
+
+  // Fetch wishlist data
+  const { data: wishlistResponse } = useGetWishlistQuery(undefined, {
+    skip: !isLoggedIn
+  });
+  
+  // Wishlist mutations
+  const [addToWishlist, { isLoading: isAddingToWishlist }] = useAddToWishlistMutation();
+  const [removeFromWishlist, { isLoading: isRemovingFromWishlist }] = useRemoveFromWishlistMutation();
+
+  const featuredProducts = productsResponse?.data?.products || [];
+  const wishlistItems = wishlistResponse?.data?.items || [];
+  const wishlistProductIds = wishlistItems.map(item => item.product?._id || item.productId);
+  
+  // Function to check if product is in wishlist
+  const isProductInWishlist = (productId) => {
+    return wishlistProductIds.includes(productId);
+  };
+
+  // Function to handle wishlist toggle
+  const handleWishlistToggle = async (productId, productName) => {
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      if (isProductInWishlist(productId)) {
+        await removeFromWishlist(productId).unwrap();
+        // toast.success(`${productName} removed from wishlist`);
+      } else {
+        await addToWishlist(productId).unwrap();
+        // toast.success(`${productName} added to wishlist`);
+      }
+    } catch (error) {
+      console.error('Wishlist error:', error);
+      // toast.error('Failed to update wishlist');
+    }
+  };
+  
   // Function to navigate to category page and ensure scroll to top
   const navigateToCategory = (link) => {
     navigate(link);
+    window.scrollTo(0, 0);
+  };
+
+  // Function to navigate to specific category page
+  const navigateToCategoryByName = (categoryName) => {
+    const categoryLink = `/categories?category=${encodeURIComponent(categoryName)}`;
+    navigate(categoryLink);
     window.scrollTo(0, 0);
   };
   
@@ -196,45 +255,115 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {featuredProducts.map((product) => (
-              <Link to={`/product/${product.id}`} key={product.id} className="group">
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <img 
-                      src={product.img} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300 ease-out"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <span className="text-sm text-blue-600">{product.category}</span>
-                    <h3 className="font-medium text-lg text-neutral-800 mt-1">{product.name}</h3>
-                    {isLoggedIn ? (
-                      <div className="mt-3 flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                        <div>
-                          <p className="text-emerald-800 text-xl font-semibold">₹{product.price}</p>
-                          <p className="text-emerald-600 text-xs">Wholesale Price</p>
-                        </div>
-                        <div className="bg-green-100 px-2 py-1 rounded-full">
-                          <span className="text-green-700 text-xs font-medium">💰 Best Rate</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                        <Link to="/login" className="block text-center group">
-                          <p className="text-blue-700 font-medium text-sm group-hover:text-blue-800 transition-colors">
-                            🔒 Sign in to view price
-                          </p>
-                          <p className="text-blue-500 text-xs mt-1 group-hover:text-blue-600 transition-colors">
-                            Get exclusive wholesale rates
-                          </p>
-                        </Link>
-                      </div>
-                    )}
+            {productsLoading ? (
+              // Loading skeleton
+              [...Array(3)].map((_, index) => (
+                <div key={index} className="group">
+                  <div className="bg-white rounded-xl overflow-hidden shadow-sm">
+                    <div className="aspect-[4/3] bg-gray-200 animate-pulse"></div>
+                    <div className="p-6">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                      <div className="h-6 bg-gray-200 rounded animate-pulse mb-3"></div>
+                      <div className="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+                    </div>
                   </div>
                 </div>
-              </Link>
-            ))}
+              ))
+            ) : productsError ? (
+              // Error state
+              <div className="col-span-full text-center py-12">
+                <p className="text-red-600">Failed to load featured products</p>
+              </div>
+            ) : featuredProducts.length > 0 ? (
+              // Dynamic products from API
+              featuredProducts.map((product) => (
+                <Link to={`/product/${product._id}`} key={product._id} className="group">
+                  <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition relative">
+                    {/* Wishlist Heart Icon */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleWishlistToggle(product._id, product.name || product.title);
+                      }}
+                      disabled={isAddingToWishlist || isRemovingFromWishlist}
+                      className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-sm transition-all duration-300 ${
+                        isProductInWishlist(product._id)
+                          ? 'bg-red-100 hover:bg-red-200'
+                          : 'bg-white/80 hover:bg-white'
+                      } shadow-md hover:shadow-lg disabled:opacity-50`}
+                    >
+                      <Heart
+                        size={20}
+                        className={`transition-all duration-300 ${
+                          isProductInWishlist(product._id)
+                            ? 'text-red-500 fill-red-500'
+                            : 'text-gray-600 hover:text-red-500'
+                        }`}
+                      />
+                    </button>
+                    
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <img 
+                        src={product.images?.[0] || '/placeholder-product.jpg'} 
+                        alt={product.name || product.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300 ease-out"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <span 
+                        className="text-sm text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigateToCategoryByName(product.category?.name || 'All Products');
+                        }}
+                      >
+                        {product.category?.name || 'Uncategorized'}
+                      </span>
+                      <h3 className="font-medium text-lg text-neutral-800 mt-1">
+                        {product.name || product.title}
+                      </h3>
+                      {isLoggedIn ? (
+                        <div className="mt-3 flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                          <div>
+                            <p className="text-emerald-800 text-xl font-semibold">
+                              ₹{product.discountPrice ? product.discountPrice.toLocaleString('en-IN') : product.price.toLocaleString('en-IN')}
+                            </p>
+                            <p className="text-emerald-600 text-xs">
+                              {product.discountPrice ? 'Discounted Price' : 'Wholesale Price'}
+                            </p>
+                          </div>
+                          {product.discountPrice && (
+                            <div className="bg-green-100 px-2 py-1 rounded-full">
+                              <span className="text-green-700 text-xs font-medium">
+                                {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                          <Link to="/login" className="block text-center group">
+                            <p className="text-blue-700 font-medium text-sm group-hover:text-blue-800 transition-colors">
+                              🔒 Sign in to view price
+                            </p>
+                            <p className="text-blue-500 text-xs mt-1 group-hover:text-blue-600 transition-colors">
+                              Get exclusive wholesale rates
+                            </p>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              // No products available
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-600">No featured products available at the moment</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
