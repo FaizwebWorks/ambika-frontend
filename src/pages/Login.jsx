@@ -37,8 +37,16 @@ const Login = () => {
                     user: result.user,
                     token: result.token
                 }));
-                toast.success(`Welcome back, ${result.user?.name || result.user?.username || 'User'}! 👋`);
-                navigate('/'); // Redirect to home page
+                
+                const userName = result.user?.username || result.user?.name || 'User';
+                toast.success(`Welcome back, ${userName}! 👋`);
+                
+                // Redirect based on user role
+                if (result.user?.role === 'admin') {
+                    navigate('/admin'); // Redirect admin to customers management
+                } else {
+                    navigate('/'); // Redirect regular user to home page
+                }
             }
         } catch (err) {
             console.error('Login error:', err);
@@ -156,7 +164,6 @@ const Login = () => {
                             Create account
                         </Link>
                     </div>
-
                     {/* Additional Information */}
                     <div className="mt-8 pt-6 border-t border-neutral-100 text-center">
                         <p className="text-xs text-neutral-400">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '../store/slices/authSlice';
+import { selectIsAuthenticated, selectCurrentUser } from '../store/slices/authSlice';
 import { useGetPublicProductByIdQuery, useGetProductsQuery } from '../store/api/publicApiSlice';
 import { 
   useAddToCartMutation,
@@ -25,7 +25,8 @@ import {
   ChevronRight,
   Zap,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ProductCard from '../components/ProductCard';
@@ -35,6 +36,7 @@ const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsAuthenticated);
+  const currentUser = useSelector(selectCurrentUser);
   
   // Fetch product data from backend
   const { 
@@ -70,6 +72,12 @@ const ProductDetails = () => {
   const wishlistProductIds = wishlistItems.map(item => item.product?._id || item.productId);
   const isProductInWishlist = wishlistProductIds.includes(product?._id);
   
+  // Determine customer type and pricing logic
+  const isB2BCustomer = currentUser?.customerType === 'B2B';
+  const isApprovedB2B = isB2BCustomer && currentUser?.approvalStatus === 'approved';
+  const showPricing = !isB2BCustomer || (isB2BCustomer && product?.b2bPricing?.showPriceToGuests);
+  const isPriceOnRequest = isB2BCustomer && product?.b2bPricing?.priceOnRequest;
+  
   // Local state
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -89,7 +97,7 @@ const ProductDetails = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white flex items-center justify-center">
+      <div className="min-h-screen w-full bg-gradient-to-b from-neutral-50 to-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={48} className="animate-spin text-blue-600 mb-4 mx-auto" />
           <h3 className="text-lg font-medium text-neutral-800 mb-2">Loading product...</h3>
@@ -102,7 +110,7 @@ const ProductDetails = () => {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white flex items-center justify-center">
+      <div className="min-h-screen w-full bg-gradient-to-b from-neutral-50 to-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="w-16 h-16 mb-4 rounded-full bg-red-100 flex items-center justify-center mx-auto">
             <AlertCircle size={24} className="text-red-500" />
@@ -351,18 +359,42 @@ const ProductDetails = () => {
               {/* Price */}
               {isLoggedIn ? (
                 <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-bold text-neutral-900">
-                    ₹{product.price.toLocaleString('en-IN')}
-                  </span>
-                  {product.discount > 0 && (
+                  {showPricing ? (
                     <>
-                      <span className="text-lg text-neutral-500 line-through">
-                        ₹{((product.price * 100) / (100 - product.discount)).toLocaleString('en-IN')}
+                      <span className="text-3xl font-bold text-neutral-900">
+                        ₹{product.price.toLocaleString('en-IN')}
                       </span>
-                      <span className="text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
-                        {product.discount}% off
-                      </span>
+                      {product.discount > 0 && (
+                        <>
+                          <span className="text-lg text-neutral-500 line-through">
+                            ₹{((product.price * 100) / (100 - product.discount)).toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
+                            {product.discount}% off
+                          </span>
+                        </>
+                      )}
+                      {isB2BCustomer && (
+                        <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          B2B Price
+                        </span>
+                      )}
                     </>
+                  ) : isPriceOnRequest ? (
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl font-bold text-blue-600">
+                        Price on Request
+                      </span>
+                      {isB2BCustomer && (
+                        <span className="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                          Bulk Pricing Available
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-neutral-400 font-medium">
+                      Contact for pricing
+                    </div>
                   )}
                 </div>
               ) : (
@@ -448,7 +480,7 @@ const ProductDetails = () => {
               </div>
             )}
 
-            {/* Add to Cart Button */}
+            {/* Add to Cart/Request Quote Button */}
             <div className="pt-4 space-y-3">
               {!isLoggedIn ? (
                 <Button 
@@ -464,6 +496,51 @@ const ProductDetails = () => {
                 >
                   Out of Stock
                 </Button>
+              ) : isB2BCustomer && isPriceOnRequest ? (
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={() => navigate(`/quote-request?product=${product._id}`)}
+                    className="flex-1 h-12 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-3 flex items-center justify-center gap-2 rounded-xl shadow-lg transition-all duration-300"
+                  >
+                    <FileText size={20} />
+                    Request Quote
+                  </Button>
+                  
+                  {/* Wishlist Button */}
+                  <Button
+                    onClick={handleWishlistToggle}
+                    disabled={isAddingToWishlist || isRemovingFromWishlist}
+                    variant="outline"
+                    className={`h-12 px-4 border-2 transition-all duration-300 disabled:opacity-50 ${
+                      isProductInWishlist
+                        ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'border-neutral-300 hover:border-red-500 hover:text-red-500'
+                    }`}
+                  >
+                    {isAddingToWishlist || isRemovingFromWishlist ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      <Heart 
+                        size={20} 
+                        className={`transition-all duration-300 ${
+                          isProductInWishlist ? 'fill-red-500' : ''
+                        }`}
+                      />
+                    )}
+                  </Button>
+                </div>
+              ) : isB2BCustomer && !isApprovedB2B ? (
+                <div className="text-center">
+                  <Button 
+                    disabled
+                    className="w-full h-12 bg-yellow-100 text-yellow-700 py-3 cursor-not-allowed"
+                  >
+                    Account Pending Approval
+                  </Button>
+                  <p className="text-sm text-yellow-600 mt-2">
+                    Your B2B account is under review. You'll be able to place orders once approved.
+                  </p>
+                </div>
               ) : (
                 <div className="flex gap-3">
                   <Button 
@@ -479,7 +556,7 @@ const ProductDetails = () => {
                     ) : (
                       <>
                         <ShoppingCart size={20} />
-                        Add to Cart
+                        {isB2BCustomer ? 'Add to Bulk Order' : 'Add to Cart'}
                       </>
                     )}
                   </Button>
@@ -506,6 +583,22 @@ const ProductDetails = () => {
                       />
                     )}
                   </Button>
+                </div>
+              )}
+              
+              {/* B2B Additional Info */}
+              {isB2BCustomer && isApprovedB2B && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-blue-800 text-sm">
+                    <Shield size={16} />
+                    <span className="font-medium">B2B Benefits:</span>
+                  </div>
+                  <ul className="text-blue-700 text-sm mt-1 space-y-1">
+                    <li>• Bulk pricing available for orders above {product.minOrderQuantity || 10} units</li>
+                    <li>• Dedicated account manager support</li>
+                    <li>• Extended payment terms available</li>
+                    <li>• Priority customer service</li>
+                  </ul>
                 </div>
               )}
             </div>

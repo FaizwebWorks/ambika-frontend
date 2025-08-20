@@ -921,7 +921,7 @@ const Cart = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
                 <Shield size={20} className="text-white" />
               </div>
-              <h2 className="text-2xl font-bold">Premium Trust & Excellence</h2>
+              <h2 className="text-lg sm:text-2xl font-bold">Premium Trust & Excellence</h2>
             </div>
             <p className="text-slate-300">Trusted by hospitality leaders across India</p>
           </div>

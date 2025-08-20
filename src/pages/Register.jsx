@@ -178,6 +178,23 @@ const Register = () => {
             </Link>
           </div>
 
+          {/* B2B Registration Link */}
+          <div className="mt-4 text-center">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800 font-medium mb-2">Business Customer?</p>
+              <p className="text-xs text-blue-600 mb-3">
+                Register as B2B partner for wholesale pricing and bulk orders
+              </p>
+              <Link 
+                to="/register-b2b" 
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all"
+              >
+                Register as B2B Partner
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+
           {/* Additional Information */}
           <div className="mt-8 pt-6 border-t border-neutral-100 text-center">
             <p className="text-xs text-neutral-400">

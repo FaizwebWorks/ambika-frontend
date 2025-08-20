@@ -4,6 +4,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import RegisterB2B from "../pages/RegisterB2B";
 import Categories from "../pages/Categories";
 import ProductDetails from "../pages/ProductDetails";
 import Profile from "../pages/Profile";
@@ -11,6 +12,7 @@ import About from "../pages/About";
 import Contact from "../pages/Contact";
 import Cart from "../pages/Cart";
 import Wishlist from "../pages/Wishlist";
+import QuoteRequest from "../pages/QuoteRequest";
 import ScrollToTop from "../components/ScrollToTop";
 
 // Admin Components
@@ -20,6 +22,7 @@ import AdminProducts from "../pages/admin/AdminProducts";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminCategories from "../pages/admin/AdminCategories";
+import AdminUsers from "../pages/admin/AdminUsers";
 import AdminSettings from "../pages/admin/AdminSettings";
 
 const AppRoutes = () => (
@@ -30,6 +33,7 @@ const AppRoutes = () => (
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="register-b2b" element={<RegisterB2B />} />
         <Route path="categories" element={<Categories />} />
         <Route path="product/:id" element={<ProductDetails />} />
         <Route path="profile" element={
@@ -45,11 +49,16 @@ const AppRoutes = () => (
             <Wishlist />
           </ProtectedRoute>
         } />
+        <Route path="quote-request" element={
+          <ProtectedRoute>
+            <QuoteRequest />
+          </ProtectedRoute>
+        } />
       </Route>
       
       {/* Admin Routes */}
       <Route path="/admin" element={
-        <ProtectedRoute>
+        <ProtectedRoute requireAdmin={true}>
           <AdminLayout />
         </ProtectedRoute>
       }>
@@ -58,6 +67,7 @@ const AppRoutes = () => (
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="users" element={<AdminUsers />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
     </Routes>

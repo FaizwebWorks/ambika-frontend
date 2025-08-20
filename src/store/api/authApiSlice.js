@@ -18,6 +18,14 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
+    registerB2B: builder.mutation({
+      query: (userData) => ({
+        url: '/users/register-b2b',
+        method: 'POST',
+        body: userData,
+      }),
+      invalidatesTags: ['User'],
+    }),
     logout: builder.mutation({
       query: () => ({
         url: '/users/logout',
@@ -115,12 +123,40 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Wishlist'],
     }),
+
+    // Quote request endpoints (B2B)
+    createQuoteRequest: builder.mutation({
+      query: (quoteData) => ({
+        url: '/users/quote-request',
+        method: 'POST',
+        body: quoteData,
+      }),
+      invalidatesTags: ['QuoteRequest'],
+    }),
+    
+    getQuoteRequests: builder.query({
+      query: (params = {}) => ({
+        url: '/users/quote-requests',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['QuoteRequest'],
+    }),
+    
+    getQuoteRequest: builder.query({
+      query: (id) => ({
+        url: `/users/quote-request/${id}`,
+        method: 'GET',
+      }),
+      providesTags: ['QuoteRequest'],
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
   useRegisterMutation,
+  useRegisterB2BMutation,
   useLogoutMutation,
   useGetProfileQuery,
   useUpdateProfileMutation,
@@ -133,4 +169,7 @@ export const {
   useGetWishlistQuery,
   useAddToWishlistMutation,
   useRemoveFromWishlistMutation,
+  useCreateQuoteRequestMutation,
+  useGetQuoteRequestsQuery,
+  useGetQuoteRequestQuery,
 } = authApiSlice;

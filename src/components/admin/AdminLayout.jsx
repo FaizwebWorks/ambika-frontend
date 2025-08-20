@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Outlet, useLocation, Link } from 'react-router-dom';
+import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../store/slices/authSlice';
 import { 
   LayoutDashboard, 
   Package, 
@@ -14,10 +16,13 @@ import {
   Search,
   User
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -25,6 +30,7 @@ const AdminLayout = () => {
     { name: 'Categories', href: '/admin/categories', icon: BarChart3 },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Customers', href: '/admin/customers', icon: Users },
+    { name: 'Users', href: '/admin/users', icon: User },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
@@ -33,6 +39,12 @@ const AdminLayout = () => {
       return location.pathname === '/admin';
     }
     return location.pathname.startsWith(path);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success('Logged out successfully');
+    navigate('/login');
   };
 
   return (
@@ -89,7 +101,10 @@ const AdminLayout = () => {
 
         {/* Sidebar footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-neutral-200">
-          <button className="flex items-center w-full px-3 py-2.5 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-all">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center w-full px-3 py-2.5 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-all"
+          >
             <LogOut size={20} className="mr-3" />
             Logout
           </button>

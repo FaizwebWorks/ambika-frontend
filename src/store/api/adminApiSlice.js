@@ -139,6 +139,28 @@ export const adminApiSlice = apiSlice.injectEndpoints({
       providesTags: ['AdminCustomers']
     }),
 
+    getCustomerById: builder.query({
+      query: (id) => `/admin/customers/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Customer', id }]
+    }),
+
+    approveCustomer: builder.mutation({
+      query: (customerId) => ({
+        url: `/admin/customers/${customerId}/approve`,
+        method: 'PUT'
+      }),
+      invalidatesTags: ['AdminCustomers', 'Customer', 'Dashboard']
+    }),
+
+    rejectCustomer: builder.mutation({
+      query: ({ customerId, reason }) => ({
+        url: `/admin/customers/${customerId}/reject`,
+        method: 'PUT',
+        body: { reason }
+      }),
+      invalidatesTags: ['AdminCustomers', 'Customer', 'Dashboard']
+    }),
+
     // Categories APIs
     getAdminCategories: builder.query({
       query: (params = {}) => {
@@ -224,6 +246,37 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         });
         return `/admin/export?${searchParams.toString()}`;
       }
+    }),
+
+    // User Management APIs
+    getAllUsers: builder.query({
+      query: (params = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.keys(params).forEach(key => {
+          if (params[key] !== undefined && params[key] !== '') {
+            searchParams.append(key, params[key]);
+          }
+        });
+        return `/admin/users?${searchParams.toString()}`;
+      },
+      providesTags: ['AdminUsers']
+    }),
+
+    updateUserRole: builder.mutation({
+      query: ({ userId, role }) => ({
+        url: `/admin/users/${userId}/role`,
+        method: 'PUT',
+        body: { role }
+      }),
+      invalidatesTags: ['AdminUsers', 'Dashboard']
+    }),
+
+    deleteUser: builder.mutation({
+      query: (userId) => ({
+        url: `/admin/users/${userId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['AdminUsers', 'Dashboard']
     })
   })
 });
@@ -243,12 +296,19 @@ export const {
   useDeleteCategoryMutation,
   useBulkUpdateCategoriesMutation,
   useGetAdminCustomersQuery,
+  useGetCustomerByIdQuery,
+  useApproveCustomerMutation,
+  useRejectCustomerMutation,
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
   useDeleteCustomerMutation,
   useGetAdminOrdersQuery,
+  useUpdateOrderStatusMutation,
   useGetOrderByIdQuery,
   useCreateOrderMutation,
   useUpdateOrderMutation,
-  useDeleteOrderMutation
+  useDeleteOrderMutation,
+  useGetAllUsersQuery,
+  useUpdateUserRoleMutation,
+  useDeleteUserMutation
 } = adminApiSlice;

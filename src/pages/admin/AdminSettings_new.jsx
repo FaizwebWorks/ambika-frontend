@@ -27,14 +27,6 @@ import {
   useUploadCompanyLogoMutation,
   useResetSettingsMutation
 } from '../../store/api/settingsApiSlice';
-import {
-  useGetSubscriptionPlansQuery,
-  useGetCurrentSubscriptionQuery,
-  useCreateSubscriptionOrderMutation,
-  useVerifyPaymentMutation,
-  useCancelSubscriptionMutation,
-  useGetPaymentHistoryQuery,
-} from '../../store/api/paymentApiSlice';
 
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
@@ -44,9 +36,6 @@ const AdminSettings = () => {
   // API hooks
   const { data: settings, isLoading: settingsLoading, error: settingsError } = useGetSettingsQuery();
   const { data: adminProfile, isLoading: profileLoading } = useGetAdminProfileQuery();
-  const { data: subscriptionPlans } = useGetSubscriptionPlansQuery();
-  const { data: currentSubscription, refetch: refetchSubscription } = useGetCurrentSubscriptionQuery();
-  const { data: paymentHistory } = useGetPaymentHistoryQuery();
   
   const [updateGeneralSettings, { isLoading: updatingGeneral }] = useUpdateGeneralSettingsMutation();
   const [updateNotificationSettings, { isLoading: updatingNotifications }] = useUpdateNotificationSettingsMutation();
@@ -55,9 +44,6 @@ const AdminSettings = () => {
   const [updateAdminProfile, { isLoading: updatingProfile }] = useUpdateAdminProfileMutation();
   const [uploadCompanyLogo, { isLoading: uploadingLogo }] = useUploadCompanyLogoMutation();
   const [resetSettings, { isLoading: resetting }] = useResetSettingsMutation();
-  const [createSubscriptionOrder, { isLoading: creatingOrder }] = useCreateSubscriptionOrderMutation();
-  const [verifyPayment] = useVerifyPaymentMutation();
-  const [cancelSubscription, { isLoading: cancelling }] = useCancelSubscriptionMutation();
 
   const tabs = [
     { id: 'general', name: 'General', icon: Settings },
@@ -65,7 +51,6 @@ const AdminSettings = () => {
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'security', name: 'Security', icon: Shield },
     { id: 'business', name: 'Business', icon: Building },
-    { id: 'subscription', name: 'Subscription', icon: CreditCard },
   ];
 
   // Handle form input changes
@@ -142,63 +127,6 @@ const AdminSettings = () => {
       setFormData({});
     } catch (error) {
       alert(`Error updating settings: ${error.data?.message || error.message}`);
-    }
-  };
-
-  // Handle subscription purchase
-  const handleSubscriptionPurchase = async (planType) => {
-    try {
-      const orderResponse = await createSubscriptionOrder({ planType }).unwrap();
-      
-      const options = {
-        key: orderResponse.data.razorpayKeyId,
-        amount: orderResponse.data.amount,
-        currency: orderResponse.data.currency,
-        name: "Ambika International",
-        description: `${subscriptionPlans.data[planType].name} Subscription`,
-        order_id: orderResponse.data.orderId,
-        handler: async function (response) {
-          try {
-            await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }).unwrap();
-            
-            alert('Payment successful! Your subscription is now active.');
-            refetchSubscription();
-          } catch (error) {
-            alert(`Payment verification failed: ${error.data?.message || error.message}`);
-          }
-        },
-        prefill: {
-          name: adminProfile?.data?.name || adminProfile?.data?.username,
-          email: adminProfile?.data?.email,
-          contact: adminProfile?.data?.phone,
-        },
-        theme: {
-          color: "#2563eb",
-        },
-      };
-      
-      const rzp1 = new window.Razorpay(options);
-      rzp1.open();
-      
-    } catch (error) {
-      alert(`Error creating order: ${error.data?.message || error.message}`);
-    }
-  };
-
-  // Handle subscription cancellation
-  const handleCancelSubscription = async () => {
-    if (window.confirm('Are you sure you want to cancel your subscription? You will lose access to admin features when it expires.')) {
-      try {
-        await cancelSubscription().unwrap();
-        alert('Subscription cancelled successfully. You can still access features until your current period ends.');
-        refetchSubscription();
-      } catch (error) {
-        alert(`Error cancelling subscription: ${error.data?.message || error.message}`);
-      }
     }
   };
 
@@ -694,170 +622,6 @@ const AdminSettings = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Subscription Settings */}
-          {activeTab === 'subscription' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium text-neutral-900 mb-4">Subscription & Billing</h3>
-                
-                {/* Current Subscription Status */}
-                {currentSubscription?.data && (
-                  <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">Current Subscription</h4>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-blue-700">Plan:</span>
-                        <span className="ml-2 font-medium">{currentSubscription.data.planDetails.name}</span>
-                      </div>
-                      <div>
-                        <span className="text-blue-700">Status:</span>
-                        <span className={`ml-2 font-medium ${
-                          currentSubscription.data.isActive ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {currentSubscription.data.status.toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-blue-700">End Date:</span>
-                        <span className="ml-2 font-medium">
-                          {new Date(currentSubscription.data.endDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-blue-700">Days Remaining:</span>
-                        <span className={`ml-2 font-medium ${
-                          currentSubscription.data.daysRemaining <= 3 ? 'text-red-600' : 'text-green-600'
-                        }`}>
-                          {currentSubscription.data.daysRemaining} days
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {currentSubscription.data.isExpiringSoon && (
-                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-yellow-800 text-sm">
-                          ⚠️ Your subscription is expiring soon. Renew now to avoid interruption.
-                        </p>
-                      </div>
-                    )}
-                    
-                    {currentSubscription.data.status === 'active' && (
-                      <div className="mt-4">
-                        <button
-                          onClick={handleCancelSubscription}
-                          disabled={cancelling}
-                          className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-                        >
-                          {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* No Active Subscription Message */}
-                {!currentSubscription?.data && (
-                  <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h4 className="font-medium text-yellow-900 mb-2">No Active Subscription</h4>
-                    <p className="text-yellow-800 text-sm">
-                      You need an active subscription to continue using the admin dashboard. Please choose a plan below.
-                    </p>
-                  </div>
-                )}
-
-                {/* Subscription Plans */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {subscriptionPlans?.data && Object.entries(subscriptionPlans.data).map(([planKey, plan]) => (
-                    <div key={planKey} className={`p-6 border rounded-lg relative ${
-                      planKey === 'professional' ? 'border-blue-500 bg-blue-50' : 'border-neutral-200'
-                    }`}>
-                      {planKey === 'professional' && (
-                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                            RECOMMENDED
-                          </span>
-                        </div>
-                      )}
-                      
-                      <div className="text-center">
-                        <h4 className="text-lg font-semibold text-neutral-900">{plan.name}</h4>
-                        <div className="mt-2">
-                          <span className="text-3xl font-bold text-neutral-900">₹{plan.price}</span>
-                          <span className="text-neutral-600">/month</span>
-                        </div>
-                      </div>
-                      
-                      <ul className="mt-4 space-y-2">
-                        {plan.features.map((feature, index) => (
-                          <li key={index} className="flex items-center text-sm text-neutral-700">
-                            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                      
-                      <button
-                        onClick={() => handleSubscriptionPurchase(planKey)}
-                        disabled={creatingOrder || (currentSubscription?.data?.planDetails?.name === plan.name)}
-                        className={`w-full mt-6 py-2 px-4 rounded-lg font-medium transition-colors ${
-                          currentSubscription?.data?.planDetails?.name === plan.name
-                            ? 'bg-gray-400 text-white cursor-not-allowed'
-                            : planKey === 'professional'
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-neutral-600 text-white hover:bg-neutral-700'
-                        } disabled:opacity-50`}
-                      >
-                        {currentSubscription?.data?.planDetails?.name === plan.name ? 'Current Plan' : 
-                         creatingOrder ? 'Processing...' : 'Subscribe Now'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Payment History */}
-                {paymentHistory?.data && paymentHistory.data.length > 0 && (
-                  <div className="mt-8">
-                    <h4 className="text-lg font-medium text-neutral-900 mb-4">Payment History</h4>
-                    <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-neutral-50">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Date</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Plan</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Amount</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-neutral-200">
-                          {paymentHistory.data.slice(0, 5).map((payment, index) => (
-                            <tr key={index}>
-                              <td className="px-4 py-3 text-sm text-neutral-900">
-                                {new Date(payment.date).toLocaleDateString()}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-neutral-900">{payment.plan}</td>
-                              <td className="px-4 py-3 text-sm text-neutral-900">₹{payment.amount}</td>
-                              <td className="px-4 py-3">
-                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                  payment.status === 'completed' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-red-100 text-red-800'
-                                }`}>
-                                  {payment.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}

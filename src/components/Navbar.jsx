@@ -201,14 +201,16 @@ const Navbar = () => {
                                             <UserCircle2 className="h-4 w-4 mr-3" />
                                             Profile
                                         </Link>
-                                        <Link
-                                            to="/admin"
-                                            className="flex items-center px-2 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-md"
-                                            onClick={() => setProfileDropdownOpen(false)}
-                                        >
-                                            <Settings className="h-4 w-4 mr-3" />
-                                            Admin Panel
-                                        </Link>
+                                        {user?.role === 'admin' && (
+                                            <Link
+                                                to="/admin"
+                                                className="flex items-center px-2 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-md"
+                                                onClick={() => setProfileDropdownOpen(false)}
+                                            >
+                                                <Settings className="h-4 w-4 mr-3" />
+                                                Admin Panel
+                                            </Link>
+                                        )}
                                         <button
                                             onClick={handleLogout}
                                             className="flex items-center w-full px-2 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-md"
