@@ -1,33 +1,37 @@
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Layout from "../components/Layout";
 import ProtectedRoute from "../components/ProtectedRoute";
-import Home from "../pages/Home";
+import ScrollToTop from "../components/ScrollToTop";
+
+// Import non-lazy components (essential for initial load)
+import AdminLayout from "../components/admin/AdminLayout";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import RegisterB2B from "../pages/RegisterB2B";
-import Categories from "../pages/Categories";
-import ProductDetails from "../pages/ProductDetails";
-import Profile from "../pages/Profile";
-import About from "../pages/About";
-import Contact from "../pages/Contact";
-import Cart from "../pages/Cart";
-import Wishlist from "../pages/Wishlist";
-import QuoteRequest from "../pages/QuoteRequest";
-import QuoteRequestSuccess from "../pages/QuoteRequestSuccess";
-import OrderSummary from "../pages/OrderSummary";
-import OrderSuccess from "../pages/OrderSuccess";
-import ScrollToTop from "../components/ScrollToTop";
 
-// Admin Components
-import AdminLayout from "../components/admin/AdminLayout";
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import AdminProducts from "../pages/admin/AdminProducts";
-import AdminOrders from "../pages/admin/AdminOrders";
-import AdminCustomers from "../pages/admin/AdminCustomers";
-import AdminCategories from "../pages/admin/AdminCategories";
-import AdminUsers from "../pages/admin/AdminUsers";
-import AdminSettings from "../pages/admin/AdminSettings";
-import AdminNotifications from "../pages/admin/AdminNotifications";
+// Import lazy components
+import {
+  About,
+  AdminCategories,
+  AdminCustomers,
+  AdminDashboard,
+  AdminNotifications,
+  AdminOrders,
+  AdminProducts,
+  AdminSettings,
+  AdminUsers,
+  Cart,
+  Categories,
+  Contact,
+  Home,
+  OrderSuccess,
+  OrderSummary,
+  ProductDetails,
+  Profile,
+  QuoteRequest,
+  QuoteRequestSuccess,
+  Wishlist
+} from "../components/LazyComponents.jsx";
 
 const AppRoutes = () => (
   <>

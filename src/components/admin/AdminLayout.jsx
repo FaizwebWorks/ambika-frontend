@@ -49,7 +49,7 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen w-full bg-neutral-50">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 

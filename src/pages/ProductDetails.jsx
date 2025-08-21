@@ -21,25 +21,16 @@ import {
     Truck,
     Shield,
     RotateCcw,
-    ChevronLeft,
-    ChevronRight,
-    Zap,
     Loader2,
     AlertCircle,
     FileText,
     Package,
     Award,
     Info,
-    ChevronDown,
-    ChevronUp,
     Ruler,
     Weight,
-    Calendar,
     Layers,
-    Tag,
-    Crown,
-    TrendingUp,
-    Clock
+    Crown
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ProductCard from '../components/ProductCard';
@@ -85,28 +76,16 @@ const ProductDetails = () => {
     const wishlistProductIds = wishlistItems.map(item => item.product?._id || item.productId);
     const isProductInWishlist = wishlistProductIds.includes(product?._id);
 
-    // Determine customer type and pricing logic
-    const isB2BCustomer = currentUser?.customerType === 'B2B';
-    const isApprovedB2B = isB2BCustomer && currentUser?.approvalStatus === 'approved';
-    const showPricing = !isB2BCustomer || (isB2BCustomer && product?.b2bPricing?.showPriceToGuests);
-    const isPriceOnRequest = isB2BCustomer && product?.b2bPricing?.priceOnRequest;
-
     // Local state
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
-    const [selectedSize, setSelectedSize] = useState("");
-    const [selectedColor, setSelectedColor] = useState("");
-    const [showSpecifications, setShowSpecifications] = useState(false);
-    const [showFeatures, setShowFeatures] = useState(false);
     const [activeTab, setActiveTab] = useState('description');
 
     // Reset states when product changes
     useEffect(() => {
         if (product) {
             setSelectedImage(0);
-            setQuantity(1);
-            setSelectedSize(product.sizes?.[0] || "");
-            setSelectedColor("");
+            setQuantity(product.minOrderQuantity || 1);
         }
     }, [product]);
 
@@ -164,21 +143,10 @@ const ProductDetails = () => {
             return;
         }
 
-        // Validate required selections
-        if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-            toast.error('Please select a size before adding to cart', {
-                duration: 3000,
-                position: 'top-center',
-            });
-            return;
-        }
-
         try {
             const cartData = {
                 productId: product._id,
-                quantity: quantity,
-                ...(selectedSize && { size: selectedSize }),
-                ...(selectedColor && { color: selectedColor })
+                quantity: quantity
             };
 
             await addToCart(cartData).unwrap();
@@ -398,27 +366,21 @@ const ProductDetails = () => {
 
                             {/* Pricing */}
                             <div className="space-y-2">
-                                {showPricing ? (
-                                    <div className="flex items-baseline gap-3">
-                                        <span className="text-3xl font-bold text-neutral-900">
-                                            ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
-                                        </span>
-                                        {product.discountPrice && product.discountPrice < product.price && (
-                                            <>
-                                                <span className="text-xl text-neutral-500 line-through">
-                                                    ₹{product.price?.toLocaleString('en-IN')}
-                                                </span>
-                                                <span className="px-2 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                                                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
-                                                </span>
-                                            </>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="text-2xl font-bold text-blue-600">
-                                        {isPriceOnRequest ? 'Price on Request' : 'Login for Price'}
-                                    </div>
-                                )}
+                                <div className="flex items-baseline gap-3">
+                                    <span className="text-3xl font-bold text-neutral-900">
+                                        ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
+                                    </span>
+                                    {product.discountPrice && product.discountPrice < product.price && (
+                                        <>
+                                            <span className="text-xl text-neutral-500 line-through">
+                                                ₹{product.price?.toLocaleString('en-IN')}
+                                            </span>
+                                            <span className="px-2 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                                {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Quick Specs */}
@@ -458,57 +420,8 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
-                        {/* Sizes */}
-                        {product.sizes && product.sizes.length > 0 && (
-                            <div className="space-y-3">
-                                <h3 className="font-semibold text-neutral-900">Size</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {product.sizes.map((size) => (
-                                        <button
-                                            key={size}
-                                            onClick={() => setSelectedSize(size)}
-                                            className={`px-4 py-2 border rounded-lg font-medium transition-all ${selectedSize === size
-                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                    : 'border-neutral-300 hover:border-neutral-400'
-                                                }`}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* B2B Bulk Pricing - Only show if user is B2B */}
-                        {isB2BCustomer && product.b2bPricing?.bulkPricing && product.b2bPricing.bulkPricing.length > 0 && (
-                            <div className="space-y-3">
-                                <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
-                                    <TrendingUp size={18} className="text-blue-600" />
-                                    Bulk Pricing
-                                </h3>
-                                <div className="bg-blue-50 rounded-xl p-4 space-y-2">
-                                    {product.b2bPricing.bulkPricing.map((tier, index) => (
-                                        <div key={index} className="flex justify-between items-center text-sm">
-                                            <span className="text-blue-800">
-                                                {tier.minQuantity}+ units
-                                                {tier.maxQuantity && ` (up to ${tier.maxQuantity})`}
-                                            </span>
-                                            <span className="font-semibold text-blue-900">
-                                                ₹{tier.pricePerUnit.toLocaleString('en-IN')} each
-                                                {tier.discount > 0 && (
-                                                    <span className="ml-2 text-green-600">
-                                                        ({tier.discount}% off)
-                                                    </span>
-                                                )}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
                         {/* Quantity & Add to Cart */}
-                        {inStock && showPricing && !isPriceOnRequest && (
+                        {inStock && (
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4">
                                     <span className="font-semibold text-neutral-900">Quantity:</span>
@@ -579,7 +492,6 @@ const ProductDetails = () => {
                 {[
                     { id: 'description', label: 'Description', icon: FileText },
                     { id: 'specifications', label: 'Specifications', icon: Info },
-                    { id: 'features', label: 'Features', icon: Zap },
                     { id: 'warranty', label: 'Warranty & Support', icon: Shield }
                 ].map(({ id, label, icon: Icon }) => (
                     <button
@@ -629,13 +541,12 @@ const ProductDetails = () => {
                         {/* Specifications Tab */}
                         {activeTab === 'specifications' && (
                             <div className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     {/* Basic Specifications */}
                                     {[
                                         { label: 'Material', value: product.specifications?.material, icon: Layers },
                                         { label: 'Dimensions', value: product.specifications?.dimensions, icon: Ruler },
-                                        { label: 'Weight', value: product.specifications?.weight, icon: Weight },
-                                        { label: 'Packaging', value: product.specifications?.packaging, icon: Package }
+                                        { label: 'Warranty', value: product.specifications?.warranty, icon: Shield }
                                     ].filter(spec => spec.value).map(({ label, value, icon: Icon }) => (
                                         <div key={label} className="flex items-start gap-3 p-4 border border-neutral-200 rounded-xl">
                                             <Icon size={20} className="text-neutral-500 mt-0.5" />
@@ -647,20 +558,11 @@ const ProductDetails = () => {
                                     ))}
                                 </div>
 
-                                {/* Certifications */}
-                                {product.specifications?.certifications && product.specifications.certifications.length > 0 && (
-                                    <div className="p-4 bg-yellow-50 rounded-xl">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Award size={20} className="text-yellow-600" />
-                                            <h4 className="font-semibold text-yellow-900">Certifications</h4>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {product.specifications.certifications.map((cert, index) => (
-                                                <span key={index} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-                                                    {cert}
-                                                </span>
-                                            ))}
-                                        </div>
+                                {/* No specifications message */}
+                                {!product.specifications?.material && !product.specifications?.dimensions && !product.specifications?.warranty && (
+                                    <div className="text-center py-8">
+                                        <Info size={48} className="text-neutral-400 mx-auto mb-4" />
+                                        <p className="text-neutral-600">No detailed specifications available for this product.</p>
                                     </div>
                                 )}
 
@@ -676,48 +578,6 @@ const ProductDetails = () => {
                                                 </div>
                                             ))
                                         }
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Features Tab */}
-                        {activeTab === 'features' && (
-                            <div className="space-y-6">
-                                {/* Main Features */}
-                                {product.features && product.features.length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {product.features.map((feature, index) => (
-                                            <div key={index} className="flex items-start gap-3 p-4 border border-neutral-200 rounded-xl">
-                                                <Check size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
-                                                <span className="text-neutral-700">{feature}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : product.specifications?.features && product.specifications.features.length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {product.specifications.features.map((feature, index) => (
-                                            <div key={index} className="flex items-start gap-3 p-4 border border-neutral-200 rounded-xl">
-                                                <Check size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
-                                                <span className="text-neutral-700">{feature}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-neutral-600">No specific features listed for this product.</p>
-                                )}
-
-                                {/* Target Customers */}
-                                {product.targetCustomers && product.targetCustomers.length > 0 && (
-                                    <div className="p-4 bg-blue-50 rounded-xl">
-                                        <h4 className="font-semibold text-blue-900 mb-3">Suitable For</h4>
-                                        <div className="flex gap-2">
-                                            {product.targetCustomers.map((customer) => (
-                                                <span key={customer} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                                    {customer === 'B2C' ? 'Individual Consumers' : 'Business Customers'}
-                                                </span>
-                                            ))}
-                                        </div>
                                     </div>
                                 )}
                             </div>
