@@ -202,8 +202,15 @@ const QuoteRequest = () => {
         position: 'top-center',
       });
       
-      // Navigate to quote requests list
-      navigate('/quote-requests');
+      // Navigate to success page with details
+      const firstItem = items[0];
+      const queryParams = new URLSearchParams({
+        productName: firstItem.productData?.title || 'Product',
+        quantity: firstItem.quantity.toString(),
+        quoteId: result.data?.quoteRequest?._id || 'QR' + Date.now()
+      });
+      
+      navigate(`/quote-request-success?${queryParams}`);
       
     } catch (error) {
       console.error('Quote request failed:', error);

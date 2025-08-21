@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { apiSlice } from './api/apiSlice';
+import { notificationApiSlice } from './api/notificationApiSlice';
 import authReducer from './slices/authSlice';
 
 // Import API slices to activate them
@@ -12,6 +13,7 @@ import './api/paymentApiSlice';
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
+    [notificationApiSlice.reducerPath]: notificationApiSlice.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -19,7 +21,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat(apiSlice.middleware),
+    }).concat(apiSlice.middleware, notificationApiSlice.middleware),
   devTools: true,
 });
 

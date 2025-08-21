@@ -13,6 +13,9 @@ import Contact from "../pages/Contact";
 import Cart from "../pages/Cart";
 import Wishlist from "../pages/Wishlist";
 import QuoteRequest from "../pages/QuoteRequest";
+import QuoteRequestSuccess from "../pages/QuoteRequestSuccess";
+import OrderSummary from "../pages/OrderSummary";
+import OrderSuccess from "../pages/OrderSuccess";
 import ScrollToTop from "../components/ScrollToTop";
 
 // Admin Components
@@ -24,6 +27,7 @@ import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminCategories from "../pages/admin/AdminCategories";
 import AdminUsers from "../pages/admin/AdminUsers";
 import AdminSettings from "../pages/admin/AdminSettings";
+import AdminNotifications from "../pages/admin/AdminNotifications";
 
 const AppRoutes = () => (
   <>
@@ -54,6 +58,21 @@ const AppRoutes = () => (
             <QuoteRequest />
           </ProtectedRoute>
         } />
+        <Route path="quote-request-success" element={
+          <ProtectedRoute>
+            <QuoteRequestSuccess />
+          </ProtectedRoute>
+        } />
+        <Route path="order-summary" element={
+          <ProtectedRoute>
+            <OrderSummary />
+          </ProtectedRoute>
+        } />
+        <Route path="order-success" element={
+          <ProtectedRoute>
+            <OrderSuccess />
+          </ProtectedRoute>
+        } />
       </Route>
       
       {/* Admin Routes */}
@@ -68,6 +87,7 @@ const AppRoutes = () => (
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="notifications" element={<AdminNotifications />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
     </Routes>

@@ -150,6 +150,81 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['QuoteRequest'],
     }),
+
+    // Order endpoints
+    createOrder: builder.mutation({
+      query: (orderData) => ({
+        url: '/orders',
+        method: 'POST',
+        body: orderData,
+      }),
+      invalidatesTags: ['Order', 'Cart'],
+    }),
+
+    getUserOrders: builder.query({
+      query: ({ page = 1, limit = 10, status = 'all' } = {}) => ({
+        url: `/orders?page=${page}&limit=${limit}&status=${status}`,
+        method: 'GET',
+      }),
+      providesTags: ['Order'],
+    }),
+
+    getOrderById: builder.query({
+      query: (id) => ({
+        url: `/orders/${id}`,
+        method: 'GET',
+      }),
+      providesTags: ['Order'],
+    }),
+
+    cancelOrder: builder.mutation({
+      query: (id) => ({
+        url: `/orders/${id}/cancel`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Order'],
+    }),
+
+    trackOrder: builder.query({
+      query: (orderNumber) => ({
+        url: `/orders/track/${orderNumber}`,
+        method: 'GET',
+      }),
+      providesTags: ['Order'],
+    }),
+
+    // Stripe payment endpoints
+    createStripePaymentIntent: builder.mutation({
+      query: (orderData) => ({
+        url: '/payments/stripe/create-payment-intent',
+        method: 'POST',
+        body: orderData,
+      }),
+    }),
+
+    confirmStripePayment: builder.mutation({
+      query: (paymentData) => ({
+        url: '/payments/stripe/confirm-payment',
+        method: 'POST',
+        body: paymentData,
+      }),
+      invalidatesTags: ['Order'],
+    }),
+
+    createStripeCheckoutSession: builder.mutation({
+      query: (orderData) => ({
+        url: '/payments/stripe/create-checkout-session',
+        method: 'POST',
+        body: orderData,
+      }),
+    }),
+
+    getStripeSession: builder.query({
+      query: (sessionId) => ({
+        url: `/payments/stripe/session/${sessionId}`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -172,4 +247,14 @@ export const {
   useCreateQuoteRequestMutation,
   useGetQuoteRequestsQuery,
   useGetQuoteRequestQuery,
+  useCreateOrderMutation,
+  useGetUserOrdersQuery,
+  useGetOrderByIdQuery,
+  useCancelOrderMutation,
+  useTrackOrderQuery,
+  // Stripe payment hooks
+  useCreateStripePaymentIntentMutation,
+  useConfirmStripePaymentMutation,
+  useCreateStripeCheckoutSessionMutation,
+  useGetStripeSessionQuery,
 } = authApiSlice;

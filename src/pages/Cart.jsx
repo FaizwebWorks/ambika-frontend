@@ -252,8 +252,8 @@ const Cart = () => {
 
   // Handle checkout
   const handleCheckout = () => {
-    // Navigate to checkout page
-    navigate('/checkout');
+    // Navigate to order summary page
+    navigate('/order-summary');
   };
 
   // Handle add to cart from recommendations
