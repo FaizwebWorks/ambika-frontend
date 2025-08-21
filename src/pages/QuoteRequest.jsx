@@ -221,7 +221,7 @@ const QuoteRequest = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
+    <div className="min-h-screen w-full bg-gradient-to-b from-neutral-50 to-white">
       {/* Header */}
       <div className="bg-white border-b border-neutral-100 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 py-4 md:px-6">

@@ -427,6 +427,124 @@ const ProductDetails = () => {
               </p>
             </div>
 
+            {/* Quality Level */}
+            {product.quality && (
+              <div>
+                <h3 className="font-medium text-neutral-800 mb-2">Quality Level</h3>
+                <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                  product.quality === 'Premium' ? 'bg-yellow-100 text-yellow-800' :
+                  product.quality === 'Standard' ? 'bg-blue-100 text-blue-800' :
+                  'bg-green-100 text-green-800'
+                }`}>
+                  {product.quality}
+                </span>
+              </div>
+            )}
+
+            {/* Order Quantities */}
+            {(product.minOrderQuantity || product.maxOrderQuantity) && (
+              <div>
+                <h3 className="font-medium text-neutral-800 mb-2">Order Information</h3>
+                <div className="flex gap-4 text-sm">
+                  {product.minOrderQuantity && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-neutral-500">Min Order:</span>
+                      <span className="font-medium">{product.minOrderQuantity} units</span>
+                    </div>
+                  )}
+                  {product.maxOrderQuantity && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-neutral-500">Max Order:</span>
+                      <span className="font-medium">{product.maxOrderQuantity} units</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Product Features */}
+            {product.features && product.features.length > 0 && (
+              <div>
+                <h3 className="font-medium text-neutral-800 mb-3">Key Features</h3>
+                <ul className="space-y-2">
+                  {product.features.map((feature, index) => (
+                    <li key={index} className="flex items-start gap-2 text-sm">
+                      <Check size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-neutral-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Product Specifications */}
+            {product.specifications && Object.keys(product.specifications).length > 0 && (
+              <div>
+                <h3 className="font-medium text-neutral-800 mb-3">Specifications</h3>
+                <div className="bg-neutral-50 rounded-lg p-4 space-y-3">
+                  {product.specifications.material && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Material:</span>
+                      <span className="font-medium">{product.specifications.material}</span>
+                    </div>
+                  )}
+                  {product.specifications.dimensions && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Dimensions:</span>
+                      <span className="font-medium">{product.specifications.dimensions}</span>
+                    </div>
+                  )}
+                  {product.specifications.weight && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Weight:</span>
+                      <span className="font-medium">{product.specifications.weight}</span>
+                    </div>
+                  )}
+                  {product.specifications.warranty && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Warranty:</span>
+                      <span className="font-medium">{product.specifications.warranty}</span>
+                    </div>
+                  )}
+                  {product.specifications.usage && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Usage:</span>
+                      <span className="font-medium">{product.specifications.usage}</span>
+                    </div>
+                  )}
+                  {product.specifications.packaging && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Packaging:</span>
+                      <span className="font-medium">{product.specifications.packaging}</span>
+                    </div>
+                  )}
+                  {product.specifications.certifications && product.specifications.certifications.length > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Certifications:</span>
+                      <span className="font-medium">{product.specifications.certifications.join(', ')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Tags */}
+            {product.tags && product.tags.length > 0 && (
+              <div>
+                <h3 className="font-medium text-neutral-800 mb-3">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.tags.map((tag, index) => (
+                    <span 
+                      key={index}
+                      className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Sizes */}
             {product.sizes && product.sizes.length > 0 && (
               <div>
@@ -588,12 +706,40 @@ const ProductDetails = () => {
               
               {/* B2B Additional Info */}
               {isB2BCustomer && isApprovedB2B && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-blue-800 text-sm">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-blue-800 text-sm mb-3">
                     <Shield size={16} />
                     <span className="font-medium">B2B Benefits:</span>
                   </div>
-                  <ul className="text-blue-700 text-sm mt-1 space-y-1">
+                  
+                  {/* Bulk Pricing Tiers */}
+                  {product.b2bPricing?.bulkPricing && product.b2bPricing.bulkPricing.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="font-medium text-blue-800 mb-2">Bulk Pricing Tiers:</h4>
+                      <div className="space-y-2">
+                        {product.b2bPricing.bulkPricing.map((tier, index) => (
+                          <div key={index} className="bg-white rounded-lg p-3 border border-blue-200">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-blue-700">
+                                {tier.minQuantity}+ units
+                                {tier.maxQuantity ? ` - ${tier.maxQuantity} units` : ''}
+                              </span>
+                              <span className="font-medium text-blue-800">
+                                ₹{tier.pricePerUnit.toLocaleString('en-IN')}/unit
+                              </span>
+                            </div>
+                            {tier.discount > 0 && (
+                              <div className="text-xs text-green-600 mt-1">
+                                Save {tier.discount}% on bulk orders
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <ul className="text-blue-700 text-sm space-y-1">
                     <li>• Bulk pricing available for orders above {product.minOrderQuantity || 10} units</li>
                     <li>• Dedicated account manager support</li>
                     <li>• Extended payment terms available</li>
@@ -632,6 +778,124 @@ const ProductDetails = () => {
                     <div className="font-medium text-neutral-800">Easy Returns</div>
                     <div className="text-neutral-500">7-day return policy</div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Detailed Product Information Tabs */}
+        <div className="mt-12 bg-white rounded-xl border border-neutral-100 overflow-hidden">
+          <div className="border-b border-neutral-100">
+            <div className="flex">
+              <button className="px-6 py-4 font-medium text-blue-600 border-b-2 border-blue-600 bg-blue-50">
+                Product Details
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Technical Specifications */}
+              {product.specifications && Object.keys(product.specifications).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-medium text-neutral-800 mb-4 flex items-center gap-2">
+                    <Zap size={20} className="text-blue-600" />
+                    Technical Specifications
+                  </h3>
+                  <div className="space-y-4">
+                    {Object.entries(product.specifications).map(([key, value]) => {
+                      if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                      return (
+                        <div key={key} className="border-b border-neutral-100 pb-3">
+                          <div className="flex justify-between items-start">
+                            <span className="text-neutral-600 capitalize font-medium">
+                              {key.replace(/([A-Z])/g, ' $1').trim()}:
+                            </span>
+                            <span className="text-neutral-800 text-right max-w-xs">
+                              {Array.isArray(value) ? value.join(', ') : value}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Product Features */}
+              {product.features && product.features.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-medium text-neutral-800 mb-4 flex items-center gap-2">
+                    <Check size={20} className="text-green-600" />
+                    Key Features
+                  </h3>
+                  <ul className="space-y-3">
+                    {product.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                        <span className="text-neutral-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Additional Information */}
+              <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-neutral-100">
+                {/* Quality & Order Info */}
+                <div className="text-center p-4 bg-neutral-50 rounded-lg">
+                  <div className="text-sm text-neutral-500 mb-1">Quality Level</div>
+                  <div className="font-medium text-neutral-800">
+                    {product.quality || 'Standard'}
+                  </div>
+                  {product.minOrderQuantity && (
+                    <>
+                      <div className="text-sm text-neutral-500 mt-3 mb-1">Min Order</div>
+                      <div className="font-medium text-neutral-800">
+                        {product.minOrderQuantity} units
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Target Customers */}
+                {product.targetCustomers && product.targetCustomers.length > 0 && (
+                  <div className="text-center p-4 bg-neutral-50 rounded-lg">
+                    <div className="text-sm text-neutral-500 mb-2">Target Customers</div>
+                    <div className="flex justify-center gap-2">
+                      {product.targetCustomers.map((customer, index) => (
+                        <span 
+                          key={index}
+                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                        >
+                          {customer}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Status */}
+                <div className="text-center p-4 bg-neutral-50 rounded-lg">
+                  <div className="text-sm text-neutral-500 mb-1">Product Status</div>
+                  <div className="font-medium">
+                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                      product.status === 'active' ? 'bg-green-100 text-green-700' :
+                      product.status === 'inactive' ? 'bg-red-100 text-red-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {product.status?.charAt(0).toUpperCase() + product.status?.slice(1) || 'Active'}
+                    </span>
+                  </div>
+                  {product.featured && (
+                    <>
+                      <div className="text-sm text-neutral-500 mt-3 mb-1">Featured</div>
+                      <div className="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
+                        ⭐ Featured Product
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

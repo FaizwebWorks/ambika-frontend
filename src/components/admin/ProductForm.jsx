@@ -20,7 +20,24 @@ const ProductForm = ({
     tags: '',
     status: 'active',
     features: '',
-    specifications: ''
+    specifications: '',
+    quality: '',
+    sizes: [],
+    minOrderQuantity: '1',
+    maxOrderQuantity: '',
+    material: '',
+    dimensions: '',
+    weight: '',
+    warranty: '',
+    certifications: '',
+    usage: '',
+    packaging: '',
+    targetCustomers: ['B2C', 'B2B'],
+    featured: false,
+    b2bPricingEnabled: true,
+    showPriceToGuests: false,
+    priceOnRequest: true,
+    bulkPricing: [{ minQuantity: 1, pricePerUnit: '', discount: 0 }]
   });
 
   const [errors, setErrors] = useState({});
@@ -48,7 +65,27 @@ const ProductForm = ({
         features: Array.isArray(product.features) ? product.features.join('\n') : product.features || '',
         specifications: typeof product.specifications === 'object' 
           ? Object.entries(product.specifications).map(([key, value]) => `${key}: ${value}`).join('\n')
-          : product.specifications || ''
+          : product.specifications || '',
+        quality: product.quality || '',
+        sizes: product.sizes || [],
+        minOrderQuantity: product.minOrderQuantity || '1',
+        maxOrderQuantity: product.maxOrderQuantity || '',
+        material: product.specifications?.material || '',
+        dimensions: product.specifications?.dimensions || '',
+        weight: product.specifications?.weight || '',
+        warranty: product.specifications?.warranty || '',
+        certifications: Array.isArray(product.specifications?.certifications) 
+          ? product.specifications.certifications.join(', ') : '',
+        usage: product.specifications?.usage || '',
+        packaging: product.specifications?.packaging || '',
+        targetCustomers: product.targetCustomers || ['B2C', 'B2B'],
+        featured: product.featured || false,
+        b2bPricingEnabled: product.b2bPricing?.enabled !== false,
+        showPriceToGuests: product.b2bPricing?.showPriceToGuests || false,
+        priceOnRequest: product.b2bPricing?.priceOnRequest !== false,
+        bulkPricing: product.b2bPricing?.bulkPricing?.length > 0 
+          ? product.b2bPricing.bulkPricing 
+          : [{ minQuantity: 1, pricePerUnit: '', discount: 0 }]
       });
       
       // Set existing images for preview
@@ -67,7 +104,24 @@ const ProductForm = ({
         tags: '',
         status: 'active',
         features: '',
-        specifications: ''
+        specifications: '',
+        quality: '',
+        sizes: [],
+        minOrderQuantity: '1',
+        maxOrderQuantity: '',
+        material: '',
+        dimensions: '',
+        weight: '',
+        warranty: '',
+        certifications: '',
+        usage: '',
+        packaging: '',
+        targetCustomers: ['B2C', 'B2B'],
+        featured: false,
+        b2bPricingEnabled: true,
+        showPriceToGuests: false,
+        priceOnRequest: true,
+        bulkPricing: [{ minQuantity: 1, pricePerUnit: '', discount: 0 }]
       });
       setImages([]);
       setImagePreviews([]);
@@ -76,12 +130,56 @@ const ProductForm = ({
   }, [product]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }));
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleSizeChange = (size) => {
+    setFormData(prev => ({
+      ...prev,
+      sizes: prev.sizes.includes(size) 
+        ? prev.sizes.filter(s => s !== size)
+        : [...prev.sizes, size]
+    }));
+  };
+
+  const handleTargetCustomerChange = (customer) => {
+    setFormData(prev => ({
+      ...prev,
+      targetCustomers: prev.targetCustomers.includes(customer) 
+        ? prev.targetCustomers.filter(c => c !== customer)
+        : [...prev.targetCustomers, customer]
+    }));
+  };
+
+  const addBulkPricingTier = () => {
+    setFormData(prev => ({
+      ...prev,
+      bulkPricing: [...prev.bulkPricing, { minQuantity: '', pricePerUnit: '', discount: 0 }]
+    }));
+  };
+
+  const removeBulkPricingTier = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      bulkPricing: prev.bulkPricing.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateBulkPricingTier = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      bulkPricing: prev.bulkPricing.map((tier, i) => 
+        i === index ? { ...tier, [field]: value } : tier
+      )
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -168,19 +266,33 @@ const ProductForm = ({
       price: parseFloat(formData.price),
       discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
       stock: parseInt(formData.stock),
+      minOrderQuantity: parseInt(formData.minOrderQuantity) || 1,
+      maxOrderQuantity: formData.maxOrderQuantity ? parseInt(formData.maxOrderQuantity) : undefined,
       tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
       features: formData.features ? formData.features.split('\n').map(feature => feature.trim()).filter(Boolean) : [],
-      specifications: formData.specifications ? 
-        Object.fromEntries(
-          formData.specifications.split('\n')
-            .map(line => line.trim())
-            .filter(Boolean)
-            .map(line => {
-              const [key, ...valueParts] = line.split(':');
-              return [key?.trim(), valueParts.join(':')?.trim()];
-            })
-            .filter(([key, value]) => key && value)
-        ) : {}
+      specifications: {
+        material: formData.material || undefined,
+        dimensions: formData.dimensions || undefined,
+        weight: formData.weight || undefined,
+        warranty: formData.warranty || undefined,
+        certifications: formData.certifications ? formData.certifications.split(',').map(cert => cert.trim()).filter(Boolean) : [],
+        usage: formData.usage || undefined,
+        packaging: formData.packaging || undefined,
+        features: formData.features ? formData.features.split('\n').map(feature => feature.trim()).filter(Boolean) : []
+      },
+      b2bPricing: {
+        enabled: formData.b2bPricingEnabled,
+        showPriceToGuests: formData.showPriceToGuests,
+        priceOnRequest: formData.priceOnRequest,
+        bulkPricing: formData.bulkPricing.filter(tier => 
+          tier.minQuantity && tier.pricePerUnit
+        ).map(tier => ({
+          minQuantity: parseInt(tier.minQuantity),
+          maxQuantity: tier.maxQuantity ? parseInt(tier.maxQuantity) : undefined,
+          pricePerUnit: parseFloat(tier.pricePerUnit),
+          discount: parseFloat(tier.discount) || 0
+        }))
+      }
     };
 
     // Add images if any
@@ -336,6 +448,322 @@ const ProductForm = ({
                     {errors.category}
                   </p>
                 )}
+              </div>
+            </div>
+
+            {/* Quality and Order Quantities */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Quality Level
+                </label>
+                <select
+                  name="quality"
+                  value={formData.quality}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                >
+                  <option value="">Select Quality</option>
+                  <option value="Premium">Premium</option>
+                  <option value="Standard">Standard</option>
+                  <option value="Economy">Economy</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Min Order Quantity
+                </label>
+                <input
+                  type="number"
+                  name="minOrderQuantity"
+                  value={formData.minOrderQuantity}
+                  onChange={handleInputChange}
+                  min="1"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                  placeholder="1"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Max Order Quantity
+                </label>
+                <input
+                  type="number"
+                  name="maxOrderQuantity"
+                  value={formData.maxOrderQuantity}
+                  onChange={handleInputChange}
+                  min="1"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                  placeholder="Leave empty for unlimited"
+                />
+              </div>
+            </div>
+
+            {/* Sizes */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Available Sizes
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {['Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL', 'Custom'].map(size => (
+                  <label key={size} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.sizes.includes(size)}
+                      onChange={() => handleSizeChange(size)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">{size}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Target Customers */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Target Customers
+              </label>
+              <div className="flex gap-4">
+                {['B2C', 'B2B'].map(customer => (
+                  <label key={customer} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.targetCustomers.includes(customer)}
+                      onChange={() => handleTargetCustomerChange(customer)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">{customer === 'B2C' ? 'Business to Consumer' : 'Business to Business'}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Featured Product */}
+            <div>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={formData.featured}
+                  onChange={handleInputChange}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium text-neutral-700">Featured Product</span>
+              </label>
+            </div>
+
+            {/* Product Specifications */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-neutral-900 border-b border-neutral-200 pb-2">
+                Product Specifications
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Material
+                  </label>
+                  <input
+                    type="text"
+                    name="material"
+                    value={formData.material}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                    placeholder="e.g., Stainless Steel, Plastic, Cotton"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Dimensions
+                  </label>
+                  <input
+                    type="text"
+                    name="dimensions"
+                    value={formData.dimensions}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                    placeholder="e.g., 10 x 10 x 5 cm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Weight
+                  </label>
+                  <input
+                    type="text"
+                    name="weight"
+                    value={formData.weight}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                    placeholder="e.g., 500g, 1.2kg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Warranty
+                  </label>
+                  <input
+                    type="text"
+                    name="warranty"
+                    value={formData.warranty}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                    placeholder="e.g., 1 year, 6 months"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Usage
+                  </label>
+                  <input
+                    type="text"
+                    name="usage"
+                    value={formData.usage}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                    placeholder="e.g., Daily cleaning, Kitchen use"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Packaging
+                  </label>
+                  <input
+                    type="text"
+                    name="packaging"
+                    value={formData.packaging}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                    placeholder="e.g., Box of 12, Individual pack"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Certifications (comma separated)
+                </label>
+                <input
+                  type="text"
+                  name="certifications"
+                  value={formData.certifications}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                  placeholder="e.g., ISO 9001, FDA Approved, CE Marked"
+                />
+              </div>
+            </div>
+
+            {/* B2B Pricing */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-neutral-900 border-b border-neutral-200 pb-2">
+                B2B Pricing Settings
+              </h3>
+              
+              <div className="space-y-3">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="b2bPricingEnabled"
+                    checked={formData.b2bPricingEnabled}
+                    onChange={handleInputChange}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium text-neutral-700">Enable B2B Pricing</span>
+                </label>
+
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="showPriceToGuests"
+                    checked={formData.showPriceToGuests}
+                    onChange={handleInputChange}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-neutral-700">Show Price to Guests (Non-logged in users)</span>
+                </label>
+
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="priceOnRequest"
+                    checked={formData.priceOnRequest}
+                    onChange={handleInputChange}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-neutral-700">Price on Request</span>
+                </label>
+              </div>
+
+              {/* Bulk Pricing Tiers */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-neutral-700">
+                    Bulk Pricing Tiers
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addBulkPricingTier}
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    + Add Tier
+                  </button>
+                </div>
+                
+                <div className="space-y-3">
+                  {formData.bulkPricing.map((tier, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 border border-neutral-200 rounded-lg">
+                      <div>
+                        <label className="block text-xs text-neutral-600 mb-1">Min Qty</label>
+                        <input
+                          type="number"
+                          value={tier.minQuantity}
+                          onChange={(e) => updateBulkPricingTier(index, 'minQuantity', e.target.value)}
+                          className="w-full px-2 py-1 border border-neutral-300 rounded text-sm"
+                          placeholder="1"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-600 mb-1">Max Qty</label>
+                        <input
+                          type="number"
+                          value={tier.maxQuantity || ''}
+                          onChange={(e) => updateBulkPricingTier(index, 'maxQuantity', e.target.value)}
+                          className="w-full px-2 py-1 border border-neutral-300 rounded text-sm"
+                          placeholder="Optional"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-600 mb-1">Price/Unit (₹)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={tier.pricePerUnit}
+                          onChange={(e) => updateBulkPricingTier(index, 'pricePerUnit', e.target.value)}
+                          className="w-full px-2 py-1 border border-neutral-300 rounded text-sm"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          type="button"
+                          onClick={() => removeBulkPricingTier(index)}
+                          className="w-full px-2 py-1 text-red-600 hover:text-red-700 text-sm border border-red-300 rounded hover:bg-red-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

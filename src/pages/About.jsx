@@ -128,19 +128,19 @@ const About = () => {
       name: 'Haresh Vaghasiya',
       position: 'Founder & CEO',
       image: '/team-member-1.jpg',
-      description: 'With over 20 years in the hospitality supply industry, Rajesh founded Ambika International with a vision to revolutionize hotel amenity supply chains.'
+      description: 'With over 12 years in the hospitality supply industry, Haresh Vaghasiya founded Ambika International with a vision to revolutionize hotel amenity supply chains.'
     },
     {
       name: 'Vishal Vaghasiya',
       position: 'Operations Director',
       image: '/team-member-2.jpg',
-      description: 'Priya oversees our day-to-day operations, ensuring seamless delivery and maintaining our high service standards across all client relationships.'
+      description: 'Vishal Vaghasiya oversees our day-to-day operations, ensuring seamless delivery and maintaining our high service standards across all client relationships.'
     },
     {
       name: 'Rinkesh Vaghasiya',
       position: 'Quality Manager',
       image: '/team-member-3.jpg',
-      description: 'Vikram leads our quality assurance team, implementing rigorous testing protocols to ensure every product meets our exacting standards.'
+      description: 'Riknesh Vaghasiya leads our quality assurance team, implementing rigorous testing protocols to ensure every product meets our exacting standards.'
     }
   ];
 
@@ -334,7 +334,7 @@ const About = () => {
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               <motion.div 
                 className="relative bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-sm rounded-3xl p-12 h-96 flex items-center justify-center border border-white/20 shadow-lg"
@@ -344,8 +344,14 @@ const About = () => {
                 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                {/* Subtle animated dots pattern */}
-                <motion.div className="absolute inset-0 opacity-30">
+                {/* Animated dots pattern */}
+                <motion.div 
+                  className="absolute inset-0 opacity-30"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 0.3 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5, duration: 1 }}
+                >
                   <div className="absolute inset-0" style={{
                     backgroundImage: `radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.3) 1px, transparent 0)`,
                     backgroundSize: '40px 40px'
@@ -364,9 +370,13 @@ const About = () => {
                   </div>
                 </motion.div>
 
-                {/* Floating geometric shapes */}
+                {/* Animated floating geometric shapes */}
                 <motion.div
                   className="absolute top-8 right-8 w-3 h-3 bg-blue-400/40 rounded-full"
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 0.4, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8, duration: 0.6 }}
                   animate={{ 
                     y: [-8, 8, -8],
                     opacity: [0.4, 0.8, 0.4]
@@ -379,6 +389,10 @@ const About = () => {
                 />
                 <motion.div
                   className="absolute bottom-8 left-8 w-2 h-8 bg-indigo-400/30 rounded-full"
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 0.3, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 1, duration: 0.6 }}
                   animate={{ 
                     rotate: [0, 360],
                     scale: [1, 1.1, 1]
@@ -390,33 +404,36 @@ const About = () => {
                   }}
                 />
 
-                {/* Main content */}
+                {/* Main content with staggered animations */}
                 <motion.div 
                   className="text-center relative z-10"
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={{ y: 30, opacity: 0 }}
                   whileInView={{ y: 0, opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
+                  transition={{ delay: 0.4, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
                 >
-                  {/* Icon with subtle animation */}
+                  {/* Icon with enhanced animation */}
                   <motion.div 
-                    className="relative mx-auto mb-6"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
+                    className="relative mx-auto mb-6 w-20 h-20"
+                    initial={{ scale: 0, rotate: -180 }}
+                    whileInView={{ scale: 1, rotate: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
+                    whileHover={{ scale: 1.05, rotate: 5 }}
                   >
                     <motion.div
-                      className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg relative"
+                      className="w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-lg relative overflow-hidden"
                       whileHover={{ 
-                        rotate: [0, -2, 2, 0],
                         boxShadow: "0 10px 30px -5px rgba(59, 130, 246, 0.2)"
                       }}
-                      transition={{ duration: 0.6 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      {/* Subtle glow effect */}
+                      {/* Animated glow effect */}
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-2xl"
                         animate={{ 
-                          opacity: [0.5, 0.8, 0.5]
+                          opacity: [0.3, 0.6, 0.3],
+                          scale: [1, 1.05, 1]
                         }}
                         transition={{ 
                           duration: 3,
@@ -425,44 +442,75 @@ const About = () => {
                         }}
                       />
                       
-                      <Award className="text-blue-600 relative z-10" size={32} />
+                      {/* Rotating border */}
+                      <motion.div
+                        className="absolute inset-0 rounded-2xl border border-blue-300/30"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                      />
+                      
+                      <div className="relative z-10 flex items-center justify-center w-full h-full">
+                        <Award className="text-blue-600" size={32} />
+                      </div>
                     </motion.div>
                   </motion.div>
 
-                  {/* Text content */}
+                  {/* Text content with staggered reveal */}
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
+                    transition={{ delay: 0.8, duration: 0.6 }}
                   >
-                    <h3 className="text-2xl font-semibold text-neutral-800 mb-3">
+                    <motion.h3 
+                      className="text-2xl font-semibold text-neutral-800 mb-3"
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 1, duration: 0.5 }}
+                    >
                       12+ Years of Excellence
-                    </h3>
-                    <p className="text-neutral-600 leading-relaxed max-w-sm mx-auto">
+                    </motion.h3>
+                    <motion.p 
+                      className="text-neutral-600 leading-relaxed max-w-sm mx-auto"
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 1.2, duration: 0.5 }}
+                    >
                       Serving the hospitality industry with dedication and innovation
-                    </p>
+                    </motion.p>
                   </motion.div>
 
-                  {/* Minimal decorative line */}
+                  {/* Animated decorative line */}
                   <motion.div
                     className="w-16 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent mx-auto mt-6"
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    whileInView={{ scaleX: 1, opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.8, duration: 0.8 }}
+                    transition={{ delay: 1.4, duration: 0.8 }}
                   />
                 </motion.div>
 
-                {/* Corner accent */}
+                {/* Animated corner accent */}
                 <motion.div
                   className="absolute top-0 right-0 w-16 h-16"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 1, duration: 0.5 }}
+                  transition={{ delay: 1.6, duration: 0.6 }}
                 >
-                  <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-blue-300/50 rounded-tr-xl" />
+                  <motion.div 
+                    className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-blue-300/50 rounded-tr-xl"
+                    animate={{ 
+                      opacity: [0.5, 1, 0.5]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
                 </motion.div>
               </motion.div>
             </motion.div>
@@ -640,7 +688,7 @@ const About = () => {
               {
                 icon: Shield,
                 title: 'Trusted Partner',
-                description: '15+ years of experience serving 500+ satisfied customers across the hospitality industry.'
+                description: '12+ years of experience serving 1000+ satisfied customers across the hospitality industry.'
               },
               {
                 icon: Star,
