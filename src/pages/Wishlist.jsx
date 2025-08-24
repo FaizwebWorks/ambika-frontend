@@ -1,23 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '../store/slices/authSlice';
 import {
-  useGetWishlistQuery,
-  useRemoveFromWishlistMutation,
-  useAddToCartMutation
-} from '../store/api/authApiSlice';
-import {
-  ArrowLeft,
-  Heart,
-  ShoppingBag,
-  Loader2,
   AlertCircle,
+  ArrowLeft,
   Eye,
-  Trash2
+  Heart,
+  Loader2,
+  ShoppingBag
 } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import {
+  useAddToCartMutation,
+  useGetWishlistQuery,
+  useRemoveFromWishlistMutation
+} from '../store/api/authApiSlice';
+import { selectIsAuthenticated } from '../store/slices/authSlice';
 
 const Wishlist = () => {
   const navigate = useNavigate();
@@ -43,7 +42,22 @@ const Wishlist = () => {
   const [removeFromWishlist, { isLoading: isRemoving }] = useRemoveFromWishlistMutation();
   const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
 
-  const wishlistItems = wishlistResponse?.data?.items || [];
+  // Filter out items with deleted/null products and ensure they have required properties
+  const wishlistItems = (wishlistResponse?.data?.items || []).filter(item => {
+    const product = item.product || item;
+    return product && product._id && product.price !== undefined && product.price !== null;
+  });
+
+  // If we have filtered out items, we might want to refetch to get updated data
+  useEffect(() => {
+    const originalCount = wishlistResponse?.data?.items?.length || 0;
+    const filteredCount = wishlistItems.length;
+    
+    // If there's a mismatch, it means we have deleted products in wishlist
+    if (originalCount > 0 && filteredCount < originalCount) {
+      console.log(`Found ${originalCount - filteredCount} deleted products in wishlist, consider running cleanup`);
+    }
+  }, [wishlistResponse?.data?.items?.length, wishlistItems.length]);
 
   // Handle remove from wishlist
   const handleRemoveFromWishlist = async (productId, productTitle) => {
@@ -186,6 +200,12 @@ const Wishlist = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {wishlistItems.map((item) => {
                 const product = item.product || item;
+                
+                // Skip rendering if product is invalid
+                if (!product || !product._id || product.price === undefined || product.price === null) {
+                  return null;
+                }
+
                 return (
                   <div key={product._id} className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200">
                     {/* Product Image */}
@@ -193,14 +213,14 @@ const Wishlist = () => {
                       <Link to={`/product/${product._id}`}>
                         <img
                           src={product.images?.[0] || '/placeholder-product.jpg'}
-                          alt={product.name || product.title}
+                          alt={product.name || product.title || 'Product'}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       </Link>
                       
                       {/* Remove from Wishlist Button */}
                       <button
-                        onClick={() => handleRemoveFromWishlist(product._id, product.name || product.title)}
+                        onClick={() => handleRemoveFromWishlist(product._id, product.name || product.title || 'Item')}
                         disabled={isRemoving}
                         className="absolute top-3 right-3 z-10 p-2 bg-red-100 hover:bg-red-200 rounded-full backdrop-blur-sm transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
                       >
@@ -208,7 +228,7 @@ const Wishlist = () => {
                       </button>
 
                       {/* Discount Badge */}
-                      {product.discountPrice && (
+                      {product.discountPrice && product.price && product.discountPrice < product.price && (
                         <div className="absolute top-3 left-3 z-10">
                           <div className="bg-emerald-500 text-white px-2 py-1 rounded-lg font-bold text-sm">
                             {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
@@ -221,7 +241,7 @@ const Wishlist = () => {
                     <div className="p-4">
                       <Link to={`/product/${product._id}`} className="block hover:text-blue-600 transition-colors duration-300">
                         <h3 className="font-bold text-slate-900 mb-2 line-clamp-2 hover:text-blue-700">
-                          {product.name || product.title}
+                          {product.name || product.title || 'Unnamed Product'}
                         </h3>
                       </Link>
 
@@ -232,7 +252,7 @@ const Wishlist = () => {
 
                       {/* Price */}
                       <div className="flex items-center gap-2 mb-4">
-                        {product.discountPrice ? (
+                        {product.discountPrice && product.discountPrice < product.price ? (
                           <>
                             <span className="text-lg font-bold text-emerald-600">
                               ₹{product.discountPrice.toLocaleString('en-IN')}
@@ -260,7 +280,7 @@ const Wishlist = () => {
                         </Button>
                         <Button 
                           onClick={() => handleAddToCart(product)}
-                          disabled={isAdding || product.stock === 0}
+                          disabled={isAdding || (product.stock !== undefined && product.stock <= 0)}
                           className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-300"
                         >
                           {isAdding ? (
@@ -268,7 +288,7 @@ const Wishlist = () => {
                           ) : (
                             <ShoppingBag size={16} className="mr-2" />
                           )}
-                          {isAdding ? 'Adding...' : product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                          {isAdding ? 'Adding...' : (product.stock !== undefined && product.stock <= 0) ? 'Out of Stock' : 'Add to Cart'}
                         </Button>
                       </div>
                     </div>

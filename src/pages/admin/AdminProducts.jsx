@@ -1,28 +1,26 @@
-import { useState } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Eye,
-  Package,
+import {
   AlertCircle,
   CheckCircle,
-  RefreshCw
+  Edit,
+  Eye,
+  Package,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2
 } from 'lucide-react';
-import { 
-  useGetAdminProductsQuery,
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useDeleteProductMutation,
-  useGetAdminCategoriesQuery
-} from '../../store/api/adminApiSlice';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import ProductForm from '../../components/admin/ProductForm';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import CustomDropdown from '../../components/ui/CustomDropdown';
-import toast from 'react-hot-toast';
+import {
+  useCreateProductMutation,
+  useDeleteProductMutation,
+  useGetAdminCategoriesQuery,
+  useGetAdminProductsQuery,
+  useUpdateProductMutation
+} from '../../store/api/adminApiSlice';
 
 const AdminProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -122,10 +120,17 @@ const AdminProducts = () => {
 
   const handleUpdateProduct = async (productData) => {
     try {
-      await updateProduct({ 
-        id: editingProduct._id, 
-        ...productData 
-      }).unwrap();
+      // If productData is FormData, append the id to it
+      if (productData instanceof FormData) {
+        productData.append('id', editingProduct._id);
+        await updateProduct(productData).unwrap();
+      } else {
+        // For regular objects, use the old method
+        await updateProduct({ 
+          id: editingProduct._id, 
+          ...productData 
+        }).unwrap();
+      }
       toast.success('Product updated successfully!');
       setShowProductForm(false);
       setEditingProduct(null);

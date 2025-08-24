@@ -1,40 +1,40 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
+    AlertCircle,
+    ArrowLeft,
+    Award,
+    Check,
+    Crown,
+    FileText,
+    Heart,
+    Info,
+    Layers,
+    Loader2,
+    Minus,
+    Package,
+    Plus,
+    RotateCcw,
+    Ruler,
+    Share2,
+    Shield,
+    ShoppingCart,
+    Star,
+    Truck,
+    Weight
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
-import { selectIsAuthenticated, selectCurrentUser } from '../store/slices/authSlice';
-import { useGetPublicProductByIdQuery, useGetProductsQuery } from '../store/api/publicApiSlice';
+import { useNavigate, useParams } from 'react-router-dom';
+import ProductCard from '../components/ProductCard';
+import { Button } from '../components/ui/button';
 import {
     useAddToCartMutation,
-    useGetWishlistQuery,
     useAddToWishlistMutation,
+    useGetWishlistQuery,
     useRemoveFromWishlistMutation
 } from '../store/api/authApiSlice';
-import {
-    ArrowLeft,
-    ShoppingCart,
-    Heart,
-    Share2,
-    Star,
-    Plus,
-    Minus,
-    Check,
-    Truck,
-    Shield,
-    RotateCcw,
-    Loader2,
-    AlertCircle,
-    FileText,
-    Package,
-    Award,
-    Info,
-    Ruler,
-    Weight,
-    Layers,
-    Crown
-} from 'lucide-react';
-import { Button } from '../components/ui/button';
-import ProductCard from '../components/ProductCard';
-import toast from 'react-hot-toast';
+import { useGetProductsQuery, useGetPublicProductByIdQuery } from '../store/api/publicApiSlice';
+import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -157,8 +157,8 @@ const ProductDetails = () => {
                 position: 'top-center',
             });
 
-            // Optional: Navigate to cart page
-            // navigate('/cart');
+            // Navigate to cart page after successful addition
+            navigate('/cart');
 
         } catch (error) {
             console.error('Failed to add to cart:', error);

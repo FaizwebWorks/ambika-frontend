@@ -1,10 +1,10 @@
-import { ShoppingCart, Heart, UserCircle2, LogIn, X, Menu, Truck, Home, ArrowRight, Phone, Mail, Building2, MessageSquare, ShoppingBag, LogOut, ChevronDown, Settings } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { selectIsAuthenticated, selectCurrentUser, logout } from "../store/slices/authSlice";
-import { useGetCartQuery, useGetWishlistQuery } from "../store/api/authApiSlice";
+import { ArrowRight, Building2, ChevronDown, Heart, Home, LogIn, LogOut, Mail, Menu, MessageSquare, Phone, Settings, ShoppingBag, ShoppingCart, Truck, UserCircle2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useGetCartQuery, useGetWishlistQuery } from "../store/api/authApiSlice";
+import { logout, selectCurrentUser, selectIsAuthenticated } from "../store/slices/authSlice";
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,8 +29,18 @@ const Navbar = () => {
         skip: !isLoggedIn
     });
     
-    const cartItemsCount = cartResponse?.data?.cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
-    const wishlistItemsCount = wishlistResponse?.data?.items?.length || 0;
+    // Filter out deleted products from cart count
+    const validCartItems = (cartResponse?.data?.cart?.items || []).filter(item => 
+        item.product && item.product._id
+    );
+    const cartItemsCount = validCartItems.reduce((total, item) => total + item.quantity, 0);
+    
+    // Filter out deleted products from wishlist count
+    const validWishlistItems = (wishlistResponse?.data?.items || []).filter(item => {
+        const product = item.product || item;
+        return product && product._id && product.price !== undefined && product.price !== null;
+    });
+    const wishlistItemsCount = validWishlistItems.length;
 
     // Handle logout
     const handleLogout = () => {

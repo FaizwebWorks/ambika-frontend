@@ -225,6 +225,49 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: 'GET',
       }),
     }),
+
+    // Address management endpoints
+    getAddresses: builder.query({
+      query: () => ({
+        url: '/users/addresses',
+        method: 'GET',
+      }),
+      providesTags: ['Address'],
+    }),
+
+    addAddress: builder.mutation({
+      query: (addressData) => ({
+        url: '/users/addresses',
+        method: 'POST',
+        body: addressData,
+      }),
+      invalidatesTags: ['Address'],
+    }),
+
+    updateAddress: builder.mutation({
+      query: ({ addressId, ...addressData }) => ({
+        url: `/users/addresses/${addressId}`,
+        method: 'PUT',
+        body: addressData,
+      }),
+      invalidatesTags: ['Address'],
+    }),
+
+    deleteAddress: builder.mutation({
+      query: (addressId) => ({
+        url: `/users/addresses/${addressId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Address'],
+    }),
+
+    setDefaultAddress: builder.mutation({
+      query: (addressId) => ({
+        url: `/users/addresses/${addressId}/default`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Address'],
+    }),
   }),
 });
 
@@ -257,4 +300,10 @@ export const {
   useConfirmStripePaymentMutation,
   useCreateStripeCheckoutSessionMutation,
   useGetStripeSessionQuery,
+  // Address management hooks
+  useGetAddressesQuery,
+  useAddAddressMutation,
+  useUpdateAddressMutation,
+  useDeleteAddressMutation,
+  useSetDefaultAddressMutation,
 } = authApiSlice;

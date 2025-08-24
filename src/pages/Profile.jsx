@@ -1,41 +1,38 @@
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
-import { 
-  useGetProfileQuery, 
-  useUpdateProfileMutation, 
-  useChangePasswordMutation,
-  useGetUserOrdersQuery,
-  useGetWishlistQuery,
-  useGetQuoteRequestsQuery
-} from '../store/api/authApiSlice';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Edit3, 
-  Save, 
-  X, 
-  Lock, 
-  Eye, 
-  EyeOff,
-  Package,
-  Heart,
-  FileText,
-  Building,
-  Calendar,
+import {
+  AlertCircle,
   CheckCircle,
   Clock,
-  AlertCircle,
-  Settings,
-  Shield,
   CreditCard,
-  Truck
+  Edit3,
+  Eye,
+  EyeOff,
+  FileText,
+  Heart,
+  Lock,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  Save,
+  Shield,
+  Truck,
+  User,
+  X
 } from 'lucide-react';
-import { Button } from '../components/ui/button.tsx';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Button } from '../components/ui/button.tsx';
+import {
+  useChangePasswordMutation,
+  useGetProfileQuery,
+  useGetQuoteRequestsQuery,
+  useGetUserOrdersQuery,
+  useGetWishlistQuery,
+  useUpdateProfileMutation
+} from '../store/api/authApiSlice';
+import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
 const Profile = () => {
   const [searchParams] = useSearchParams();
@@ -158,7 +155,7 @@ const Profile = () => {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen w-full flex items-center justify-center">
         <div className="text-center">
           <Lock size={64} className="text-neutral-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-neutral-800 mb-2">Access Denied</h2>
@@ -189,7 +186,9 @@ const Profile = () => {
                   <h3 className="font-semibold text-neutral-900">
                     {profileData?.user?.name || profileData?.user?.username || 'User'}
                   </h3>
-                  <p className="text-sm text-neutral-600">{profileData?.user?.email}</p>
+                  <p className="text-sm text-neutral-600 truncate md:max-w-[150px]" title={profileData?.user?.email}>
+                    {profileData?.user?.email}
+                  </p>
                 </div>
               </div>
               
@@ -300,7 +299,7 @@ const Profile = () => {
                       <Mail size={16} className="inline mr-2" />
                       Email Address
                     </label>
-                    <p className="p-3 bg-neutral-50 rounded-lg text-neutral-900">
+                    <p className="p-3 bg-neutral-50 rounded-lg text-neutral-900 truncate" title={profileData?.user?.email}>
                       {profileData?.user?.email}
                     </p>
                   </div>

@@ -29,6 +29,16 @@ export const adminApiSlice = apiSlice.injectEndpoints({
 
     createProduct: builder.mutation({
       query: (data) => {
+        // If data is already FormData (from ProductForm), use it directly
+        if (data instanceof FormData) {
+          return {
+            url: '/products',
+            method: 'POST',
+            body: data
+          };
+        }
+        
+        // Otherwise, create FormData from object (for other uses)
         const formData = new FormData();
         Object.keys(data).forEach(key => {
           if (key === 'images' && data[key] && data[key].length > 0) {
@@ -56,7 +66,26 @@ export const adminApiSlice = apiSlice.injectEndpoints({
     }),
 
     updateProduct: builder.mutation({
-      query: ({ id, ...data }) => {
+      query: (payload) => {
+        // If payload is FormData, extract id from it
+        if (payload instanceof FormData) {
+          const id = payload.get('id');
+          // Create new FormData without the id
+          const formData = new FormData();
+          for (let [key, value] of payload.entries()) {
+            if (key !== 'id') {
+              formData.append(key, value);
+            }
+          }
+          return {
+            url: `/products/${id}`,
+            method: 'PUT',
+            body: formData
+          };
+        }
+        
+        // For object payload
+        const { id, ...data } = payload;
         const formData = new FormData();
         Object.keys(data).forEach(key => {
           if (key === 'images' && data[key] && data[key].length > 0) {

@@ -1,29 +1,31 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
-import { 
-  useGetCartQuery, 
-  useCreateOrderMutation,
-  useCreateStripePaymentIntentMutation,
-  useCreateStripeCheckoutSessionMutation
-} from '../store/api/authApiSlice';
-import { 
-  ArrowLeft, 
-  Package, 
-  MapPin, 
-  CreditCard,
-  Truck,
-  Shield,
-  Clock,
+import {
+  ArrowLeft,
   CheckCircle,
-  AlertCircle,
-  Edit3,
-  Plus
+  Clock,
+  CreditCard,
+  Package,
+  Shield,
+  Truck
 } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import StripePayment from '../components/StripePayment';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import InlineAddressManager from '../components/InlineAddressManager';
+import StripePayment from '../components/StripePayment';
+import { Button } from '../components/ui/button';
+import {
+  useAddAddressMutation,
+  useCreateOrderMutation,
+  useCreateStripeCheckoutSessionMutation,
+  useCreateStripePaymentIntentMutation,
+  useDeleteAddressMutation,
+  useGetAddressesQuery,
+  useGetCartQuery,
+  useSetDefaultAddressMutation,
+  useUpdateAddressMutation
+} from '../store/api/authApiSlice';
+import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
 const OrderSummary = () => {
   const navigate = useNavigate();
@@ -38,10 +40,24 @@ const OrderSummary = () => {
   const [createStripePaymentIntent] = useCreateStripePaymentIntentMutation();
   const [createStripeCheckoutSession] = useCreateStripeCheckoutSessionMutation();
   
+  // Address management hooks
+  const { 
+    data: addressesData, 
+    isLoading: addressesLoading, 
+    error: addressesError 
+  } = useGetAddressesQuery();
+  
+  const [addAddress] = useAddAddressMutation();
+  const [updateAddress] = useUpdateAddressMutation();
+  const [deleteAddress] = useDeleteAddressMutation();
+  const [setDefaultAddress] = useSetDefaultAddressMutation();
+  
+  const addresses = addressesData?.addresses || [];
+  
   const cart = cartResponse?.data?.cart;
   const cartItems = cart?.items || [];
   
-  const [selectedAddress, setSelectedAddress] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showStripePayment, setShowStripePayment] = useState(false);
@@ -75,28 +91,20 @@ const OrderSummary = () => {
   
   const [selectedDelivery, setSelectedDelivery] = useState('standard');
   
-  // Mock addresses for testing (in real app, these would come from user profile)
-  const mockAddresses = [
-    {
-      _id: 'addr1',
-      type: 'Home',
-      street: '123 MG Road',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      zipCode: '400001'
-    },
-    {
-      _id: 'addr2', 
-      type: 'Office',
-      street: '456 Business Park',
-      city: 'Mumbai',
-      state: 'Maharashtra', 
-      zipCode: '400002'
+  // Set default address when addresses are loaded
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) {
+      const defaultAddress = addresses.find(addr => addr.isDefault);
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress._id);
+      } else {
+        setSelectedAddressId(addresses[0]._id);
+      }
     }
-  ];
+  }, [addresses, selectedAddressId]);
   
-  // Use user addresses if available, otherwise use mock addresses
-  const availableAddresses = currentUser?.addresses || mockAddresses;
+  // Use real addresses from API
+  const availableAddresses = addresses;
   
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => {
@@ -125,7 +133,7 @@ const OrderSummary = () => {
   }, [isLoggedIn, navigate, cartItems.length, cartLoading, cartResponse]);
   
   const handlePlaceOrder = async () => {
-    if (!selectedAddress) {
+    if (!selectedAddressId) {
       toast.error('Please select a delivery address');
       return;
     }
@@ -144,10 +152,10 @@ const OrderSummary = () => {
     
     try {
       // Prepare order data
-      const selectedAddressObj = availableAddresses.find(addr => addr._id === selectedAddress);
+      const selectedAddressObj = availableAddresses.find(addr => addr._id === selectedAddressId);
       const addressString = selectedAddressObj 
         ? `${selectedAddressObj.street}, ${selectedAddressObj.city}, ${selectedAddressObj.state} - ${selectedAddressObj.zipCode}`
-        : selectedAddress;
+        : selectedAddressId;
 
       const orderData = {
         items: cartItems.map(item => ({
@@ -222,13 +230,11 @@ const OrderSummary = () => {
 
   const handleStripePaymentError = (error) => {
     console.error('Stripe payment error:', error);
+    setIsProcessing(false);
     toast.error('Payment failed. Please try again.');
   };
   
-  if (!isLoggedIn) {
-    return null;
-  }
-  
+  // Let ProtectedRoute handle authentication - component code starts below
   if (cartLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -299,65 +305,44 @@ const OrderSummary = () => {
 
             {/* Delivery Address */}
             <div className="bg-white rounded-xl border border-neutral-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-neutral-800 flex items-center gap-2">
-                  <MapPin size={20} className="text-blue-600" />
-                  Delivery Address
-                </h2>
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1">
-                  <Edit3 size={14} />
-                  Edit
-                </button>
-              </div>
-              
-              {availableAddresses && availableAddresses.length > 0 ? (
-                <div className="space-y-3">
-                  {availableAddresses.map((address) => (
-                    <label key={address._id} className="block">
-                      <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        selectedAddress === address._id 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-neutral-200 hover:border-neutral-300'
-                      }`}>
-                        <input
-                          type="radio"
-                          name="address"
-                          value={address._id}
-                          checked={selectedAddress === address._id}
-                          onChange={(e) => setSelectedAddress(e.target.value)}
-                          className="sr-only"
-                        />
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-medium text-neutral-800">{address.type}</p>
-                            <p className="text-neutral-600 text-sm mt-1">
-                              {address.street}, {address.city}
-                            </p>
-                            <p className="text-neutral-600 text-sm">
-                              {address.state} - {address.zipCode}
-                            </p>
-                          </div>
-                          {selectedAddress === address._id && (
-                            <CheckCircle size={20} className="text-blue-600" />
-                          )}
-                        </div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <MapPin size={48} className="text-neutral-400 mx-auto mb-4" />
-                  <p className="text-neutral-600 mb-4">No delivery address found</p>
-                  <Button 
-                    onClick={() => navigate('/profile?tab=addresses')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Plus size={16} className="mr-2" />
-                    Add Address
-                  </Button>
-                </div>
-              )}
+              <InlineAddressManager
+                addresses={addresses}
+                selectedAddressId={selectedAddressId}
+                onAddressSelect={setSelectedAddressId}
+                onAddAddress={async (formData) => {
+                  try {
+                    await addAddress(formData).unwrap();
+                  } catch (error) {
+                    throw new Error(error?.data?.message || 'Failed to add address');
+                  }
+                }}
+                onUpdateAddress={async (addressId, formData) => {
+                  try {
+                    await updateAddress({ addressId, ...formData }).unwrap();
+                  } catch (error) {
+                    throw new Error(error?.data?.message || 'Failed to update address');
+                  }
+                }}
+                onDeleteAddress={async (addressId) => {
+                  try {
+                    await deleteAddress(addressId).unwrap();
+                    // Reset selected address if deleted address was selected
+                    if (selectedAddressId === addressId) {
+                      setSelectedAddressId(null);
+                    }
+                  } catch (error) {
+                    throw new Error(error?.data?.message || 'Failed to delete address');
+                  }
+                }}
+                onSetDefault={async (addressId) => {
+                  try {
+                    await setDefaultAddress(addressId).unwrap();
+                  } catch (error) {
+                    throw new Error(error?.data?.message || 'Failed to set default address');
+                  }
+                }}
+                isLoading={addressesLoading}
+              />
             </div>
 
             {/* Delivery Options */}
@@ -554,7 +539,7 @@ const OrderSummary = () => {
 
               <Button
                 onClick={handlePlaceOrder}
-                disabled={isProcessing || !selectedAddress || !paymentMethod}
+                disabled={isProcessing || !selectedAddressId || !paymentMethod}
                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? 'Processing...' : 'Place Order'}

@@ -1,23 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
-import { useGetPublicProductByIdQuery } from '../store/api/publicApiSlice';
-import { useCreateQuoteRequestMutation } from '../store/api/authApiSlice';
-import { 
-  ArrowLeft, 
-  FileText, 
-  Package, 
-  MapPin, 
-  Calendar,
-  DollarSign,
-  AlertCircle,
-  CheckCircle,
-  Plus,
-  Minus
+import {
+    ArrowLeft,
+    FileText,
+    MapPin,
+    Minus,
+    Package,
+    Plus
 } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { useCreateQuoteRequestMutation } from '../store/api/authApiSlice';
+import { useGetPublicProductByIdQuery } from '../store/api/publicApiSlice';
+import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
 const QuoteRequest = () => {
   const navigate = useNavigate();
@@ -223,8 +219,15 @@ const QuoteRequest = () => {
     }
   };
   
-  if (!isLoggedIn || currentUser?.customerType !== 'B2B') {
-    return null;
+  // Let ProtectedRoute handle authentication - redirect using navigate instead of return null
+  if (!isLoggedIn) {
+    navigate('/login');
+    return null; // Temporarily return null while navigating
+  }
+  
+  if (currentUser?.customerType !== 'B2B') {
+    navigate('/');
+    return null; // Temporarily return null while navigating
   }
 
   return (

@@ -1,35 +1,34 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '../store/slices/authSlice';
 import {
-  useGetCartQuery,
-  useUpdateCartItemMutation,
-  useRemoveFromCartMutation,
-  useClearCartMutation,
-  useAddToCartMutation
-} from '../store/api/authApiSlice';
-import { useGetProductsByCategoryQuery, useGetProductsQuery } from '../store/api/publicApiSlice';
-import {
-  ArrowLeft,
-  Plus,
-  Minus,
-  Trash2,
-  ShoppingBag,
-  Loader2,
   AlertCircle,
-  Package,
-  Truck,
-  Shield,
-  Headphones,
-  RotateCcw,
-  Star,
+  ArrowLeft,
+  Eye,
   Gift,
-  Heart,
-  Eye
+  Headphones,
+  Loader2,
+  Minus,
+  Package,
+  Plus,
+  RotateCcw,
+  Shield,
+  ShoppingBag,
+  Star,
+  Trash2,
+  Truck
 } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import {
+  useAddToCartMutation,
+  useClearCartMutation,
+  useGetCartQuery,
+  useRemoveFromCartMutation,
+  useUpdateCartItemMutation
+} from '../store/api/authApiSlice';
+import { useGetProductsQuery } from '../store/api/publicApiSlice';
+import { selectIsAuthenticated } from '../store/slices/authSlice';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -62,7 +61,11 @@ const Cart = () => {
   const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
 
   const cart = cartResponse?.data?.cart;
-  const cartItems = cart?.items || [];
+  
+  // Filter out items with deleted/null products using useMemo to prevent infinite re-renders
+  const cartItems = useMemo(() => {
+    return (cart?.items || []).filter(item => item.product && item.product._id);
+  }, [cart?.items]);
 
   // Initialize quantity inputs when cart items change
   useEffect(() => {
@@ -74,8 +77,10 @@ const Cart = () => {
     setQuantityErrors({}); // Clear errors when cart items change
   }, [cartItems]);
 
-  // Get unique categories from cart items
-  const cartCategories = [...new Set(cartItems.map(item => item.product.category?._id).filter(Boolean))];
+  // Get unique categories from cart items using useMemo
+  const cartCategories = useMemo(() => {
+    return [...new Set(cartItems.map(item => item.product?.category?._id).filter(Boolean))];
+  }, [cartItems]);
 
   // Fetch recommended products from cart categories using general products API
   const { data: recommendedProducts, error: recommendedError, isLoading: recommendedLoading } = useGetProductsQuery(
@@ -290,6 +295,7 @@ const Cart = () => {
             <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-blue-400 rounded-full animate-ping mx-auto"></div>
           </div>
           <div className="space-y-2">
+            <Loader2 className='animate-spin h-4 w-4' />
             <h3 className="text-xl font-semibold text-slate-800">Loading your cart</h3>
             <p className="text-slate-600 text-sm">Please wait while we fetch your items...</p>
           </div>
@@ -323,7 +329,7 @@ const Cart = () => {
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       {/* Modern Header */}
       <header className="sticky top-16 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
@@ -354,7 +360,7 @@ const Cart = () => {
       </header>
 
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Free Shipping Banner */}
         {cartItems.length > 0 && (
           <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">

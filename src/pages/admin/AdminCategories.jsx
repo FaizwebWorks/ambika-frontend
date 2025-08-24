@@ -60,6 +60,13 @@ const AdminCategories = () => {
     setShowForm(true);
   };
 
+/*************  ✨ Windsurf Command ⭐  *************/
+  /**
+   * Handle form submission to either create a new category or update an existing one
+   * @param {Object} formData category data to be saved
+   * @returns {Promise<void>}
+   */
+/*******  5b3b1fe1-8476-49e3-aa13-9e39bbb43533  *******/
   const handleFormSubmit = async (formData) => {
     try {
       if (editingCategory) {
