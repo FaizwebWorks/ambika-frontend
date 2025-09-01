@@ -77,14 +77,14 @@ const OrderSummary = () => {
       id: 'express',
       name: 'Express Delivery',
       time: '2-3 business days',
-      price: 150,
+      price: 60,
       icon: Clock
     },
     {
       id: 'priority',
       name: 'Priority Delivery',
       time: 'Next business day',
-      price: 300,
+      price: 100,
       icon: CheckCircle
     }
   ];

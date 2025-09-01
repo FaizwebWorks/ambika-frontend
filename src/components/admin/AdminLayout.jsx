@@ -140,10 +140,10 @@ const AdminLayout = () => {
             {/* Header actions */}
             <div className="flex items-center space-x-3">
               {/* Notifications */}
-              <button className="relative p-2 rounded-lg hover:bg-neutral-100 transition-colors">
+              <Link to="/admin/notifications" className="relative p-2 rounded-lg hover:bg-neutral-100 transition-colors">
                 <Bell size={20} className="text-neutral-600" />
                 <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full"></span>
-              </button>
+              </Link>
 
               {/* Admin profile */}
               <div className="flex items-center space-x-3 pl-3 border-l border-neutral-200">

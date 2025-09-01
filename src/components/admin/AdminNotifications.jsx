@@ -1,27 +1,25 @@
-import { useState, useEffect } from 'react';
-import { 
-  Bell, 
-  Package, 
-  User, 
-  FileText, 
-  ShoppingCart, 
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  X,
-  Filter,
-  Search,
-  Loader2,
-  RefreshCw
-} from 'lucide-react';
-import { Button } from '../ui/button';
 import {
+  AlertCircle,
+  Bell,
+  CheckCircle,
+  FileText,
+  Filter,
+  Loader2,
+  RefreshCw,
+  Search,
+  ShoppingCart,
+  User,
+  X
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  useDeleteNotificationMutation,
   useGetNotificationsQuery,
   useGetNotificationStatsQuery,
-  useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
-  useDeleteNotificationMutation
+  useMarkNotificationAsReadMutation
 } from '../../store/api/notificationApiSlice';
+import { Button } from '../ui/button';
 
 const AdminNotifications = () => {
   const [filter, setFilter] = useState('all');
@@ -29,21 +27,21 @@ const AdminNotifications = () => {
   const [page, setPage] = useState(1);
 
   // API hooks
-  const { 
-    data: notificationData, 
-    isLoading, 
-    isError, 
+  const {
+    data: notificationData,
+    isLoading,
+    isError,
     error,
-    refetch 
-  } = useGetNotificationsQuery({ 
-    filter, 
-    search: searchTerm, 
-    page, 
-    limit: 20 
+    refetch
+  } = useGetNotificationsQuery({
+    filter,
+    search: searchTerm,
+    page,
+    limit: 20
   });
 
   const { data: statsData } = useGetNotificationStatsQuery();
-  
+
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
   const [deleteNotification] = useDeleteNotificationMutation();
@@ -152,32 +150,34 @@ const AdminNotifications = () => {
             </p>
           </div>
         </div>
-        
-        {unreadCount > 0 && (
+
+        <div className='flex items-center gap-3'>
+          {unreadCount > 0 && (
+            <Button
+              onClick={handleMarkAllAsRead}
+              variant="outline"
+              size="sm"
+              className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            >
+              Mark all as read
+            </Button>
+          )}
+
           <Button
-            onClick={handleMarkAllAsRead}
+            onClick={handleRefresh}
             variant="outline"
             size="sm"
-            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            className="text-gray-600 border-gray-200 hover:bg-gray-50"
+            disabled={isLoading}
           >
-            Mark all as read
+            {isLoading ? (
+              <Loader2 size={16} className="animate-spin mr-1" />
+            ) : (
+              <RefreshCw size={16} className="mr-1" />
+            )}
+            Refresh
           </Button>
-        )}
-        
-        <Button
-          onClick={handleRefresh}
-          variant="outline"
-          size="sm"
-          className="text-gray-600 border-gray-200 hover:bg-gray-50"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader2 size={16} className="animate-spin mr-1" />
-          ) : (
-            <RefreshCw size={16} className="mr-1" />
-          )}
-          Refresh
-        </Button>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -198,7 +198,7 @@ const AdminNotifications = () => {
             <option value="payment_received">Payments</option>
           </select>
         </div>
-        
+
         <div className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
           <input
@@ -235,15 +235,14 @@ const AdminNotifications = () => {
           notifications.map((notification) => (
             <div
               key={notification._id}
-              className={`border-l-4 bg-white border border-neutral-200 rounded-lg p-4 transition-all hover:shadow-md ${
-                getPriorityColor(notification.priority)
-              } ${!notification.isRead ? 'ring-2 ring-blue-100' : ''}`}
+              className={`border-l-4 bg-white border border-neutral-200 rounded-lg p-4 transition-all hover:shadow-md ${getPriorityColor(notification.priority)
+                } ${!notification.isRead ? 'ring-2 ring-blue-100' : ''}`}
             >
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
                   {getNotificationIcon(notification.type)}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -258,16 +257,15 @@ const AdminNotifications = () => {
                         <span>•</span>
                         <span>{formatTimeAgo(notification.createdAt)}</span>
                         <span>•</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          notification.priority === 'high' ? 'bg-red-100 text-red-700' :
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${notification.priority === 'high' ? 'bg-red-100 text-red-700' :
                           notification.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
+                            'bg-green-100 text-green-700'
+                          }`}>
                           {notification.priority}
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       {!notification.isRead && (
                         <button
@@ -285,7 +283,7 @@ const AdminNotifications = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Action buttons based on notification type */}
                   {notification.type === 'quote_request' && (
                     <div className="flex gap-2 mt-3">
@@ -297,7 +295,7 @@ const AdminNotifications = () => {
                       </Button>
                     </div>
                   )}
-                  
+
                   {notification.type === 'b2b_registration' && (
                     <div className="flex gap-2 mt-3">
                       <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
@@ -308,7 +306,7 @@ const AdminNotifications = () => {
                       </Button>
                     </div>
                   )}
-                  
+
                   {notification.type === 'low_stock' && (
                     <div className="flex gap-2 mt-3">
                       <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
@@ -324,7 +322,7 @@ const AdminNotifications = () => {
             </div>
           ))
         )}
-        
+
         {/* Pagination */}
         {pagination.total > 1 && (
           <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t">
