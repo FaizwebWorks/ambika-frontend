@@ -16,6 +16,7 @@ import StripePayment from '../components/StripePayment';
 import { Button } from '../components/ui/button';
 import {
   useAddAddressMutation,
+  useClearCartMutation,
   useCreateOrderMutation,
   useCreateStripeCheckoutSessionMutation,
   useCreateStripePaymentIntentMutation,
@@ -39,6 +40,7 @@ const OrderSummary = () => {
   const [createOrder] = useCreateOrderMutation();
   const [createStripePaymentIntent] = useCreateStripePaymentIntentMutation();
   const [createStripeCheckoutSession] = useCreateStripeCheckoutSessionMutation();
+  const [clearCart] = useClearCartMutation();
   
   // Address management hooks
   const { 
@@ -208,7 +210,8 @@ const OrderSummary = () => {
           duration: 4000,
           position: 'top-center',
         });
-        
+        // Clear cart after successful order placement
+        await clearCart();
         navigate(`/order-success?orderId=${orderId}&total=${total}`);
       }
       
@@ -225,6 +228,8 @@ const OrderSummary = () => {
       duration: 4000,
       position: 'top-center',
     });
+    // Clear cart after successful Stripe payment
+    clearCart();
     navigate(`/order-success?orderId=${currentOrderId}&total=${total}`);
   };
 
