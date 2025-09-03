@@ -146,48 +146,48 @@ const AdminSettings = () => {
   };
 
   // Handle subscription purchase
-  const handleSubscriptionPurchase = async (planType) => {
-    try {
-      const orderResponse = await createSubscriptionOrder({ planType }).unwrap();
+  // const handleSubscriptionPurchase = async (planType) => {
+  //   try {
+  //     const orderResponse = await createSubscriptionOrder({ planType }).unwrap();
       
-      const options = {
-        key: orderResponse.data.razorpayKeyId,
-        amount: orderResponse.data.amount,
-        currency: orderResponse.data.currency,
-        name: "Ambika International",
-        description: `${subscriptionPlans.data[planType].name} Subscription`,
-        order_id: orderResponse.data.orderId,
-        handler: async function (response) {
-          try {
-            await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }).unwrap();
+  //     const options = {
+  //       key: orderResponse.data.razorpayKeyId,
+  //       amount: orderResponse.data.amount,
+  //       currency: orderResponse.data.currency,
+  //       name: "Ambika International",
+  //       description: `${subscriptionPlans.data[planType].name} Subscription`,
+  //       order_id: orderResponse.data.orderId,
+  //       handler: async function (response) {
+  //         try {
+  //           await verifyPayment({
+  //             razorpay_order_id: response.razorpay_order_id,
+  //             razorpay_payment_id: response.razorpay_payment_id,
+  //             razorpay_signature: response.razorpay_signature,
+  //           }).unwrap();
             
-            alert('Payment successful! Your subscription is now active.');
-            refetchSubscription();
-          } catch (error) {
-            alert(`Payment verification failed: ${error.data?.message || error.message}`);
-          }
-        },
-        prefill: {
-          name: adminProfile?.data?.name || adminProfile?.data?.username,
-          email: adminProfile?.data?.email,
-          contact: adminProfile?.data?.phone,
-        },
-        theme: {
-          color: "#2563eb",
-        },
-      };
+  //           alert('Payment successful! Your subscription is now active.');
+  //           refetchSubscription();
+  //         } catch (error) {
+  //           alert(`Payment verification failed: ${error.data?.message || error.message}`);
+  //         }
+  //       },
+  //       prefill: {
+  //         name: adminProfile?.data?.name || adminProfile?.data?.username,
+  //         email: adminProfile?.data?.email,
+  //         contact: adminProfile?.data?.phone,
+  //       },
+  //       theme: {
+  //         color: "#2563eb",
+  //       },
+  //     };
       
-      const rzp1 = new window.Razorpay(options);
-      rzp1.open();
+  //     const rzp1 = new window.Razorpay(options);
+  //     rzp1.open();
       
-    } catch (error) {
-      alert(`Error creating order: ${error.data?.message || error.message}`);
-    }
-  };
+  //   } catch (error) {
+  //     alert(`Error creating order: ${error.data?.message || error.message}`);
+  //   }
+  // };
 
   // Handle subscription cancellation
   const handleCancelSubscription = async () => {
