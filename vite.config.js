@@ -38,7 +38,7 @@ export default defineConfig({
     hmr: {
       overlay: false
     },
-    proxy: {
+    proxy: { // Comment out this in production
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,

@@ -1,21 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
-import { 
-  Award, 
-  Users, 
-  Globe, 
-  Target, 
-  Heart, 
-  Truck, 
-  Shield, 
-  Star,
+import { motion } from 'framer-motion';
+import {
   ArrowRight,
-  CheckCircle,
+  Award,
   Calendar,
-  MapPin,
-  Phone,
-  Mail
+  CheckCircle,
+  Globe,
+  Heart,
+  Shield,
+  Star,
+  Target,
+  Truck,
+  Users
 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const About = () => {
   const [activeTab, setActiveTab] = useState('mission');
@@ -23,62 +20,56 @@ const About = () => {
   const [hasAnimated, setHasAnimated] = useState(false);
   const statsRef = useRef(null);
 
-  // Company stats
-  const stats = [
+  // Company stats (memoized)
+  const stats = useMemo(() => [
     { number: '12+', label: 'Years of Excellence', icon: Calendar, value: 12 },
     { number: '1000+', label: 'Happy Clients', icon: Users, value: 1000 },
     { number: '100,000+', label: 'Products Delivered', icon: Truck, value: 100000 },
     { number: '99.9%', label: 'Client Satisfaction', icon: Star, value: 99.9 }
-  ];
+  ], []);
 
-  // Animation function for counting numbers
-  const animateCounter = (targetValue, index, suffix = '') => {
-    const duration = 2000; // 2 seconds
-    const steps = 60;
-    const increment = targetValue / steps;
-    let current = 0;
-    
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= targetValue) {
-        current = targetValue;
-        clearInterval(timer);
+  // Animation function for counting numbers (optimized)
+  const animateCounter = (targetValue, index) => {
+    const duration = 2000;
+    const start = performance.now();
+    const step = (now) => {
+      const elapsed = now - start;
+      let progress = Math.min(elapsed / duration, 1);
+      let value = progress * targetValue;
+      if (progress === 1) value = targetValue;
+      setCounters(prev => ({ ...prev, [index]: value }));
+      if (progress < 1) {
+        requestAnimationFrame(step);
       }
-      
-      setCounters(prev => ({
-        ...prev,
-        [index]: current
-      }));
-    }, duration / steps);
+    };
+    requestAnimationFrame(step);
   };
 
-  // Intersection Observer to trigger animation when stats come into view
+  // Intersection Observer to trigger animation when stats come into view (optimized)
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          // Start animations for each stat
-          stats.forEach((stat, index) => {
-            setTimeout(() => {
-              animateCounter(stat.value, index);
-            }, index * 200); // Stagger animations
-          });
-        }
-      },
-      { threshold: 0.3 }
-    );
-
+    let observer;
     if (statsRef.current) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && !hasAnimated) {
+            setHasAnimated(true);
+            stats.forEach((stat, index) => {
+              setTimeout(() => {
+                animateCounter(stat.value, index);
+              }, index * 200);
+            });
+          }
+        },
+        { threshold: 0.3 }
+      );
       observer.observe(statsRef.current);
     }
-
     return () => {
-      if (statsRef.current) {
+      if (observer && statsRef.current) {
         observer.unobserve(statsRef.current);
       }
     };
-  }, [hasAnimated]);
+  }, [hasAnimated, stats]);
 
   // Format number for display
   const formatNumber = (value, index) => {
@@ -98,8 +89,8 @@ const About = () => {
     }
   };
 
-  // Core values
-  const values = [
+  // Core values (memoized)
+  const values = useMemo(() => [
     {
       icon: Heart,
       title: 'Customer First',
@@ -120,10 +111,10 @@ const About = () => {
       title: 'Excellence',
       description: 'Striving for excellence in every interaction, product, and service we provide.'
     }
-  ];
+  ], []);
 
-  // Team members
-  const team = [
+  // Team members (memoized)
+  const team = useMemo(() => [
     {
       name: 'Haresh Vaghasiya',
       position: 'Founder & CEO',
@@ -142,10 +133,10 @@ const About = () => {
       image: '/team-member-3.jpg',
       description: 'Riknesh Vaghasiya leads our quality assurance team, implementing rigorous testing protocols to ensure every product meets our exacting standards.'
     }
-  ];
+  ], []);
 
-  // Milestones
-  const milestones = [
+  // Milestones (memoized)
+  const milestones = useMemo(() => [
     {
       year: '2013',
       title: 'Company Founded',
@@ -171,7 +162,7 @@ const About = () => {
     //   title: 'Sustainability Initiative',
     //   description: 'Introduced eco-friendly product lines and sustainable packaging solutions.'
     // }
-  ];
+  ], []);
 
   return (
     <div className="bg-white min-h-screen w-full">
