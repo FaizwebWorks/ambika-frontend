@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import {
   useGetAdminOrdersQuery,
   useUpdateOrderStatusMutation
@@ -26,6 +27,7 @@ const AdminOrders = () => {
   const [dateRange, setDateRange] = useState('7days');
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
@@ -341,6 +343,7 @@ const AdminOrders = () => {
                         <button 
                           className="text-blue-600 hover:text-blue-800 transition-colors p-2 hover:bg-blue-50 rounded"
                           title="View Details"
+                          onClick={() => navigate(`/admin/orders/${order._id}`)}
                         >
                           <Eye size={16} />
                         </button>
@@ -422,7 +425,7 @@ const AdminOrders = () => {
               <tbody className="bg-white divide-y divide-neutral-200">{orders.length > 0 ? orders.map((order) => {
                   const statusConfig = getStatusConfig(order.status);
                   return (
-                    <tr key={order._id} className="hover:bg-neutral-50 transition-colors">
+                    <tr key={order._id} className="hover:bg-neutral-50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/orders/${order._id}`)}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-neutral-900">
                           #{order.orderNumber || order._id.slice(-8)}
@@ -459,17 +462,21 @@ const AdminOrders = () => {
                           <button 
                             className="text-blue-600 hover:text-blue-800 transition-colors p-1 hover:bg-blue-50 rounded"
                             title="View Order Details"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/admin/orders/${order._id}`); }}
                           >
                             <Eye size={16} />
                           </button>
                           
                           <div className="relative" ref={openDropdown === order._id ? dropdownRef : null}>
-                            <button 
-                              onClick={() => toggleDropdown(order._id)}
-                              className="text-neutral-600 hover:text-neutral-800 transition-colors p-1 hover:bg-neutral-50 rounded"
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleDropdown(order._id); }}
+                              className="text-neutral-600 hover:text-neutral-800 transition-colors p-1 hover:bg-neutral-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
                               title="More Actions"
+                              aria-haspopup="true"
+                              aria-expanded={openDropdown === order._id}
                             >
                               <MoreHorizontal size={16} />
+                              <span className="sr-only">Open order actions menu</span>
                             </button>
                             
                             {/* Dropdown Menu */}
@@ -484,9 +491,10 @@ const AdminOrders = () => {
                                     return (
                                       <button
                                         key={status}
-                                        onClick={() => handleStatusUpdate(order._id, status)}
+                                        onClick={(e) => { e.stopPropagation(); handleStatusUpdate(order._id, status); }}
                                         disabled={isUpdating}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                                        role="menuitem"
                                       >
                                         {statusConfig.icon}
                                         <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
@@ -496,12 +504,13 @@ const AdminOrders = () => {
                                   
                                   <div className="border-t border-neutral-100 mt-1 pt-1">
                                     <button
-                                      onClick={() => {
-                                        // Handle download invoice
+                                      onClick={(e) => {
+                                        e.stopPropagation();
                                         setOpenDropdown(null);
                                         toast.success('Invoice download started');
                                       }}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors text-left"
+                                      role="menuitem"
                                     >
                                       <Download size={14} />
                                       <span>Download Invoice</span>

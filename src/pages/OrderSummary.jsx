@@ -1,11 +1,11 @@
 import {
-  ArrowLeft,
-  CheckCircle,
-  Clock,
-  CreditCard,
-  Package,
-  Shield,
-  Truck
+    ArrowLeft,
+    CheckCircle,
+    Clock,
+    CreditCard,
+    Package,
+    Shield,
+    Truck
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -15,16 +15,16 @@ import InlineAddressManager from '../components/InlineAddressManager';
 import StripePayment from '../components/StripePayment';
 import { Button } from '../components/ui/button';
 import {
-  useAddAddressMutation,
-  useClearCartMutation,
-  useCreateOrderMutation,
-  useCreateStripeCheckoutSessionMutation,
-  useCreateStripePaymentIntentMutation,
-  useDeleteAddressMutation,
-  useGetAddressesQuery,
-  useGetCartQuery,
-  useSetDefaultAddressMutation,
-  useUpdateAddressMutation
+    useAddAddressMutation,
+    useClearCartMutation,
+    useCreateOrderMutation,
+    useCreateStripeCheckoutSessionMutation,
+    useCreateStripePaymentIntentMutation,
+    useDeleteAddressMutation,
+    useGetAddressesQuery,
+    useGetCartQuery,
+    useSetDefaultAddressMutation,
+    useUpdateAddressMutation
 } from '../store/api/authApiSlice';
 import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
@@ -115,8 +115,9 @@ const OrderSummary = () => {
   }, 0);
   
   const deliveryCharge = deliveryOptions.find(d => d.id === selectedDelivery)?.price || 0;
-  const tax = subtotal * 0.18; // 18% GST
-  const total = subtotal + deliveryCharge + tax;
+  // GST removed globally
+  const tax = 0;
+  const total = subtotal + deliveryCharge; // exclude tax since it's zero
   
   useEffect(() => {
     if (!isLoggedIn) {
@@ -531,10 +532,7 @@ const OrderSummary = () => {
                     {deliveryCharge === 0 ? 'Free' : `₹${deliveryCharge.toLocaleString('en-IN')}`}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">Tax (GST 18%)</span>
-                  <span className="font-medium">₹{tax.toLocaleString('en-IN')}</span>
-                </div>
+                {/* Tax removed (was GST 18%). If reintroduced later, add line back. */}
                 <hr className="border-neutral-200" />
                 <div className="flex justify-between text-lg">
                   <span className="font-semibold text-neutral-800">Total</span>

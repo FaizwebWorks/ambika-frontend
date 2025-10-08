@@ -1,19 +1,19 @@
 import {
-  AlertCircle,
-  ArrowLeft,
-  Eye,
-  Gift,
-  Headphones,
-  Loader2,
-  Minus,
-  Package,
-  Plus,
-  RotateCcw,
-  Shield,
-  ShoppingBag,
-  Star,
-  Trash2,
-  Truck
+    AlertCircle,
+    ArrowLeft,
+    Eye,
+    Gift,
+    Headphones,
+    Loader2,
+    Minus,
+    Package,
+    Plus,
+    RotateCcw,
+    Shield,
+    ShoppingBag,
+    Star,
+    Trash2,
+    Truck
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -21,11 +21,11 @@ import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import {
-  useAddToCartMutation,
-  useClearCartMutation,
-  useGetCartQuery,
-  useRemoveFromCartMutation,
-  useUpdateCartItemMutation
+    useAddToCartMutation,
+    useClearCartMutation,
+    useGetCartQuery,
+    useRemoveFromCartMutation,
+    useUpdateCartItemMutation
 } from '../store/api/authApiSlice';
 import { useGetProductsQuery } from '../store/api/publicApiSlice';
 import { selectIsAuthenticated } from '../store/slices/authSlice';
@@ -119,8 +119,9 @@ const Cart = () => {
   }, 0);
 
   const shipping = subtotal > 500 ? 0 : 50; // Free shipping for orders above ₹500
-  const tax = Math.round(subtotal * 0.18); // 18% GST
-  const cartTotal = subtotal + shipping + tax;
+  // GST removed globally - tax forced to 0
+  const tax = 0;
+  const cartTotal = subtotal + shipping; // excluded tax since it's 0
 
   // Handle quantity update
   const handleQuantityUpdate = async (itemId, newQuantity) => {
@@ -653,10 +654,7 @@ const Cart = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span className="font-medium text-slate-700">Tax (GST 18%)</span>
-                    <span className="font-bold text-lg text-slate-900">₹{tax.toLocaleString('en-IN')}</span>
-                  </div>
+                  {/* Tax removed (GST now 0). If needed later, reintroduce here. */}
 
                   <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                     <div className="flex justify-between items-center">

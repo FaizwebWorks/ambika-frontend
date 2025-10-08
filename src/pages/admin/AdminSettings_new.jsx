@@ -1,31 +1,29 @@
-import { useState } from 'react';
-import { 
-  Settings, 
-  User, 
-  Bell, 
-  Shield, 
-  Globe, 
-  CreditCard,
-  Mail,
-  Save,
-  Upload,
-  Key,
-  Database,
-  Truck,
-  Building,
-  RefreshCw,
-  AlertCircle
-} from 'lucide-react';
 import {
-  useGetSettingsQuery,
-  useUpdateGeneralSettingsMutation,
-  useUpdateNotificationSettingsMutation,
-  useUpdateSecuritySettingsMutation,
-  useUpdateBusinessSettingsMutation,
-  useGetAdminProfileQuery,
-  useUpdateAdminProfileMutation,
-  useUploadCompanyLogoMutation,
-  useResetSettingsMutation
+    AlertCircle,
+    Bell,
+    Building,
+    Database,
+    Key,
+    Mail,
+    RefreshCw,
+    Save,
+    Settings,
+    Shield,
+    Truck,
+    Upload,
+    User
+} from 'lucide-react';
+import { useState } from 'react';
+import {
+    useGetAdminProfileQuery,
+    useGetSettingsQuery,
+    useResetSettingsMutation,
+    useUpdateAdminProfileMutation,
+    useUpdateBusinessSettingsMutation,
+    useUpdateGeneralSettingsMutation,
+    useUpdateNotificationSettingsMutation,
+    useUpdateSecuritySettingsMutation,
+    useUploadCompanyLogoMutation
 } from '../../store/api/settingsApiSlice';
 
 const AdminSettings = () => {
@@ -547,16 +545,17 @@ const AdminSettings = () => {
                 <h3 className="text-lg font-medium text-neutral-900 mb-4">Business Settings</h3>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
+                  {/* Tax Rate removed globally (now fixed at 0). Keeping hidden field for potential future use. */}
+                  <div className="hidden">
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Tax Rate (%)
                     </label>
                     <input
                       type="number"
                       step="0.01"
-                      defaultValue={settings.data?.business?.taxRate || 18}
-                      onChange={(e) => handleInputChange('business', 'taxRate', parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
+                      value={0}
+                      readOnly
+                      className="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-100 text-neutral-500"
                     />
                   </div>
 

@@ -118,6 +118,10 @@ export const LazyAdminOrders = React.lazy(() =>
   import('../pages/admin/AdminOrders').then(module => ({ default: module.default }))
 );
 
+export const LazyAdminOrderDetail = React.lazy(() => 
+  import('../pages/admin/AdminOrderDetail').then(module => ({ default: module.default }))
+);
+
 export const LazyAdminCustomers = React.lazy(() => 
   import('../pages/admin/AdminCustomers').then(module => ({ default: module.default }))
 );
@@ -156,6 +160,7 @@ export const QuoteRequestSuccess = withLazyLoading(LazyQuoteRequestSuccess, 'Loa
 export const AdminDashboard = withLazyLoading(LazyAdminDashboard, 'Loading admin dashboard...');
 export const AdminProducts = withLazyLoading(LazyAdminProducts, 'Loading products management...');
 export const AdminOrders = withLazyLoading(LazyAdminOrders, 'Loading orders management...');
+export const AdminOrderDetail = withLazyLoading(LazyAdminOrderDetail, 'Loading order details...');
 export const AdminCustomers = withLazyLoading(LazyAdminCustomers, 'Loading customers management...');
 export const AdminCategories = withLazyLoading(LazyAdminCategories, 'Loading categories management...');
 export const AdminUsers = withLazyLoading(LazyAdminUsers, 'Loading users management...');

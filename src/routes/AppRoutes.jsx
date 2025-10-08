@@ -11,26 +11,27 @@ import RegisterB2B from "../pages/RegisterB2B";
 
 // Import lazy components
 import {
-  About,
-  AdminCategories,
-  AdminCustomers,
-  AdminDashboard,
-  AdminNotifications,
-  AdminOrders,
-  AdminProducts,
-  AdminSettings,
-  AdminUsers,
-  Cart,
-  Categories,
-  Contact,
-  Home,
-  OrderSuccess,
-  OrderSummary,
-  ProductDetails,
-  Profile,
-  QuoteRequest,
-  QuoteRequestSuccess,
-  Wishlist
+    About,
+    AdminCategories,
+    AdminCustomers,
+    AdminDashboard,
+    AdminNotifications,
+    AdminOrderDetail,
+    AdminOrders,
+    AdminProducts,
+    AdminSettings,
+    AdminUsers,
+    Cart,
+    Categories,
+    Contact,
+    Home,
+    OrderSuccess,
+    OrderSummary,
+    ProductDetails,
+    Profile,
+    QuoteRequest,
+    QuoteRequestSuccess,
+    Wishlist
 } from "../components/LazyComponents.jsx";
 
 const AppRoutes = () => (
@@ -88,6 +89,7 @@ const AppRoutes = () => (
         <Route index element={<AdminDashboard />} />
         <Route path="products" element={<AdminProducts />} />
         <Route path="orders" element={<AdminOrders />} />
+  <Route path="orders/:id" element={<AdminOrderDetail />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="users" element={<AdminUsers />} />
