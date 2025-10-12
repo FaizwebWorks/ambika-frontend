@@ -1,10 +1,21 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // Check if we're in development mode
+  if (import.meta.env.DEV) {
+    return '/api'; // Use Vite proxy in development
+  }
+  
+  // In production, use the full backend URL
+  return 'https://ambika-backend-weyi.onrender.com/api';
+};
+
 // Base API slice with RTK Query
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api', // Use proxy in development, full URL in production
+    baseUrl: getApiBaseUrl(),
     credentials: 'include', // Include cookies for authentication
     prepareHeaders: (headers, { getState }) => {
       // Add authorization token if available
@@ -12,6 +23,10 @@ export const apiSlice = createApi({
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
+      
+      // Add Content-Type header for JSON requests
+      headers.set('Content-Type', 'application/json');
+      
       return headers;
     },
   }),

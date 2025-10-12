@@ -1,7 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+// Determine API base URL based on environment
+const getNotificationApiBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return '/api/notifications'; // Use Vite proxy in development
+  }
+  return 'https://ambika-backend-weyi.onrender.com/api/notifications';
+};
+
 const baseQuery = fetchBaseQuery({
-  baseUrl: '/api/notifications',
+  baseUrl: getNotificationApiBaseUrl(),
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.token;
