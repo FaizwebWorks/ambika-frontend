@@ -1,26 +1,22 @@
-import { useState } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Plus,
-  Edit, 
-  Trash2, 
-  Eye,
+import {
+  Edit,
+  Filter,
   Package,
-  TrendingUp,
-  TrendingDown,
-  MoreHorizontal,
-  RefreshCw
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2
 } from 'lucide-react';
+import { useState } from 'react';
 import CategoryForm from '../../components/admin/CategoryForm';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import CustomDropdown from '../../components/ui/CustomDropdown';
 import {
-  useGetAdminCategoriesQuery,
+  useBulkUpdateCategoriesMutation,
   useCreateCategoryMutation,
-  useUpdateCategoryMutation,
   useDeleteCategoryMutation,
-  useBulkUpdateCategoriesMutation
+  useGetAdminCategoriesQuery,
+  useUpdateCategoryMutation
 } from '../../store/api/adminApiSlice';
 
 const AdminCategories = () => {
@@ -341,9 +337,6 @@ const AdminCategories = () => {
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
-                {/* <div className="flex items-center space-x-2">
-                  <span className="text-sm text-neutral-600">Slug: {category.slug}</span>
-                </div> */}
                 <p className="text-xs text-neutral-500">
                   Updated {formatDate(category.updatedAt)}
                 </p>

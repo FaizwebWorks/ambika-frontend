@@ -245,7 +245,7 @@ const ProductDetails = () => {
     };
 
     return (
-        <div className="bg-white min-h-screen w-full">
+        <div className="bg-gradient-to-b from-neutral-50 to-white min-h-screen w-full">
             {/* Header */}
             <div className="border-b border-neutral-100 sticky top-0 z-20 bg-white/95 backdrop-blur-sm">
                 <div className="max-w-6xl mx-auto px-4 py-4">
@@ -287,7 +287,7 @@ const ProductDetails = () => {
                     {/* Product Images */}
                     <div className="space-y-4">
                         {/* Main Image */}
-                        <div className="aspect-square rounded-2xl overflow-hidden bg-neutral-50">
+                        <div className="aspect-square rounded-2xl border border-neutral-100 overflow-hidden bg-neutral-50">
                             {images.length > 0 ? (
                                 <img
                                     src={images[selectedImage]}

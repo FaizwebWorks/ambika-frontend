@@ -189,8 +189,17 @@ const ProductForm = ({
       newErrors.minOrderQuantity = 'Minimum order quantity must be at least 1';
     }
     
-    // Check images
-    const totalImages = (imagePreviews.length - removeImages.length) + images.length;
+    // Check images - calculate remaining existing images + new images
+    const remainingExistingImages = imagePreviews.filter(img => !removeImages.includes(img));
+    const totalImages = remainingExistingImages.length + images.length;
+    console.log('Image validation:', {
+      imagePreviews: imagePreviews.length,
+      removeImages: removeImages.length,
+      newImages: images.length,
+      remainingExisting: remainingExistingImages.length,
+      totalImages
+    });
+    
     if (totalImages === 0) {
       newErrors.images = 'At least one product image is required';
     }

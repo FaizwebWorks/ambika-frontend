@@ -26,7 +26,8 @@ export const apiSlice = createApi({
       
       // Don't set Content-Type for FormData endpoints (let browser handle it)
       // Check if this is a FormData request by checking if Content-Type is already removed
-      if (!headers.has('Content-Type') && endpoint !== 'createCategory' && endpoint !== 'updateCategory') {
+      const formDataEndpoints = ['createCategory', 'updateCategory', 'createProduct', 'updateProduct'];
+      if (!headers.has('Content-Type') && !formDataEndpoints.includes(endpoint)) {
         headers.set('Content-Type', 'application/json');
       }
       

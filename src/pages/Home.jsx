@@ -1,15 +1,15 @@
-import { Button } from "../components/ui/button";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowRight, Star, Quote, Heart } from "lucide-react";
+import { ArrowRight, Heart, Quote, Star } from "lucide-react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { selectIsAuthenticated } from "../store/slices/authSlice";
-import { useGetProductsQuery } from "../store/api/publicApiSlice";
-import { 
-  useGetWishlistQuery, 
-  useAddToWishlistMutation, 
-  useRemoveFromWishlistMutation 
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import {
+  useAddToWishlistMutation,
+  useGetWishlistQuery,
+  useRemoveFromWishlistMutation
 } from "../store/api/authApiSlice";
+import { useGetProductsQuery } from "../store/api/publicApiSlice";
+import { selectIsAuthenticated } from "../store/slices/authSlice";
 
 // Custom ScrollToTop component to reset scroll position on navigation
 const ScrollToTop = () => {
@@ -325,22 +325,31 @@ const Home = () => {
                         {product.name || product.title}
                       </h3>
                       {isLoggedIn ? (
-                        <div className="mt-3 flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                          <div>
-                            <p className="text-emerald-800 text-xl font-semibold">
-                              ₹{product.discountPrice ? product.discountPrice.toLocaleString('en-IN') : product.price.toLocaleString('en-IN')}
-                            </p>
-                            <p className="text-emerald-600 text-xs">
-                              {product.discountPrice ? 'Discounted Price' : 'Wholesale Price'}
-                            </p>
-                          </div>
-                          {product.discountPrice && (
-                            <div className="bg-green-100 px-2 py-1 rounded-full">
-                              <span className="text-green-700 text-xs font-medium">
-                                {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
-                              </span>
+                        <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <span className="text-emerald-800 text-xl font-semibold">
+                                  ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
+                                </span>
+                                {product.discountPrice && product.discountPrice < product.price && (
+                                  <span className="text-sm text-neutral-500 line-through">
+                                    ₹{product.price?.toLocaleString('en-IN')}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-emerald-600 text-xs">
+                                {product.discountPrice && product.discountPrice < product.price ? 'Discounted Price' : 'Wholesale Price'}
+                              </p>
                             </div>
-                          )}
+                            {product.discountPrice && product.discountPrice < product.price && (
+                              <div className="bg-green-100 px-2 py-1 rounded-full">
+                                <span className="text-green-700 text-xs font-medium">
+                                  {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ) : (
                         <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
