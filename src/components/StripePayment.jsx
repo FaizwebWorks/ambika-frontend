@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { stripePromise, stripeConfig } from '../config/stripe';
+// import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+// import { stripePromise, stripeConfig } from '../config/stripe';
+import { Clock } from 'lucide-react';
 import { Button } from './ui/button';
-import { CreditCard, Lock, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
 
-// Payment form component
+// Payment form component - Currently Disabled
 const StripePaymentForm = ({ 
   clientSecret, 
   orderId, 
@@ -14,97 +12,48 @@ const StripePaymentForm = ({
   onError,
   isLoading = false 
 }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    setIsProcessing(true);
-    setErrorMessage('');
-
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${stripeConfig.returnUrl}?orderId=${orderId}`,
-      },
-      redirect: 'if_required'
-    });
-
-    if (error) {
-      setErrorMessage(error.message);
-      setIsProcessing(false);
-      if (onError) {
-        onError(error);
-      }
-      toast.error(error.message);
-    } else {
-      // Payment succeeded
-      setIsProcessing(false);
-      if (onSuccess) {
-        onSuccess();
-      }
-      toast.success('Payment completed successfully!');
-    }
-  };
-
+  // Stripe functionality temporarily disabled
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Payment Element */}
-      <div className="bg-neutral-50 p-4 rounded-lg border">
-        <div className="flex items-center gap-2 mb-4">
-          <CreditCard size={20} className="text-blue-600" />
-          <h3 className="font-medium text-neutral-800">Payment Details</h3>
+    <div className="space-y-6">
+      {/* Unavailable Notice */}
+      <div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
+        <div className="flex items-center gap-3 mb-4">
+          <Clock size={24} className="text-orange-600" />
+          <h3 className="font-semibold text-orange-800">Payment Gateway Maintenance</h3>
         </div>
-        
-        <PaymentElement 
-          options={stripeConfig.paymentElementOptions}
-        />
+        <p className="text-orange-700 mb-4">
+          Our online payment system is currently undergoing maintenance to serve you better. 
+          Please choose "Cash on Delivery" for now.
+        </p>
+        <div className="text-sm text-orange-600">
+          • Credit/Debit Card payments temporarily unavailable
+          <br />
+          • UPI and Digital Wallet payments temporarily unavailable
+          <br />
+          • Cash on Delivery is available and working normally
+        </div>
       </div>
 
-      {/* Error Message */}
-      {errorMessage && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle size={16} className="text-red-600" />
-          <p className="text-sm text-red-700">{errorMessage}</p>
-        </div>
-      )}
-
-      {/* Submit Button */}
+      {/* Disabled Submit Button */}
       <Button
-        type="submit"
-        disabled={!stripe || isProcessing || isLoading}
-        className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+        disabled={true}
+        className="w-full h-12 bg-gray-400 text-white cursor-not-allowed"
       >
-        {isProcessing ? (
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            Processing Payment...
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Lock size={16} />
-            Pay ₹{amount?.toLocaleString('en-IN')}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <Clock size={16} />
+          Payment Gateway Currently Unavailable
+        </div>
       </Button>
 
-      {/* Security Notice */}
-      <div className="flex items-center justify-center gap-2 text-sm text-neutral-500">
-        <Lock size={14} className="text-green-600" />
-        Your payment information is secure and encrypted
+      {/* Alternative Payment Notice */}
+      <div className="text-center text-sm text-neutral-600">
+        <p>Please use Cash on Delivery option to complete your order</p>
       </div>
-    </form>
+    </div>
   );
 };
 
-// Main Stripe payment component wrapper
+// Main Stripe payment component wrapper - Currently Disabled
 const StripePayment = ({ 
   clientSecret, 
   orderId, 
@@ -113,6 +62,20 @@ const StripePayment = ({
   onError,
   isLoading = false 
 }) => {
+  // Return maintenance notice instead of actual Stripe payment
+  return (
+    <StripePaymentForm
+      clientSecret={clientSecret}
+      orderId={orderId}
+      amount={amount}
+      onSuccess={onSuccess}
+      onError={onError}
+      isLoading={isLoading}
+    />
+  );
+
+  // Original Stripe implementation commented out:
+  /*
   const [stripeInstance, setStripeInstance] = useState(null);
 
   useEffect(() => {
@@ -149,6 +112,7 @@ const StripePayment = ({
       />
     </Elements>
   );
+  */
 };
 
 export default StripePayment;

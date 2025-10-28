@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
@@ -7,7 +7,6 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
-    slug: initialData?.slug || '',
     image: null,
     isActive: initialData?.isActive !== undefined ? initialData.isActive : true
   });
@@ -19,9 +18,7 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-      // Auto-generate slug from name if slug is empty
-      ...(name === 'name' && !formData.slug ? { slug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') } : {})
+      [name]: type === 'checkbox' ? checked : value
     }));
     // Clear errors when user starts typing
     if (errors[name]) {
@@ -72,12 +69,6 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
       newErrors.name = 'Category name is required';
     }
 
-    if (!formData.slug.trim()) {
-      newErrors.slug = 'Category slug is required';
-    } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
-      newErrors.slug = 'Slug can only contain lowercase letters, numbers, and hyphens';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -88,7 +79,6 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
       const submitData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
-        slug: formData.slug.trim(),
         isActive: formData.isActive
       };
 
@@ -97,6 +87,7 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
         submitData.image = formData.image;
       }
 
+      console.log('Submitting form data:', submitData);
       onSubmit(submitData);
     }
   };
@@ -132,24 +123,6 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
             placeholder="Enter category name"
           />
           {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-        </div>
-
-        {/* Slug */}
-        <div>
-          <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-            Slug *
-          </label>
-          <Input
-            type="text"
-            id="slug"
-            name="slug"
-            value={formData.slug}
-            onChange={handleInputChange}
-            className={`w-full ${errors.slug ? 'border-red-500' : ''}`}
-            placeholder="category-slug"
-          />
-          {errors.slug && <p className="text-red-500 text-sm mt-1">{errors.slug}</p>}
-          <p className="text-sm text-gray-500 mt-1">URL-friendly version of the name</p>
         </div>
 
         {/* Description */}

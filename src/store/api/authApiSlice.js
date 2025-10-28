@@ -193,38 +193,40 @@ export const authApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Order'],
     }),
 
-    // Stripe payment endpoints
+        // Stripe payment endpoints - Temporarily commented out
+    /*
     createStripePaymentIntent: builder.mutation({
-      query: (orderData) => ({
+      query: (data) => ({
         url: '/payments/stripe/create-payment-intent',
         method: 'POST',
-        body: orderData,
+        body: data,
       }),
     }),
-
+    
     confirmStripePayment: builder.mutation({
-      query: (paymentData) => ({
+      query: (data) => ({
         url: '/payments/stripe/confirm-payment',
         method: 'POST',
-        body: paymentData,
+        body: data,
       }),
       invalidatesTags: ['Order'],
     }),
-
+    
     createStripeCheckoutSession: builder.mutation({
-      query: (orderData) => ({
+      query: (data) => ({
         url: '/payments/stripe/create-checkout-session',
         method: 'POST',
-        body: orderData,
+        body: data,
       }),
     }),
-
+    
     getStripeSession: builder.query({
       query: (sessionId) => ({
         url: `/payments/stripe/session/${sessionId}`,
         method: 'GET',
       }),
     }),
+    */
 
     // Address management endpoints
     getAddresses: builder.query({
@@ -295,11 +297,11 @@ export const {
   useGetOrderByIdQuery,
   useCancelOrderMutation,
   useTrackOrderQuery,
-  // Stripe payment hooks
-  useCreateStripePaymentIntentMutation,
-  useConfirmStripePaymentMutation,
-  useCreateStripeCheckoutSessionMutation,
-  useGetStripeSessionQuery,
+  // Stripe payment hooks - Temporarily commented out
+  // useCreateStripePaymentIntentMutation,
+  // useConfirmStripePaymentMutation,
+  // useCreateStripeCheckoutSessionMutation,
+  // useGetStripeSessionQuery,
   // Address management hooks
   useGetAddressesQuery,
   useAddAddressMutation,

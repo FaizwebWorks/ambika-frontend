@@ -17,15 +17,18 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: getApiBaseUrl(),
     credentials: 'include', // Include cookies for authentication
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers, { getState, endpoint, type }) => {
       // Add authorization token if available
       const token = getState().auth.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
       
-      // Add Content-Type header for JSON requests
-      headers.set('Content-Type', 'application/json');
+      // Don't set Content-Type for FormData endpoints (let browser handle it)
+      // Check if this is a FormData request by checking if Content-Type is already removed
+      if (!headers.has('Content-Type') && endpoint !== 'createCategory' && endpoint !== 'updateCategory') {
+        headers.set('Content-Type', 'application/json');
+      }
       
       return headers;
     },

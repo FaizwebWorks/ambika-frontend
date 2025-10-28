@@ -207,28 +207,43 @@ const ProductForm = ({
       return;
     }
     
+    console.log('ProductForm - Form data before submission:', formData);
+    console.log('ProductForm - Images to upload:', images);
+    console.log('ProductForm - Images to remove:', removeImages);
+    
     const formDataToSubmit = new FormData();
     
     // Append text fields
     Object.keys(formData).forEach(key => {
       if (key === 'specifications') {
         formDataToSubmit.append('specifications', JSON.stringify(formData.specifications));
+        console.log('Added specifications to FormData:', JSON.stringify(formData.specifications));
       } else if (typeof formData[key] === 'boolean') {
         // Explicitly send boolean values as strings
         formDataToSubmit.append(key, formData[key].toString());
+        console.log(`Added ${key} to FormData:`, formData[key].toString());
       } else {
         formDataToSubmit.append(key, formData[key]);
+        console.log(`Added ${key} to FormData:`, formData[key]);
       }
     });
     
     // Append images
-    images.forEach(image => {
+    images.forEach((image, index) => {
       formDataToSubmit.append('images', image);
+      console.log(`Added image ${index + 1} to FormData:`, image.name);
     });
     
     // Append images to remove (for updates)
     if (removeImages.length > 0) {
       formDataToSubmit.append('removeImages', JSON.stringify(removeImages));
+      console.log('Added removeImages to FormData:', JSON.stringify(removeImages));
+    }
+    
+    // Log all FormData entries
+    console.log('ProductForm - Final FormData entries:');
+    for (let [key, value] of formDataToSubmit.entries()) {
+      console.log(key, value);
     }
     
     onSubmit(formDataToSubmit);

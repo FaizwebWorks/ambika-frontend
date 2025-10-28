@@ -12,14 +12,13 @@ import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import InlineAddressManager from '../components/InlineAddressManager';
-import StripePayment from '../components/StripePayment';
 import { Button } from '../components/ui/button';
 import {
     useAddAddressMutation,
     useClearCartMutation,
     useCreateOrderMutation,
-    useCreateStripeCheckoutSessionMutation,
-    useCreateStripePaymentIntentMutation,
+    // useCreateStripeCheckoutSessionMutation, // Commented out - Stripe temporarily disabled
+    // useCreateStripePaymentIntentMutation, // Commented out - Stripe temporarily disabled
     useDeleteAddressMutation,
     useGetAddressesQuery,
     useGetCartQuery,
@@ -38,8 +37,8 @@ const OrderSummary = () => {
   });
   
   const [createOrder] = useCreateOrderMutation();
-  const [createStripePaymentIntent] = useCreateStripePaymentIntentMutation();
-  const [createStripeCheckoutSession] = useCreateStripeCheckoutSessionMutation();
+  // const [createStripePaymentIntent] = useCreateStripePaymentIntentMutation(); // Commented out - Stripe temporarily disabled
+  // const [createStripeCheckoutSession] = useCreateStripeCheckoutSessionMutation(); // Commented out - Stripe temporarily disabled
   const [clearCart] = useClearCartMutation();
   
   // Address management hooks
@@ -62,8 +61,8 @@ const OrderSummary = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showStripePayment, setShowStripePayment] = useState(false);
-  const [stripeClientSecret, setStripeClientSecret] = useState('');
+  // const [showStripePayment, setShowStripePayment] = useState(false); // Commented out - Stripe temporarily disabled
+  // const [stripeClientSecret, setStripeClientSecret] = useState(''); // Commented out - Stripe temporarily disabled
   const [currentOrderId, setCurrentOrderId] = useState('');
   
   // Delivery options
@@ -196,15 +195,15 @@ const OrderSummary = () => {
 
       // Handle different payment methods
       if (paymentMethod === 'stripe_card') {
-        // Create Stripe payment intent
-        const paymentIntentResponse = await createStripePaymentIntent({ orderId }).unwrap();
-        setStripeClientSecret(paymentIntentResponse.data.clientSecret);
-        setShowStripePayment(true);
+        // Stripe payment temporarily disabled
+        toast.error('Online payments are currently unavailable. Please choose Cash on Delivery.');
         setIsProcessing(false);
+        return;
       } else if (paymentMethod === 'stripe_checkout') {
-        // Create Stripe checkout session and redirect
-        const checkoutResponse = await createStripeCheckoutSession({ orderId }).unwrap();
-        window.location.href = checkoutResponse.data.url;
+        // Stripe checkout temporarily disabled
+        toast.error('Online payments are currently unavailable. Please choose Cash on Delivery.');
+        setIsProcessing(false);
+        return;
       } else {
         // COD or other payment methods
         toast.success('Order placed successfully!', {
@@ -215,6 +214,21 @@ const OrderSummary = () => {
         await clearCart();
         navigate(`/order-success?orderId=${orderId}&total=${total}`);
       }
+
+      // Original Stripe implementation commented out:
+      /*
+      if (paymentMethod === 'stripe_card') {
+        // Create Stripe payment intent
+        const paymentIntentResponse = await createStripePaymentIntent({ orderId }).unwrap();
+        setStripeClientSecret(paymentIntentResponse.data.clientSecret);
+        setShowStripePayment(true);
+        setIsProcessing(false);
+      } else if (paymentMethod === 'stripe_checkout') {
+        // Create Stripe checkout session and redirect
+        const checkoutResponse = await createStripeCheckoutSession({ orderId }).unwrap();
+        window.location.href = checkoutResponse.data.url;
+      }
+      */
       
     } catch (error) {
       console.error('Order placement failed:', error);
@@ -224,7 +238,9 @@ const OrderSummary = () => {
     }
   };
 
-    const handleStripePaymentSuccess = () => {
+  // Stripe payment handlers commented out - temporarily disabled
+  /*
+  const handleStripePaymentSuccess = () => {
     toast.success('Payment completed successfully!', {
       duration: 4000,
       position: 'top-center',
@@ -239,6 +255,7 @@ const OrderSummary = () => {
     setIsProcessing(false);
     toast.error('Payment failed. Please try again.');
   };
+  */
   
   // Let ProtectedRoute handle authentication - component code starts below
   if (cartLoading) {
@@ -407,6 +424,18 @@ const OrderSummary = () => {
                 Payment Method
               </h2>
               
+              {/* Payment Gateway Maintenance Notice */}
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock size={16} className="text-orange-600" />
+                  <span className="font-medium text-orange-800">Payment Gateway Maintenance</span>
+                </div>
+                <p className="text-sm text-orange-700">
+                  Online payment options are temporarily unavailable. We're working to restore them soon. 
+                  Cash on Delivery is available for all orders.
+                </p>
+              </div>
+              
               <div className="space-y-3">
                 <label className="block">
                   <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
@@ -438,66 +467,53 @@ const OrderSummary = () => {
                 </label>
 
                 <label className="block">
-                  <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    paymentMethod === 'stripe_card' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-neutral-200 hover:border-neutral-300'
-                  }`}>
+                  <div className="p-4 border-2 rounded-lg opacity-50 cursor-not-allowed border-neutral-200 bg-neutral-100">
                     <input
                       type="radio"
                       name="payment"
                       value="stripe_card"
-                      checked={paymentMethod === 'stripe_card'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      disabled={true}
                       className="sr-only"
                     />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <CreditCard size={20} className="text-blue-600" />
+                        <CreditCard size={20} className="text-neutral-400" />
                         <div>
-                          <p className="font-medium text-neutral-800">Credit/Debit Card</p>
-                          <p className="text-sm text-neutral-600">Secure payment with Stripe</p>
+                          <p className="font-medium text-neutral-500">Credit/Debit Card</p>
+                          <p className="text-sm text-neutral-400">Currently unavailable - Under maintenance</p>
                         </div>
                       </div>
-                      {paymentMethod === 'stripe_card' && (
-                        <CheckCircle size={20} className="text-blue-600" />
-                      )}
+                      <Clock size={16} className="text-orange-500" />
                     </div>
                   </div>
                 </label>
 
                 <label className="block">
-                  <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    paymentMethod === 'stripe_checkout' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-neutral-200 hover:border-neutral-300'
-                  }`}>
+                  <div className="p-4 border-2 rounded-lg opacity-50 cursor-not-allowed border-neutral-200 bg-neutral-100">
                     <input
                       type="radio"
                       name="payment"
                       value="stripe_checkout"
-                      checked={paymentMethod === 'stripe_checkout'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      disabled={true}
                       className="sr-only"
                     />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <CreditCard size={20} className="text-purple-600" />
+                        <CreditCard size={20} className="text-neutral-400" />
                         <div>
-                          <p className="font-medium text-neutral-800">Stripe Checkout</p>
-                          <p className="text-sm text-neutral-600">Cards, UPI, Wallets & More</p>
+                          <p className="font-medium text-neutral-500">Stripe Checkout</p>
+                          <p className="text-sm text-neutral-400">Cards, UPI, Wallets - Currently unavailable</p>
                         </div>
                       </div>
-                      {paymentMethod === 'stripe_checkout' && (
-                        <CheckCircle size={20} className="text-blue-600" />
-                      )}
+                      <Clock size={16} className="text-orange-500" />
                     </div>
                   </div>
                 </label>
               </div>
             </div>
 
-            {/* Stripe Payment Modal */}
+            {/* Stripe Payment Modal - Temporarily Disabled */}
+            {/*
             {showStripePayment && stripeClientSecret && (
               <div className="bg-white rounded-xl border border-neutral-200 p-6">
                 <h2 className="text-xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
@@ -514,6 +530,7 @@ const OrderSummary = () => {
                 />
               </div>
             )}
+            */}
           </div>
 
           {/* Order Summary Sidebar */}

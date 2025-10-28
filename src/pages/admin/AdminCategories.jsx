@@ -341,9 +341,9 @@ const AdminCategories = () => {
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
-                <div className="flex items-center space-x-2">
+                {/* <div className="flex items-center space-x-2">
                   <span className="text-sm text-neutral-600">Slug: {category.slug}</span>
-                </div>
+                </div> */}
                 <p className="text-xs text-neutral-500">
                   Updated {formatDate(category.updatedAt)}
                 </p>
