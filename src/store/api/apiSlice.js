@@ -2,12 +2,17 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Determine API base URL based on environment
 const getApiBaseUrl = () => {
-  // Check if we're in development mode
+  // Use environment variable if available
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL;
+  }
+  
+  // Fallback logic
   if (import.meta.env.DEV) {
     return '/api'; // Use Vite proxy in development
   }
   
-  // In production, use the full backend URL
+  // Default production URL (update this when deploying)
   return 'https://ambika-backend-weyi.onrender.com/api';
 };
 
