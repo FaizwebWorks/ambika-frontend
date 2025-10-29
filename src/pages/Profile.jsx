@@ -196,10 +196,10 @@ const Profile = () => {
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
-                    <a
+                    <button
                       key={tab.id}
-                      href={`/profile?tab=${tab.id}`}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                      onClick={() => navigate(`/profile?tab=${tab.id}`, { replace: true })}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left ${
                         activeTab === tab.id
                           ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
@@ -207,7 +207,7 @@ const Profile = () => {
                     >
                       <Icon size={18} />
                       {tab.name}
-                    </a>
+                    </button>
                   );
                 })}
               </nav>

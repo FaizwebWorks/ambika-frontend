@@ -1,4 +1,4 @@
-import { Instagram, Heart, Facebook, Youtube } from "lucide-react";
+import { Facebook, Heart, Instagram, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => (
@@ -50,8 +50,8 @@ const Footer = () => (
                         <h3 className="font-medium text-xs tracking-wider text-neutral-900 mb-5 uppercase">Support</h3>
                         <ul className="space-y-3">
                             <FooterLink to="/faq">FAQ</FooterLink>
-                            <FooterLink to="/terms">Terms of Use</FooterLink>
-                            <FooterLink to="/privacy">Privacy Policy</FooterLink>
+                            <FooterLink to="/terms-of-use">Terms of Use</FooterLink>
+                            <FooterLink to="/privacy-policy">Privacy Policy</FooterLink>
                         </ul>
                     </div>
                     
@@ -82,7 +82,7 @@ const Footer = () => (
             <div className="flex flex-col md:flex-row items-center justify-center md:justify-between text-neutral-400 text-xs gap-4">
                 <span>© 2025 Ambika International. All rights reserved.</span>
                 <span className="flex items-center">
-                    Made with <Heart size={14} className="mx-1 text-blue-500" /> by Devora.
+                    Made with <Heart size={14} className="mx-1 text-blue-500" /> by Faizal Shaikh.
                 </span>
             </div>
         </div>

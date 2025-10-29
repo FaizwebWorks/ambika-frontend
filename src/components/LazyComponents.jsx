@@ -105,6 +105,22 @@ export const LazyQuoteRequestSuccess = React.lazy(() =>
   import('../pages/QuoteRequestSuccess').then(module => ({ default: module.default }))
 );
 
+export const LazyTermsOfUse = React.lazy(() => 
+  import('../pages/TermsOfUse').then(module => ({ default: module.default }))
+);
+
+export const LazyPrivacyPolicy = React.lazy(() => 
+  import('../pages/PrivacyPolicy').then(module => ({ default: module.default }))
+);
+
+export const LazyForgotPassword = React.lazy(() => 
+  import('../pages/ForgotPassword').then(module => ({ default: module.default }))
+);
+
+export const LazyResetPassword = React.lazy(() => 
+  import('../pages/ResetPassword').then(module => ({ default: module.default }))
+);
+
 // Admin lazy components
 export const LazyAdminDashboard = React.lazy(() => 
   import('../pages/admin/AdminDashboard').then(module => ({ default: module.default }))
@@ -155,6 +171,10 @@ export const QuoteRequest = withLazyLoading(LazyQuoteRequest, 'Loading quote req
 export const OrderSummary = withLazyLoading(LazyOrderSummary, 'Loading order summary...');
 export const OrderSuccess = withLazyLoading(LazyOrderSuccess, 'Loading order confirmation...');
 export const QuoteRequestSuccess = withLazyLoading(LazyQuoteRequestSuccess, 'Loading quote success...');
+export const TermsOfUse = withLazyLoading(LazyTermsOfUse, 'Loading terms of use...');
+export const PrivacyPolicy = withLazyLoading(LazyPrivacyPolicy, 'Loading privacy policy...');
+export const ForgotPassword = withLazyLoading(LazyForgotPassword, 'Loading forgot password...');
+export const ResetPassword = withLazyLoading(LazyResetPassword, 'Loading reset password...');
 
 // Admin components
 export const AdminDashboard = withLazyLoading(LazyAdminDashboard, 'Loading admin dashboard...');

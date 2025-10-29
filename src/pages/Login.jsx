@@ -168,9 +168,9 @@ const Login = () => {
                     <div className="mt-8 pt-6 border-t border-neutral-100 text-center">
                         <p className="text-xs text-neutral-400">
                             By signing in, you agree to our{' '}
-                            <Link to="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>{' '}
+                            <Link to="/terms-of-use" className="text-blue-600 hover:underline">Terms of Service</Link>{' '}
                             and{' '}
-                            <Link to="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+                            <Link to="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</Link>
                         </p>
                     </div>
                 </div>

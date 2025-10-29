@@ -24,13 +24,17 @@ import {
   Cart,
   Categories,
   Contact,
+  ForgotPassword,
   Home,
   OrderSuccess,
   OrderSummary,
+  PrivacyPolicy,
   ProductDetails,
   Profile,
   QuoteRequest,
   QuoteRequestSuccess,
+  ResetPassword,
+  TermsOfUse,
   Wishlist
 } from "../components/LazyComponents.jsx";
 
@@ -52,6 +56,8 @@ const AppRoutes = () => (
         } />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="terms-of-use" element={<TermsOfUse />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="cart" element={<Cart />} />
         <Route path="wishlist" element={
           <ProtectedRoute>
@@ -79,6 +85,10 @@ const AppRoutes = () => (
           </ProtectedRoute>
         } />
       </Route>
+
+      {/* Password Reset Routes */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={
