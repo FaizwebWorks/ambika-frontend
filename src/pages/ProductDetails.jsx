@@ -396,27 +396,6 @@ const ProductDetails = () => {
                                         <span className="text-sm text-neutral-700">Out of Stock</span>
                                     </div>
                                 )}
-
-                                {product.specifications?.material && (
-                                    <div className="flex items-center gap-2">
-                                        <Layers size={16} className="text-neutral-500" />
-                                        <span className="text-sm text-neutral-700">{product.specifications.material}</span>
-                                    </div>
-                                )}
-
-                                {product.specifications?.dimensions && (
-                                    <div className="flex items-center gap-2">
-                                        <Ruler size={16} className="text-neutral-500" />
-                                        <span className="text-sm text-neutral-700">{product.specifications.dimensions}</span>
-                                    </div>
-                                )}
-
-                                {product.specifications?.weight && (
-                                    <div className="flex items-center gap-2">
-                                        <Weight size={16} className="text-neutral-500" />
-                                        <span className="text-sm text-neutral-700">{product.specifications.weight}</span>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
@@ -491,6 +470,7 @@ const ProductDetails = () => {
             <div className="flex border-b border-neutral-100 mb-8 overflow-x-auto">
                 {[
                     { id: 'description', label: 'Description', icon: FileText },
+                    { id: 'features', label: 'Features', icon: Award },
                     { id: 'specifications', label: 'Specifications', icon: Info },
                     { id: 'warranty', label: 'Warranty & Support', icon: Shield }
                 ].map(({ id, label, icon: Icon }) => (
@@ -514,25 +494,61 @@ const ProductDetails = () => {
                                     {product.description}
                                 </p>
 
-                                {/* Quality Level */}
-                                {product.quality && (
-                                    <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <Award size={20} className="text-blue-600" />
-                                            <span className="font-semibold text-blue-900">Quality Level</span>
+                                {/* Features Section */}
+                                {product.features && product.features.length > 0 && (
+                                    <div className="mt-8">
+                                        <h3 className="text-xl font-semibold text-neutral-900 mb-4">Key Features</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {product.features.map((feature, index) => (
+                                                <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                                                    <Check size={18} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                                                    <span className="text-blue-900">{feature}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <p className="text-blue-800">{product.quality}</p>
                                     </div>
                                 )}
 
-                                {/* Usage Information */}
-                                {product.specifications?.usage && (
-                                    <div className="mt-4 p-4 bg-green-50 rounded-xl">
+                                {/* Warranty Information */}
+                                {product.warranty && (
+                                    <div className="mt-6 p-4 bg-green-50 rounded-xl">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Info size={20} className="text-green-600" />
-                                            <span className="font-semibold text-green-900">Usage</span>
+                                            <Shield size={20} className="text-green-600" />
+                                            <span className="font-semibold text-green-900">Warranty</span>
                                         </div>
-                                        <p className="text-green-800">{product.specifications.usage}</p>
+                                        <p className="text-green-800">{product.warranty}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Features Tab */}
+                        {activeTab === 'features' && (
+                            <div className="space-y-6">
+                                {product.features && product.features.length > 0 ? (
+                                    <>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {product.features.map((feature, index) => (
+                                                <div key={index} className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                                                    <Check size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                                                    <span className="text-blue-900 font-medium">{feature}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                                            <h3 className="text-lg font-semibold text-blue-900 mb-2">Why Choose This Product?</h3>
+                                            <p className="text-blue-800">
+                                                This product offers {product.features.length} key features designed to provide 
+                                                exceptional value and performance for your needs.
+                                            </p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <Award size={48} className="text-neutral-400 mx-auto mb-4" />
+                                        <h3 className="text-lg font-medium text-neutral-900 mb-2">No Features Listed</h3>
+                                        <p className="text-neutral-600">Specific features are not listed for this product.</p>
                                     </div>
                                 )}
                             </div>
@@ -541,43 +557,56 @@ const ProductDetails = () => {
                         {/* Specifications Tab */}
                         {activeTab === 'specifications' && (
                             <div className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {/* Basic Specifications */}
-                                    {[
-                                        { label: 'Material', value: product.specifications?.material, icon: Layers },
-                                        { label: 'Dimensions', value: product.specifications?.dimensions, icon: Ruler },
-                                        { label: 'Warranty', value: product.specifications?.warranty, icon: Shield }
-                                    ].filter(spec => spec.value).map(({ label, value, icon: Icon }) => (
-                                        <div key={label} className="flex items-start gap-3 p-4 border border-neutral-200 rounded-xl">
-                                            <Icon size={20} className="text-neutral-500 mt-0.5" />
-                                            <div>
-                                                <h4 className="font-semibold text-neutral-900">{label}</h4>
-                                                <p className="text-neutral-600 mt-1">{value}</p>
+                                {/* Display specifications from Map */}
+                                {product.specifications && Object.keys(product.specifications).length > 0 ? (
+                                    <>
+                                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {Object.entries(product.specifications).map(([key, value]) => {
+                                                // Get appropriate icon based on specification key
+                                                let Icon = Info;
+                                                if (key.toLowerCase().includes('material')) Icon = Layers;
+                                                else if (key.toLowerCase().includes('dimension') || key.toLowerCase().includes('size') || key.toLowerCase().includes('capacity')) Icon = Ruler;
+                                                else if (key.toLowerCase().includes('weight')) Icon = Weight;
+                                                else if (key.toLowerCase().includes('power') || key.toLowerCase().includes('voltage') || key.toLowerCase().includes('watt')) Icon = Package;
+                                                
+                                                return (
+                                                    <div key={key} className="flex items-start gap-3 p-4 bg-neutral-50 rounded-xl">
+                                                        <Icon size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                                                        <div className="min-w-0 flex-1">
+                                                            <h4 className="font-semibold text-neutral-900 mb-1">{key}</h4>
+                                                            <p className="text-neutral-700">{value}</p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div> */}
+
+                                        {/* Technical Details Table */}
+                                        <div className="mt-8">
+                                            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Technical Specifications</h3>
+                                            <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
+                                                <table className="w-full">
+                                                    <tbody>
+                                                        {Object.entries(product.specifications).map(([key, value], index) => (
+                                                            <tr key={key} className={index % 2 === 0 ? 'bg-neutral-50' : 'bg-white'}>
+                                                                <td className="px-6 py-4 font-medium text-neutral-900 w-1/3">
+                                                                    {key}
+                                                                </td>
+                                                                <td className="px-6 py-4 text-neutral-700">
+                                                                    {value}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-
-                                {/* No specifications message */}
-                                {!product.specifications?.material && !product.specifications?.dimensions && !product.specifications?.warranty && (
-                                    <div className="text-center py-8">
+                                    </>
+                                ) : (
+                                    <div className="text-center py-12">
                                         <Info size={48} className="text-neutral-400 mx-auto mb-4" />
-                                        <p className="text-neutral-600">No detailed specifications available for this product.</p>
-                                    </div>
-                                )}
-
-                                {/* Additional Specifications */}
-                                {product.specifications && typeof product.specifications === 'object' && (
-                                    <div className="space-y-3">
-                                        {Object.entries(product.specifications)
-                                            .filter(([key]) => !['material', 'dimensions', 'weight', 'packaging', 'certifications', 'usage', 'warranty'].includes(key))
-                                            .map(([key, value]) => (
-                                                <div key={key} className="flex justify-between items-center py-3 border-b border-neutral-100">
-                                                    <span className="font-medium text-neutral-900 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                                                    <span className="text-neutral-600">{value}</span>
-                                                </div>
-                                            ))
-                                        }
+                                        <h3 className="text-lg font-medium text-neutral-900 mb-2">No Specifications Available</h3>
+                                        <p className="text-neutral-600">Detailed specifications are not available for this product.</p>
                                     </div>
                                 )}
                             </div>
@@ -586,13 +615,13 @@ const ProductDetails = () => {
                         {/* Warranty Tab */}
                         {activeTab === 'warranty' && (
                             <div className="space-y-6">
-                                {product.specifications?.warranty ? (
+                                {product.warranty ? (
                                     <div className="p-6 bg-green-50 rounded-xl">
                                         <div className="flex items-center gap-2 mb-3">
                                             <Shield size={24} className="text-green-600" />
                                             <h4 className="text-xl font-semibold text-green-900">Warranty Coverage</h4>
                                         </div>
-                                        <p className="text-green-800 text-lg">{product.specifications.warranty}</p>
+                                        <p className="text-green-800 text-lg">{product.warranty}</p>
                                     </div>
                                 ) : (
                                     <div className="p-6 bg-neutral-50 rounded-xl">
@@ -625,6 +654,7 @@ const ProductDetails = () => {
                                 <ProductCard
                                     key={relatedProduct._id}
                                     product={relatedProduct}
+                                    isLoggedIn={isLoggedIn}
                                 />
                             ))}
                         </div>

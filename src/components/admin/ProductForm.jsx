@@ -17,13 +17,10 @@ const ProductForm = ({
     discountPrice: '',
     stock: '',
     category: '',
-    tags: '',
+    features: '',
+    specifications: '',
+    warranty: '',
     status: 'active',
-    specifications: {
-      material: '',
-      dimensions: '',
-      warranty: ''
-    },
     minOrderQuantity: '1',
     featured: false
   });
@@ -41,6 +38,38 @@ const ProductForm = ({
   // Populate form when editing
   useEffect(() => {
     if (product) {
+      // Convert specifications Map back to string format
+      let specificationsText = '';
+      console.log('Product specifications:', product.specifications, typeof product.specifications);
+      
+      if (product.specifications) {
+        if (product.specifications instanceof Map) {
+          specificationsText = Array.from(product.specifications.entries())
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('\n');
+        } else if (typeof product.specifications === 'object' && product.specifications !== null) {
+          specificationsText = Object.entries(product.specifications)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('\n');
+        } else if (typeof product.specifications === 'string') {
+          // If it's already a string, use it as is
+          specificationsText = product.specifications;
+        }
+      }
+      
+      console.log('Processed specifications text:', specificationsText);
+
+      // Also handle features properly
+      let featuresText = '';
+      if (product.features) {
+        if (Array.isArray(product.features)) {
+          featuresText = product.features.join('\n');
+        } else if (typeof product.features === 'string') {
+          featuresText = product.features;
+        }
+      }
+      console.log('Processed features text:', featuresText);
+
       setFormData({
         title: product.title || '',
         description: product.description || '',
@@ -48,13 +77,10 @@ const ProductForm = ({
         discountPrice: product.discountPrice?.toString() || '',
         stock: product.stock?.toString() || '',
         category: product.category?._id || '',
-        tags: Array.isArray(product.tags) ? product.tags.join(', ') : '',
+        features: featuresText,
+        specifications: specificationsText,
+        warranty: product.warranty || '',
         status: product.status || 'active',
-        specifications: {
-          material: product.specifications?.material || '',
-          dimensions: product.specifications?.dimensions || '',
-          warranty: product.specifications?.warranty || ''
-        },
         minOrderQuantity: product.minOrderQuantity?.toString() || '1',
         featured: product.featured || false
       });
@@ -69,13 +95,10 @@ const ProductForm = ({
         discountPrice: '',
         stock: '',
         category: '',
-        tags: '',
+        features: '',
+        specifications: '',
+        warranty: '',
         status: 'active',
-        specifications: {
-          material: '',
-          dimensions: '',
-          warranty: ''
-        },
         minOrderQuantity: '1',
         featured: false
       });
@@ -89,21 +112,10 @@ const ProductForm = ({
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    if (name.startsWith('specifications.')) {
-      const specField = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        specifications: {
-          ...prev.specifications,
-          [specField]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
     
     // Clear error when user starts typing
     if (errors[name]) {
@@ -222,20 +234,39 @@ const ProductForm = ({
     
     const formDataToSubmit = new FormData();
     
-    // Append text fields
+    // Add basic fields
     Object.keys(formData).forEach(key => {
-      if (key === 'specifications') {
-        formDataToSubmit.append('specifications', JSON.stringify(formData.specifications));
-        console.log('Added specifications to FormData:', JSON.stringify(formData.specifications));
-      } else if (typeof formData[key] === 'boolean') {
-        // Explicitly send boolean values as strings
-        formDataToSubmit.append(key, formData[key].toString());
-        console.log(`Added ${key} to FormData:`, formData[key].toString());
-      } else {
-        formDataToSubmit.append(key, formData[key]);
-        console.log(`Added ${key} to FormData:`, formData[key]);
+      if (key !== 'features' && key !== 'specifications') {
+        if (typeof formData[key] === 'boolean') {
+          formDataToSubmit.append(key, formData[key].toString());
+        } else {
+          formDataToSubmit.append(key, formData[key]);
+        }
       }
     });
+
+    // Process features (convert newline-separated to array)
+    const featuresArray = formData.features
+      .split('\n')
+      .map(feature => feature.trim())
+      .filter(feature => feature.length > 0);
+    
+    featuresArray.forEach(feature => {
+      formDataToSubmit.append('features[]', feature);
+    });
+
+    // Process specifications (convert key:value format to object)
+    const specificationsObj = {};
+    formData.specifications
+      .split('\n')
+      .forEach(line => {
+        const [key, ...valueParts] = line.split(':');
+        if (key && valueParts.length > 0) {
+          specificationsObj[key.trim()] = valueParts.join(':').trim();
+        }
+      });
+    
+    formDataToSubmit.append('specifications', JSON.stringify(specificationsObj));
     
     // Append images
     images.forEach((image, index) => {
@@ -437,69 +468,62 @@ const ProductForm = ({
             </div>
           </div>
 
-          {/* Specifications */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-2">
-                Material
-              </label>
-              <input
-                type="text"
-                id="material"
-                name="specifications.material"
-                value={formData.specifications.material}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Stainless Steel"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700 mb-2">
-                Dimensions
-              </label>
-              <input
-                type="text"
-                id="dimensions"
-                name="specifications.dimensions"
-                value={formData.specifications.dimensions}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., 30cm x 20cm x 15cm"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="warranty" className="block text-sm font-medium text-gray-700 mb-2">
-                Warranty
-              </label>
-              <input
-                type="text"
-                id="warranty"
-                name="specifications.warranty"
-                value={formData.specifications.warranty}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., 1 Year"
-              />
-            </div>
+          {/* Features */}
+          <div>
+            <label htmlFor="features" className="block text-sm font-medium text-gray-700 mb-2">
+              Features
+            </label>
+            <textarea
+              id="features"
+              name="features"
+              value={formData.features}
+              onChange={handleInputChange}
+              rows={6}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={`Enter each feature on a new line, for example:
+Includes 1.2L electric kettle with auto shut-off
+Premium ceramic cups and saucers
+Elegant stainless steel presentation tray`}
+            />
+            <p className="text-sm text-gray-500 mt-1">Enter each feature on a new line</p>
           </div>
 
-          {/* Tags */}
+          {/* Specifications */}
           <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
-              Tags
+            <label htmlFor="specifications" className="block text-sm font-medium text-gray-700 mb-2">
+              Specifications
+            </label>
+            <textarea
+              id="specifications"
+              name="specifications"
+              value={formData.specifications}
+              onChange={handleInputChange}
+              rows={6}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={`Enter specifications in key: value format, for example:
+Material: Stainless steel with mirror finish
+Capacity: 1.2 Liters
+Power Rating: 1500W
+Voltage: 220-240V`}
+            />
+            <p className="text-sm text-gray-500 mt-1">Enter each specification as "Key: Value" on a new line</p>
+          </div>
+
+          {/* Warranty */}
+          <div>
+            <label htmlFor="warranty" className="block text-sm font-medium text-gray-700 mb-2">
+              Warranty Information
             </label>
             <input
               type="text"
-              id="tags"
-              name="tags"
-              value={formData.tags}
+              id="warranty"
+              name="warranty"
+              value={formData.warranty}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., electric kettle, hospitality, kitchen"
+              placeholder="e.g., 2 years manufacturer warranty, 1 year extended warranty available"
             />
-            <p className="text-sm text-gray-500 mt-1">Separate tags with commas</p>
+            <p className="text-sm text-gray-500 mt-1">Describe warranty terms and coverage details</p>
           </div>
 
           {/* Status and Featured */}
