@@ -13,7 +13,7 @@ const getApiBaseUrl = () => {
   }
   
   // Default production URL (update this when deploying)
-  return 'https://ambika-international.onrender.com/api';
+  return 'https://ambika-e6if.onrender.com/api';
 };
 
 // Base API slice with RTK Query
