@@ -7,19 +7,16 @@ import {
     FileText,
     Heart,
     Info,
-    Layers,
     Loader2,
     Minus,
     Package,
     Plus,
     RotateCcw,
-    Ruler,
     Share2,
     Shield,
     ShoppingCart,
     Star,
-    Truck,
-    Weight
+    Truck
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -558,7 +555,7 @@ const ProductDetails = () => {
                         {activeTab === 'specifications' && (
                             <div className="space-y-6">
                                 {/* Display specifications from Map */}
-                                {product.specifications && Object.keys(product.specifications).length > 0 ? (
+                                {product.specifications && product.specifications.length > 0 ? (
                                     <>
                                         {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             {Object.entries(product.specifications).map(([key, value]) => {
@@ -587,13 +584,13 @@ const ProductDetails = () => {
                                             <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
                                                 <table className="w-full">
                                                     <tbody>
-                                                        {Object.entries(product.specifications).map(([key, value], index) => (
-                                                            <tr key={key} className={index % 2 === 0 ? 'bg-neutral-50' : 'bg-white'}>
+                                                        {product.specifications.map((spec, index) => (
+                                                            <tr key={index} className={index % 2 === 0 ? 'bg-neutral-50' : 'bg-white'}>
                                                                 <td className="px-6 py-4 font-medium text-neutral-900 w-1/3">
-                                                                    {key}
+                                                                    {spec.key}
                                                                 </td>
                                                                 <td className="px-6 py-4 text-neutral-700">
-                                                                    {value}
+                                                                    {spec.value}
                                                                 </td>
                                                             </tr>
                                                         ))}

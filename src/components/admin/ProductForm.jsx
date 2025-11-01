@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useGetAdminCategoriesQuery } from '../../store/api/adminApiSlice';
+import SpecificationsEditor from './SpecificationsEditor';
 
 const ProductForm = ({ 
   isOpen, 
@@ -18,7 +19,7 @@ const ProductForm = ({
     stock: '',
     category: '',
     features: '',
-    specifications: '',
+    specifications: [],
     warranty: '',
     status: 'active',
     minOrderQuantity: '1',
@@ -38,26 +39,9 @@ const ProductForm = ({
   // Populate form when editing
   useEffect(() => {
     if (product) {
-      // Convert specifications Map back to string format
-      let specificationsText = '';
-      console.log('Product specifications:', product.specifications, typeof product.specifications);
-      
-      if (product.specifications) {
-        if (product.specifications instanceof Map) {
-          specificationsText = Array.from(product.specifications.entries())
-            .map(([key, value]) => `${key}: ${value}`)
-            .join('\n');
-        } else if (typeof product.specifications === 'object' && product.specifications !== null) {
-          specificationsText = Object.entries(product.specifications)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join('\n');
-        } else if (typeof product.specifications === 'string') {
-          // If it's already a string, use it as is
-          specificationsText = product.specifications;
-        }
-      }
-      
-      console.log('Processed specifications text:', specificationsText);
+      // Process specifications
+      let processedSpecs = product.specifications || [];
+      console.log('Product specifications:', processedSpecs);
 
       // Also handle features properly
       let featuresText = '';
@@ -78,7 +62,7 @@ const ProductForm = ({
         stock: product.stock?.toString() || '',
         category: product.category?._id || '',
         features: featuresText,
-        specifications: specificationsText,
+        specifications: processedSpecs,
         warranty: product.warranty || '',
         status: product.status || 'active',
         minOrderQuantity: product.minOrderQuantity?.toString() || '1',
@@ -96,7 +80,7 @@ const ProductForm = ({
         stock: '',
         category: '',
         features: '',
-        specifications: '',
+        specifications: [],
         warranty: '',
         status: 'active',
         minOrderQuantity: '1',
@@ -255,18 +239,8 @@ const ProductForm = ({
       formDataToSubmit.append('features[]', feature);
     });
 
-    // Process specifications (convert key:value format to object)
-    const specificationsObj = {};
-    formData.specifications
-      .split('\n')
-      .forEach(line => {
-        const [key, ...valueParts] = line.split(':');
-        if (key && valueParts.length > 0) {
-          specificationsObj[key.trim()] = valueParts.join(':').trim();
-        }
-      });
-    
-    formDataToSubmit.append('specifications', JSON.stringify(specificationsObj));
+    // Add specifications array
+    formDataToSubmit.append('specifications', JSON.stringify(formData.specifications));
     
     // Append images
     images.forEach((image, index) => {
@@ -490,23 +464,16 @@ Elegant stainless steel presentation tray`}
 
           {/* Specifications */}
           <div>
-            <label htmlFor="specifications" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Specifications
             </label>
-            <textarea
-              id="specifications"
-              name="specifications"
-              value={formData.specifications}
-              onChange={handleInputChange}
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={`Enter specifications in key: value format, for example:
-Material: Stainless steel with mirror finish
-Capacity: 1.2 Liters
-Power Rating: 1500W
-Voltage: 220-240V`}
+            <SpecificationsEditor
+              specifications={formData.specifications}
+              onChange={(newSpecs) => setFormData(prev => ({
+                ...prev,
+                specifications: newSpecs
+              }))}
             />
-            <p className="text-sm text-gray-500 mt-1">Enter each specification as "Key: Value" on a new line</p>
           </div>
 
           {/* Warranty */}
