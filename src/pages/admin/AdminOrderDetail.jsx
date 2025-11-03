@@ -132,9 +132,9 @@ const AdminOrderDetail = () => {
           <div className="col-span-12 xl:col-span-4 space-y-6">
             <Section icon={<User2 size={16} className="text-neutral-500" />} title="Customer">
               <div className="space-y-1 text-sm">
-                <div className="font-medium">{order.customerInfo?.name}</div>
-                <div className="text-neutral-600">{order.customerInfo?.email}</div>
-                <div className="text-neutral-600">{order.customerInfo?.phone}</div>
+                <div className="font-medium">{order.customer?.name}</div>
+                <div className="text-neutral-600">{order.customer?.email}</div>
+                <div className="text-neutral-600">{order.customer?.phone}</div>
                 {order.customerInfo?.company && <div className="text-neutral-600">{order.customerInfo.company}</div>}
               </div>
             </Section>
@@ -153,7 +153,24 @@ const AdminOrderDetail = () => {
                 <span className="capitalize">{order.payment?.method}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${paymentStatusColors[order.payment?.status || 'pending']}`}>{order.payment?.status || 'pending'}</span>
               </div>
-              {order.payment?.transactionId && <div className="text-xs text-neutral-500 mt-1">Txn: {order.payment.transactionId}</div>}
+              {order.payment?.transactionId && (
+                <div className="text-xs text-neutral-500 mt-1">
+                  <div>Txn ID: {order.payment.transactionId}</div>
+                  {order.payment.method === 'upi' && (
+                    <>
+                      {order.payment.upiTransactionId && (
+                        <div>UPI Txn ID: {order.payment.upiTransactionId}</div>
+                      )}
+                      {order.payment.upiId && (
+                        <div>Paid from UPI ID: {order.payment.upiId}</div>
+                      )}
+                      {order.payment.paidAt && (
+                        <div>Paid at: {formatDate(order.payment.paidAt)}</div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </Section>
             <Section icon={<IndianRupee size={16} className="text-neutral-500" />} title="Pricing Breakdown">
               <div className="space-y-2 text-sm">

@@ -25,12 +25,13 @@ import {
 const AdminProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // API queries
   const { 
@@ -43,7 +44,9 @@ const AdminProducts = () => {
     limit: 10,
     search: searchTerm,
     category: filterCategory,
-    status: filterStatus
+    status: filterStatus === 'all' ? '' : filterStatus
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   const { data: categoriesData } = useGetAdminCategoriesQuery({});
@@ -65,7 +68,7 @@ const AdminProducts = () => {
   ];
 
   const statusOptions = [
-    { value: '', label: 'All Status' },
+    { value: 'all', label: 'All Status' },
     { value: 'active', label: 'Active' },
     { value: 'inactive', label: 'Inactive' },
     { value: 'draft', label: 'Draft' }
@@ -302,20 +305,25 @@ const AdminProducts = () => {
           />
 
           {/* Status Filter */}
-          <CustomDropdown
-            options={statusOptions}
-            value={filterStatus}
-            onChange={setFilterStatus}
-            placeholder="All Status"
-            className="min-w-[140px]"
-          />
+
 
           <button 
-            onClick={refetchProducts}
-            className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors"
+            onClick={async () => {
+              setIsRefreshing(true);
+              try {
+                await refetchProducts();
+                toast.success('Products refreshed successfully');
+              } catch (error) {
+                toast.error('Failed to refresh products');
+              } finally {
+                setIsRefreshing(false);
+              }
+            }}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw size={16} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
       </div>

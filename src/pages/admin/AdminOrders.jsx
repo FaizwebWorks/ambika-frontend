@@ -27,6 +27,7 @@ const AdminOrders = () => {
   const [dateRange, setDateRange] = useState('7days');
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -45,11 +46,11 @@ const AdminOrders = () => {
   }, []);
 
   // API calls
-  const { 
-    data: ordersData, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: ordersData,
+    isLoading,
+    error,
+    refetch
   } = useGetAdminOrdersQuery({
     page: currentPage,
     limit: 10,
@@ -82,11 +83,11 @@ const AdminOrders = () => {
   // Check if dropdown should be positioned upward to avoid viewport cutoff
   const getDropdownPosition = (element) => {
     if (!element) return 'bottom';
-    
+
     const rect = element.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const dropdownHeight = 200; // Approximate height of dropdown
-    
+
     // If there's not enough space below, position above
     if (rect.bottom + dropdownHeight > viewportHeight && rect.top > dropdownHeight) {
       return 'top';
@@ -111,33 +112,33 @@ const AdminOrders = () => {
   const getStatusConfig = (status) => {
     switch (status) {
       case 'delivered':
-        return { 
-          color: 'bg-green-100 text-green-800', 
+        return {
+          color: 'bg-green-100 text-green-800',
           icon: <CheckCircle size={14} />
         };
       case 'shipped':
-        return { 
-          color: 'bg-blue-100 text-blue-800', 
+        return {
+          color: 'bg-blue-100 text-blue-800',
           icon: <Truck size={14} />
         };
       case 'processing':
-        return { 
-          color: 'bg-yellow-100 text-yellow-800', 
+        return {
+          color: 'bg-yellow-100 text-yellow-800',
           icon: <Package size={14} />
         };
       case 'pending':
-        return { 
-          color: 'bg-orange-100 text-orange-800', 
+        return {
+          color: 'bg-orange-100 text-orange-800',
           icon: <Clock size={14} />
         };
       case 'cancelled':
-        return { 
-          color: 'bg-red-100 text-red-800', 
+        return {
+          color: 'bg-red-100 text-red-800',
           icon: <XCircle size={14} />
         };
       default:
-        return { 
-          color: 'bg-gray-100 text-gray-800', 
+        return {
+          color: 'bg-gray-100 text-gray-800',
           icon: <AlertTriangle size={14} />
         };
     }
@@ -171,7 +172,7 @@ const AdminOrders = () => {
             <p className="text-neutral-600 mt-1">Manage all customer orders</p>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg border border-neutral-100 p-6">
           <div className="flex items-center justify-center min-h-96">
             <div className="flex flex-col items-center">
@@ -201,7 +202,7 @@ const AdminOrders = () => {
             Retry
           </button>
         </div>
-        
+
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-neutral-900 mb-2">Error Loading Orders</h3>
@@ -219,17 +220,56 @@ const AdminOrders = () => {
           <h1 className="text-2xl font-semibold text-neutral-900">Orders</h1>
           <p className="text-neutral-600 mt-1">Manage all customer orders</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <button
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors"
+            onClick={async () => {
+              setIsRefreshing(true);
+              try {
+                await refetch();
+                toast.success('Orders refreshed successfully');
+              } catch (error) {
+                toast.error('Failed to refresh orders');
+              } finally {
+                setIsRefreshing(false);
+              }
+            }}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw size={16} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
-          
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+
+          <button
+            onClick={() => {
+              const csvData = orders.map(order => ({
+                'Order Number': order.orderNumber,
+                'Customer': order.customerInfo?.name,
+                'Email': order.customerInfo?.email,
+                'Total': order.pricing?.total,
+                'Status': order.status,
+                'Payment Method': order.payment?.method,
+                'Payment Status': order.payment?.status,
+                'Date': new Date(order.createdAt).toLocaleDateString()
+              }));
+
+              const csvContent = "data:text/csv;charset=utf-8,"
+                + [
+                  Object.keys(csvData[0]).join(','),
+                  ...csvData.map(row => Object.values(row).join(','))
+                ].join('\n');
+
+              const encodedUri = encodeURI(csvContent);
+              const link = document.createElement("a");
+              link.setAttribute("href", encodedUri);
+              link.setAttribute("download", `orders_${new Date().toISOString().split('T')[0]}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
             <Download size={16} />
             <span className="hidden sm:inline">Export</span>
           </button>
@@ -307,7 +347,7 @@ const AdminOrders = () => {
                         <span className="capitalize">{order.status}</span>
                       </span>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="text-neutral-500">Customer:</span>
@@ -334,13 +374,13 @@ const AdminOrders = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
                       <div className="text-xs text-neutral-500">
                         {order.payment?.method || 'N/A'}
                       </div>
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           className="text-blue-600 hover:text-blue-800 transition-colors p-2 hover:bg-blue-50 rounded"
                           title="View Details"
                           onClick={() => navigate(`/admin/orders/${order._id}`)}
@@ -348,13 +388,13 @@ const AdminOrders = () => {
                           <Eye size={16} />
                         </button>
                         <div className="relative" ref={openDropdown === order._id ? dropdownRef : null}>
-                          <button 
+                          <button
                             onClick={() => toggleDropdown(order._id)}
                             className="text-neutral-600 hover:text-neutral-800 transition-colors p-2 hover:bg-neutral-50 rounded"
                           >
                             <MoreHorizontal size={16} />
                           </button>
-                          
+
                           {openDropdown === order._id && (
                             <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg border border-neutral-200 shadow-xl z-50 min-w-max">
                               <div className="py-2">
@@ -375,7 +415,7 @@ const AdminOrders = () => {
                                     </button>
                                   );
                                 })}
-                                
+
                                 <div className="border-t border-neutral-100 mt-1 pt-1">
                                   <button
                                     onClick={() => {
@@ -423,115 +463,115 @@ const AdminOrders = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-neutral-200">{orders.length > 0 ? orders.map((order) => {
-                  const statusConfig = getStatusConfig(order.status);
-                  return (
-                    <tr key={order._id} className="hover:bg-neutral-50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/orders/${order._id}`)}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-neutral-900">
-                          #{order.orderNumber || order._id.slice(-8)}
-                        </div>
-                        <div className="text-sm text-neutral-500">
-                          {order.payment?.method || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-neutral-900">
-                          {order.customerInfo?.name || order.customer?.name || 'Unknown Customer'}
-                        </div>
-                        <div className="text-sm text-neutral-500">
-                          {order.customerInfo?.email || order.customer?.email || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
-                        {order.items?.length || 0} items
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
-                        {formatCurrency(order.pricing?.total || 0)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}>
-                          {statusConfig.icon}
-                          <span className="capitalize">{order.status}</span>
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                        {formatDate(order.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap relative">
-                        <div className="flex items-center justify-center gap-3">
-                          <button 
-                            className="text-blue-600 hover:text-blue-800 transition-colors p-1 hover:bg-blue-50 rounded"
-                            title="View Order Details"
-                            onClick={(e) => { e.stopPropagation(); navigate(`/admin/orders/${order._id}`); }}
+                const statusConfig = getStatusConfig(order.status);
+                return (
+                  <tr key={order._id} className="hover:bg-neutral-50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/orders/${order._id}`)}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-neutral-900">
+                        #{order.orderNumber || order._id.slice(-8)}
+                      </div>
+                      <div className="text-sm text-neutral-500">
+                        {order.payment?.method || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-neutral-900">
+                        {order.customerInfo?.name || order.customer?.name || 'Unknown Customer'}
+                      </div>
+                      <div className="text-sm text-neutral-500">
+                        {order.customerInfo?.email || order.customer?.email || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
+                      {order.items?.length || 0} items
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
+                      {formatCurrency(order.pricing?.total || 0)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}>
+                        {statusConfig.icon}
+                        <span className="capitalize">{order.status}</span>
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                      {formatDate(order.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap relative">
+                      <div className="flex items-center justify-center gap-3">
+                        <button
+                          className="text-blue-600 hover:text-blue-800 transition-colors p-1 hover:bg-blue-50 rounded"
+                          title="View Order Details"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/admin/orders/${order._id}`); }}
+                        >
+                          <Eye size={16} />
+                        </button>
+
+                        <div className="relative" ref={openDropdown === order._id ? dropdownRef : null}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleDropdown(order._id); }}
+                            className="text-neutral-600 hover:text-neutral-800 transition-colors p-1 hover:bg-neutral-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            title="More Actions"
+                            aria-haspopup="true"
+                            aria-expanded={openDropdown === order._id}
                           >
-                            <Eye size={16} />
+                            <MoreHorizontal size={16} />
+                            <span className="sr-only">Open order actions menu</span>
                           </button>
-                          
-                          <div className="relative" ref={openDropdown === order._id ? dropdownRef : null}>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); toggleDropdown(order._id); }}
-                              className="text-neutral-600 hover:text-neutral-800 transition-colors p-1 hover:bg-neutral-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
-                              title="More Actions"
-                              aria-haspopup="true"
-                              aria-expanded={openDropdown === order._id}
-                            >
-                              <MoreHorizontal size={16} />
-                              <span className="sr-only">Open order actions menu</span>
-                            </button>
-                            
-                            {/* Dropdown Menu */}
-                            {openDropdown === order._id && (
-                              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg border border-neutral-200 shadow-xl z-[9999] min-w-max transform translate-y-0">
-                                <div className="py-2">
-                                  <div className="px-3 py-2 text-xs font-medium text-neutral-500 border-b border-neutral-100">
-                                    Update Status
-                                  </div>
-                                  {statuses.filter(s => s !== 'all' && s !== order.status).map(status => {
-                                    const statusConfig = getStatusConfig(status);
-                                    return (
-                                      <button
-                                        key={status}
-                                        onClick={(e) => { e.stopPropagation(); handleStatusUpdate(order._id, status); }}
-                                        disabled={isUpdating}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
-                                        role="menuitem"
-                                      >
-                                        {statusConfig.icon}
-                                        <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
-                                      </button>
-                                    );
-                                  })}
-                                  
-                                  <div className="border-t border-neutral-100 mt-1 pt-1">
+
+                          {/* Dropdown Menu */}
+                          {openDropdown === order._id && (
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg border border-neutral-200 shadow-xl z-[9999] min-w-max transform translate-y-0">
+                              <div className="py-2">
+                                <div className="px-3 py-2 text-xs font-medium text-neutral-500 border-b border-neutral-100">
+                                  Update Status
+                                </div>
+                                {statuses.filter(s => s !== 'all' && s !== order.status).map(status => {
+                                  const statusConfig = getStatusConfig(status);
+                                  return (
                                     <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenDropdown(null);
-                                        toast.success('Invoice download started');
-                                      }}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors text-left"
+                                      key={status}
+                                      onClick={(e) => { e.stopPropagation(); handleStatusUpdate(order._id, status); }}
+                                      disabled={isUpdating}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
                                       role="menuitem"
                                     >
-                                      <Download size={14} />
-                                      <span>Download Invoice</span>
+                                      {statusConfig.icon}
+                                      <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
                                     </button>
-                                  </div>
+                                  );
+                                })}
+
+                                <div className="border-t border-neutral-100 mt-1 pt-1">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenDropdown(null);
+                                      toast.success('Invoice download started');
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors text-left"
+                                    role="menuitem"
+                                  >
+                                    <Download size={14} />
+                                    <span>Download Invoice</span>
+                                  </button>
                                 </div>
                               </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
-                      </td>
-                    </tr>
-                  );
-                }) : (
-                  <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center">
-                      <Package size={48} className="text-neutral-400 mx-auto mb-4" />
-                      <p className="text-neutral-600">No orders found</p>
+                      </div>
                     </td>
                   </tr>
-                )}
+                );
+              }) : (
+                <tr>
+                  <td colSpan="7" className="px-6 py-12 text-center">
+                    <Package size={48} className="text-neutral-400 mx-auto mb-4" />
+                    <p className="text-neutral-600">No orders found</p>
+                  </td>
+                </tr>
+              )}
               </tbody>
             </table>
           </div>

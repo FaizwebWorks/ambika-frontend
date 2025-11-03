@@ -1,6 +1,7 @@
+import { FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const ProductCard = ({ product, isLoggedIn }) => (
+const ProductCard = ({ product, isLoggedIn, user }) => (
   <Link to={`/product/${product._id || product.id}`} className="block">
     <div className="bg-white rounded-lg overflow-hidden border border-neutral-100 transition-all duration-300 flex flex-col group">
       {/* Image container with proper aspect ratio */}
@@ -40,20 +41,29 @@ const ProductCard = ({ product, isLoggedIn }) => (
         {/* Price with premium typography */}
         {isLoggedIn ? (
           <div className="mt-3 space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-neutral-900">
-                ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
-              </span>
-              {product.discountPrice && product.discountPrice < product.price && (
-                <span className="text-sm text-neutral-500 line-through">
-                  ₹{product.price?.toLocaleString('en-IN')}
-                </span>
-              )}
-            </div>
-            {product.discountPrice && product.discountPrice < product.price && (
-              <div className="text-xs text-green-600 font-medium">
-                {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+            {user?.type === 'b2b' ? (
+              <div className="text-neutral-600 text-sm font-medium flex items-center space-x-1">
+                <FileText size={14} />
+                <span>Request Quotation</span>
               </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-neutral-900">
+                    ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
+                  </span>
+                  {product.discountPrice && product.discountPrice < product.price && (
+                    <span className="text-sm text-neutral-500 line-through">
+                      ₹{product.price?.toLocaleString('en-IN')}
+                    </span>
+                  )}
+                </div>
+                {product.discountPrice && product.discountPrice < product.price && (
+                  <div className="text-xs text-green-600 font-medium">
+                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : (

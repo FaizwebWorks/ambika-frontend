@@ -1,19 +1,19 @@
 import {
-    AlertCircle,
-    ArrowLeft,
-    Eye,
-    Gift,
-    Headphones,
-    Loader2,
-    Minus,
-    Package,
-    Plus,
-    RotateCcw,
-    Shield,
-    ShoppingBag,
-    Star,
-    Trash2,
-    Truck
+  AlertCircle,
+  ArrowLeft,
+  Eye,
+  Gift,
+  Headphones,
+  Loader2,
+  Minus,
+  Package,
+  Plus,
+  RotateCcw,
+  Shield,
+  ShoppingBag,
+  Star,
+  Trash2,
+  Truck
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -21,11 +21,11 @@ import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import {
-    useAddToCartMutation,
-    useClearCartMutation,
-    useGetCartQuery,
-    useRemoveFromCartMutation,
-    useUpdateCartItemMutation
+  useAddToCartMutation,
+  useClearCartMutation,
+  useGetCartQuery,
+  useRemoveFromCartMutation,
+  useUpdateCartItemMutation
 } from '../store/api/authApiSlice';
 import { useGetProductsQuery } from '../store/api/publicApiSlice';
 import { selectIsAuthenticated } from '../store/slices/authSlice';
@@ -37,6 +37,8 @@ const Cart = () => {
   // Local state for quantity inputs to allow typing multiple digits
   const [quantityInputs, setQuantityInputs] = useState({});
   const [quantityErrors, setQuantityErrors] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState(''); // 'UPI', 'COD', etc.
+  const [showUPIPayment, setShowUPIPayment] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -258,8 +260,26 @@ const Cart = () => {
 
   // Handle checkout
   const handleCheckout = () => {
-    // Navigate to order summary page
-    navigate('/order-summary');
+    if (!paymentMethod) {
+      toast.error('Please select a payment method', {
+        duration: 2000,
+        position: 'bottom-center',
+      });
+      return;
+    }
+
+    // Navigate to order summary with selected payment method
+    navigate('/order-summary', {
+      state: { 
+        paymentMethod,
+        cartTotal,
+        cartItems: cartItems.map(item => ({
+          productId: item.product._id,
+          quantity: item.quantity,
+          price: item.product.discountPrice || item.product.price
+        }))
+      }
+    });
   };
 
   // Handle add to cart from recommendations
@@ -665,6 +685,74 @@ const Cart = () => {
                     </div>
                   </div>
 
+                  {/* Payment Method Selection */}
+                  <div className="bg-white rounded-xl p-4 border border-slate-200">
+                    <h3 className="font-semibold text-slate-900 mb-4">Select Payment Method</h3>
+                    <div className="space-y-3">
+                      {/* UPI Payment Option */}
+                      <div
+                        onClick={() => setPaymentMethod('UPI')}
+                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border-2 transition-all duration-200 ${
+                          paymentMethod === 'UPI'
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-blue-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-slate-900">UPI Payment</h4>
+                          <p className="text-sm text-slate-600">Pay using any UPI app</p>
+                        </div>
+                        <div className={`w-5 h-5 rounded-full border-2 ${
+                          paymentMethod === 'UPI'
+                            ? 'border-blue-500 bg-blue-500'
+                            : 'border-slate-300'
+                        }`}>
+                          {paymentMethod === 'UPI' && (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Cash on Delivery Option */}
+                      <div
+                        onClick={() => setPaymentMethod('COD')}
+                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border-2 transition-all duration-200 ${
+                          paymentMethod === 'COD'
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-blue-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-slate-900">Cash on Delivery</h4>
+                          <p className="text-sm text-slate-600">Pay when you receive</p>
+                        </div>
+                        <div className={`w-5 h-5 rounded-full border-2 ${
+                          paymentMethod === 'COD'
+                            ? 'border-blue-500 bg-blue-500'
+                            : 'border-slate-300'
+                        }`}>
+                          {paymentMethod === 'COD' && (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Savings Display */}
                   {cartItems.some(item => item.product.discountPrice) && (
                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
@@ -695,7 +783,7 @@ const Cart = () => {
                     disabled={cartItems.length === 0}
                   >
                     <ShoppingBag className="mr-3" size={20} />
-                    Proceed to Checkout
+                    {paymentMethod ? `Pay ${cartTotal.toLocaleString('en-IN')} with ${paymentMethod}` : 'Select Payment Method'}
                   </Button>
 
                   <Button
@@ -706,6 +794,8 @@ const Cart = () => {
                     Continue Shopping
                   </Button>
                 </div>
+
+
 
                 {/* Premium Security & Trust Section - Keep as is */}
                 <div className="mt-8 pt-6 border-t border-slate-200">

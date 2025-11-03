@@ -1,23 +1,21 @@
-import { useState } from 'react';
-import { 
-  BarChart3, 
-  Users, 
-  Package, 
-  ShoppingCart, 
-  TrendingUp, 
-  TrendingDown,
-  Eye,
-  Calendar,
-  Filter,
+import {
+  DollarSign,
   Download,
+  Eye,
+  Package,
   RefreshCw,
-  DollarSign
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp,
+  Users
 } from 'lucide-react';
-import { useGetDashboardStatsQuery } from '../../store/api/adminApiSlice';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useGetDashboardStatsQuery } from '../../store/api/adminApiSlice';
 
 const AdminDashboard = () => {
   const [dateRange, setDateRange] = useState('7days');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Fetch dashboard data
   const { 
@@ -28,9 +26,16 @@ const AdminDashboard = () => {
   } = useGetDashboardStatsQuery();
 
   // Handle refresh
-  const handleRefresh = () => {
-    refetch();
-    toast.success('Dashboard refreshed!');
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+      toast.success('Dashboard refreshed successfully');
+    } catch (error) {
+      toast.error('Failed to refresh dashboard');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Format currency
@@ -175,10 +180,11 @@ const AdminDashboard = () => {
           
           <button
             onClick={handleRefresh}
-            className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors"
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw size={16} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
           
           <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">

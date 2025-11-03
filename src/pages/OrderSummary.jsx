@@ -1,11 +1,11 @@
 import {
-    ArrowLeft,
-    CheckCircle,
-    Clock,
-    CreditCard,
-    Package,
-    Shield,
-    Truck
+  ArrowLeft,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Package,
+  Shield,
+  Truck
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -13,17 +13,18 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import InlineAddressManager from '../components/InlineAddressManager';
 import { Button } from '../components/ui/button';
+import UPIPayment from '../components/UPIPayment';
 import {
-    useAddAddressMutation,
-    useClearCartMutation,
-    useCreateOrderMutation,
-    // useCreateStripeCheckoutSessionMutation, // Commented out - Stripe temporarily disabled
-    // useCreateStripePaymentIntentMutation, // Commented out - Stripe temporarily disabled
-    useDeleteAddressMutation,
-    useGetAddressesQuery,
-    useGetCartQuery,
-    useSetDefaultAddressMutation,
-    useUpdateAddressMutation
+  useAddAddressMutation,
+  useClearCartMutation,
+  useCreateOrderMutation,
+  // useCreateStripeCheckoutSessionMutation, // Commented out - Stripe temporarily disabled
+  // useCreateStripePaymentIntentMutation, // Commented out - Stripe temporarily disabled
+  useDeleteAddressMutation,
+  useGetAddressesQuery,
+  useGetCartQuery,
+  useSetDefaultAddressMutation,
+  useUpdateAddressMutation
 } from '../store/api/authApiSlice';
 import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
@@ -61,8 +62,7 @@ const OrderSummary = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  // const [showStripePayment, setShowStripePayment] = useState(false); // Commented out - Stripe temporarily disabled
-  // const [stripeClientSecret, setStripeClientSecret] = useState(''); // Commented out - Stripe temporarily disabled
+  const [showUPIPayment, setShowUPIPayment] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState('');
   
   // Delivery options
@@ -158,6 +158,9 @@ const OrderSummary = () => {
       const addressString = selectedAddressObj 
         ? `${selectedAddressObj.street}, ${selectedAddressObj.city}, ${selectedAddressObj.state} - ${selectedAddressObj.zipCode}`
         : selectedAddressId;
+        
+      // Get delivery option details
+      const deliveryOption = deliveryOptions.find(option => option.id === selectedDelivery);
 
       const orderData = {
         items: cartItems.map(item => ({
@@ -178,7 +181,7 @@ const OrderSummary = () => {
           method: selectedDelivery
         },
         payment: {
-          method: paymentMethod
+          method: paymentMethod === 'upi' ? 'upi' : 'cod'
         },
         pricing: {
           subtotal,
@@ -194,18 +197,12 @@ const OrderSummary = () => {
       setCurrentOrderId(orderId);
 
       // Handle different payment methods
-      if (paymentMethod === 'stripe_card') {
-        // Stripe payment temporarily disabled
-        toast.error('Online payments are currently unavailable. Please choose Cash on Delivery.');
+      if (paymentMethod === 'upi') {
+        setCurrentOrderId(orderId);
+        setShowUPIPayment(true);
         setIsProcessing(false);
-        return;
-      } else if (paymentMethod === 'stripe_checkout') {
-        // Stripe checkout temporarily disabled
-        toast.error('Online payments are currently unavailable. Please choose Cash on Delivery.');
-        setIsProcessing(false);
-        return;
-      } else {
-        // COD or other payment methods
+      } else if (paymentMethod === 'cod') {
+        // COD payment method
         toast.success('Order placed successfully!', {
           duration: 4000,
           position: 'top-center',
@@ -213,6 +210,11 @@ const OrderSummary = () => {
         // Clear cart after successful order placement
         await clearCart();
         navigate(`/order-success?orderId=${orderId}&total=${total}`);
+      } else {
+        // Other payment methods (currently disabled)
+        toast.error('This payment method is currently unavailable. Please choose UPI or Cash on Delivery.');
+        setIsProcessing(false);
+        return;
       }
 
       // Original Stripe implementation commented out:
@@ -437,6 +439,39 @@ const OrderSummary = () => {
               </div>
               
               <div className="space-y-3">
+                {/* UPI Payment Option */}
+                <label className="block">
+                  <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    paymentMethod === 'upi' 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-neutral-200 hover:border-neutral-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="upi"
+                      checked={paymentMethod === 'upi'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 0L1.5 6v12L12 24l10.5-6V6L12 0zm-1.77 16.5l-3.46-3.47 1.41-1.41 2.05 2.05 4.65-4.64 1.41 1.41-6.06 6.06z"/>
+                        </svg>
+                        <div>
+                          <p className="font-medium text-neutral-800">UPI Payment</p>
+                          <p className="text-sm text-neutral-600">Pay using any UPI app</p>
+                        </div>
+                      </div>
+                      {paymentMethod === 'upi' && (
+                        <CheckCircle size={20} className="text-blue-600" />
+                      )}
+                    </div>
+                  </div>
+                </label>
+
+                {/* Cash on Delivery Option */}
                 <label className="block">
                   <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                     paymentMethod === 'cod' 
@@ -512,25 +547,32 @@ const OrderSummary = () => {
               </div>
             </div>
 
-            {/* Stripe Payment Modal - Temporarily Disabled */}
-            {/*
-            {showStripePayment && stripeClientSecret && (
-              <div className="bg-white rounded-xl border border-neutral-200 p-6">
-                <h2 className="text-xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
-                  <CreditCard size={20} className="text-blue-600" />
-                  Complete Payment
-                </h2>
-                <StripePayment
-                  clientSecret={stripeClientSecret}
-                  orderId={currentOrderId}
-                  amount={total}
-                  onSuccess={handleStripePaymentSuccess}
-                  onError={handleStripePaymentError}
-                  isLoading={isProcessing}
-                />
+            {/* UPI Payment Modal */}
+            {showUPIPayment && currentOrderId && (
+              <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl max-w-md w-full p-6 relative">
+                  <button
+                    onClick={() => setShowUPIPayment(false)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                  
+                  <UPIPayment
+                    orderId={currentOrderId}
+                    amount={total}
+                    onClose={() => setShowUPIPayment(false)}
+                    onSuccess={async (transactionId) => {
+                      setShowUPIPayment(false);
+                      await clearCart();
+                      navigate(`/order-success?orderId=${currentOrderId}&transactionId=${transactionId}&total=${total}`);
+                    }}
+                  />
+                </div>
               </div>
             )}
-            */}
           </div>
 
           {/* Order Summary Sidebar */}

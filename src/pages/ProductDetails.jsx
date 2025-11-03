@@ -7,16 +7,19 @@ import {
     FileText,
     Heart,
     Info,
+    Layers,
     Loader2,
     Minus,
     Package,
     Plus,
     RotateCcw,
+    Ruler,
     Share2,
     Shield,
     ShoppingCart,
     Star,
-    Truck
+    Truck,
+    Weight
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';

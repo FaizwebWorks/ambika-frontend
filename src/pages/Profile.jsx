@@ -59,7 +59,6 @@ const Profile = () => {
     name: '',
     email: '',
     phone: '',
-    address: '',
     username: ''
   });
   
@@ -75,7 +74,6 @@ const Profile = () => {
         name: profileData.user.name || '',
         email: profileData.user.email || '',
         phone: profileData.user.phone || '',
-        address: profileData.user.address || '',
         username: profileData.user.username || ''
       });
     }
@@ -325,23 +323,23 @@ const Profile = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      <MapPin size={16} className="inline mr-2" />
-                      Address
-                    </label>
-                    {isEditing ? (
-                      <textarea
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        rows={3}
-                        className="w-full p-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
-                        placeholder="Enter your address"
-                      />
-                    ) : (
-                      <p className="p-3 bg-neutral-50 rounded-lg text-neutral-900">
-                        {profileData?.user?.address || 'Not provided'}
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-neutral-700">
+                        <MapPin size={16} className="inline mr-2" />
+                        Delivery Address
+                      </label>
+                      <span className="text-xs text-neutral-500 italic">Address can be managed during checkout</span>
+                    </div>
+                    <p className="p-3 bg-neutral-50 rounded-lg text-neutral-900">
+                        {(profileData?.user?.addresses?.find(addr => addr.isDefault) || profileData?.user?.addresses?.[0])
+                          ? `${profileData?.user?.addresses?.find(addr => addr.isDefault)?.street || profileData?.user?.addresses?.[0]?.street}, 
+                             ${profileData?.user?.addresses?.find(addr => addr.isDefault)?.city || profileData?.user?.addresses?.[0]?.city}, 
+                             ${profileData?.user?.addresses?.find(addr => addr.isDefault)?.state || profileData?.user?.addresses?.[0]?.state} - 
+                             ${profileData?.user?.addresses?.find(addr => addr.isDefault)?.zipCode || profileData?.user?.addresses?.[0]?.zipCode}
+                             ${(profileData?.user?.addresses?.find(addr => addr.isDefault)?.landmark || profileData?.user?.addresses?.[0]?.landmark) ? 
+                               `(${profileData?.user?.addresses?.find(addr => addr.isDefault)?.landmark || profileData?.user?.addresses?.[0]?.landmark})` : ''}`
+                          : 'Not provided'}
                       </p>
-                    )}
                   </div>
                 </div>
 
