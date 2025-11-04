@@ -12,6 +12,9 @@ import {
   X
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { useApproveCustomerMutation } from '../../store/api/adminApiSlice';
 import {
   useDeleteNotificationMutation,
   useGetNotificationsQuery,
@@ -22,9 +25,12 @@ import {
 import { Button } from '../ui/button';
 
 const AdminNotifications = () => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
+
+  const [approveCustomer] = useApproveCustomerMutation();
 
   // API hooks
   const {
@@ -121,8 +127,20 @@ const AdminNotifications = () => {
   const handleDeleteNotification = async (id) => {
     try {
       await deleteNotification(id).unwrap();
+      toast.success('Notification deleted successfully');
     } catch (error) {
       console.error('Error deleting notification:', error);
+      toast.error('Failed to delete notification');
+    }
+  };
+
+  const handleApproveB2BRegistration = async (customerId) => {
+    try {
+      await approveCustomer(customerId).unwrap();
+      toast.success('B2B customer approved successfully');
+    } catch (error) {
+      console.error('Error approving B2B customer:', error);
+      toast.error('Failed to approve B2B customer');
     }
   };
 
@@ -287,10 +305,24 @@ const AdminNotifications = () => {
                   {/* Action buttons based on notification type */}
                   {notification.type === 'quote_request' && (
                     <div className="flex gap-2 mt-3">
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button 
+                        size="sm" 
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => {
+                          handleMarkAsRead(notification._id);
+                          navigate(`/admin/quotations/${notification.data.quotationId}`);
+                        }}
+                      >
                         View Quote
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          const { customerPhone, customerEmail } = notification.data;
+                          window.open(`https://wa.me/${customerPhone}`, '_blank');
+                        }}
+                      >
                         Send Response
                       </Button>
                     </div>
@@ -298,10 +330,24 @@ const AdminNotifications = () => {
 
                   {notification.type === 'b2b_registration' && (
                     <div className="flex gap-2 mt-3">
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                      <Button 
+                        size="sm" 
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          handleMarkAsRead(notification._id);
+                          handleApproveB2BRegistration(notification.data.customerId);
+                        }}
+                      >
                         Approve
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          handleMarkAsRead(notification._id);
+                          navigate(`/admin/customers/${notification.data.customerId}`);
+                        }}
+                      >
                         Review Details
                       </Button>
                     </div>
@@ -309,10 +355,24 @@ const AdminNotifications = () => {
 
                   {notification.type === 'low_stock' && (
                     <div className="flex gap-2 mt-3">
-                      <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
+                      <Button 
+                        size="sm" 
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                        onClick={() => {
+                          handleMarkAsRead(notification._id);
+                          navigate(`/admin/products/${notification.data.productId}/edit`);
+                        }}
+                      >
                         Update Stock
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          handleMarkAsRead(notification._id);
+                          navigate(`/admin/products/${notification.data.productId}`);
+                        }}
+                      >
                         View Product
                       </Button>
                     </div>

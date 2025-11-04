@@ -1,4 +1,4 @@
-import { ArrowRight, Heart, Quote, Star } from "lucide-react";
+import { ArrowRight, FileText, Heart, Quote, Star } from "lucide-react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -9,7 +9,7 @@ import {
   useRemoveFromWishlistMutation
 } from "../store/api/authApiSlice";
 import { useGetProductsQuery } from "../store/api/publicApiSlice";
-import { selectIsAuthenticated } from "../store/slices/authSlice";
+import { selectCurrentUser, selectIsAuthenticated } from "../store/slices/authSlice";
 
 // Custom ScrollToTop component to reset scroll position on navigation
 const ScrollToTop = () => {
@@ -93,6 +93,8 @@ const brands = ["brand1.svg", "brand2.svg", "brand3.svg", "brand4.svg", "brand5.
 const Home = () => {
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsAuthenticated);
+  const currentUser = useSelector(selectCurrentUser);
+  console.log("Current User:", currentUser?.customerType);
   
   // Fetch top 3 products from API
   const { data: productsResponse, isLoading: productsLoading, error: productsError } = useGetProductsQuery({
@@ -325,32 +327,45 @@ const Home = () => {
                         {product.name || product.title}
                       </h3>
                       {isLoggedIn ? (
-                        <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
+                        currentUser?.customerType === 'B2B' ? (
+                          <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors">
+                            <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <span className="text-emerald-800 text-xl font-semibold">
-                                  ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
-                                </span>
-                                {product.discountPrice && product.discountPrice < product.price && (
-                                  <span className="text-sm text-neutral-500 line-through">
-                                    ₹{product.price?.toLocaleString('en-IN')}
-                                  </span>
-                                )}
+                                <FileText size={16} className="text-blue-600" />
+                                <span className="text-blue-700 font-medium">Request Quotation</span>
                               </div>
-                              <p className="text-emerald-600 text-xs">
-                                {product.discountPrice && product.discountPrice < product.price ? 'Discounted Price' : 'Wholesale Price'}
-                              </p>
+                              <span className="text-xs text-blue-600 bg-white px-2 py-1 rounded-full border border-blue-100">B2B</span>
                             </div>
-                            {product.discountPrice && product.discountPrice < product.price && (
-                              <div className="bg-green-100 px-2 py-1 rounded-full">
-                                <span className="text-green-700 text-xs font-medium">
-                                  {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
-                                </span>
-                              </div>
-                            )}
+                            <p className="text-xs text-blue-600 mt-1">Get bulk pricing & special offers</p>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-emerald-800 text-xl font-semibold">
+                                    ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
+                                  </span>
+                                  {product.discountPrice && product.discountPrice < product.price && (
+                                    <span className="text-sm text-neutral-500 line-through">
+                                      ₹{product.price?.toLocaleString('en-IN')}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-emerald-600 text-xs">
+                                  {product.discountPrice && product.discountPrice < product.price ? 'Discounted Price' : 'Wholesale Price'}
+                                </p>
+                              </div>
+                              {product.discountPrice && product.discountPrice < product.price && (
+                                <div className="bg-green-100 px-2 py-1 rounded-full">
+                                  <span className="text-green-700 text-xs font-medium">
+                                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
                       ) : (
                         <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
                           <Link to="/login" className="block text-center group">

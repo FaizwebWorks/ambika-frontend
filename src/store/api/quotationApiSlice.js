@@ -1,17 +1,17 @@
-import { api } from '../api/apiSlice';
+import { apiSlice } from './apiSlice';
 
-export const quotationApiSlice = api.injectEndpoints({
+export const quotationApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     createQuotationRequest: builder.mutation({
       query: (data) => ({
-        url: '/quotations',
+        url: '/quotations/request',
         method: 'POST',
         body: data,
       }),
     }),
     
     getQuotationRequests: builder.query({
-      query: () => '/quotations',
+      query: () => '/quotations/my-requests',
       providesTags: ['Quotations'],
     }),
     
@@ -19,18 +19,23 @@ export const quotationApiSlice = api.injectEndpoints({
     getAllQuotationRequests: builder.query({
       query: (params) => {
         const searchParams = new URLSearchParams(params);
-        return `/admin/quotations?${searchParams.toString()}`;
+        return `/quotations/admin/requests?${searchParams.toString()}`;
       },
       providesTags: ['AdminQuotations'],
     }),
     
     respondToQuotation: builder.mutation({
-      query: ({ id, ...data }) => ({
-        url: `/admin/quotations/${id}/respond`,
+      query: ({ id, data }) => ({
+        url: `/quotations/admin/respond/${id}`,
         method: 'POST',
-        body: data,
+        body: data
       }),
       invalidatesTags: ['AdminQuotations', 'Quotations'],
+    }),
+    
+    getQuotationById: builder.query({
+      query: (id) => `/quotations/admin/requests/${id}`,
+      providesTags: (result, error, id) => [{ type: 'AdminQuotations', id }],
     }),
   }),
 });
@@ -40,4 +45,5 @@ export const {
   useGetQuotationRequestsQuery,
   useGetAllQuotationRequestsQuery,
   useRespondToQuotationMutation,
+  useGetQuotationByIdQuery,
 } = quotationApiSlice;

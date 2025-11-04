@@ -7,24 +7,21 @@ import {
     FileText,
     Heart,
     Info,
-    Layers,
     Loader2,
     Minus,
     Package,
     Plus,
     RotateCcw,
-    Ruler,
     Share2,
     Shield,
     ShoppingCart,
-    Star,
-    Truck,
-    Weight
+    Truck
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import QuotationRequestModal from '../components/modals/QuotationRequestModal';
 import ProductCard from '../components/ProductCard';
 import { Button } from '../components/ui/button';
 import {
@@ -34,6 +31,7 @@ import {
     useRemoveFromWishlistMutation
 } from '../store/api/authApiSlice';
 import { useGetProductsQuery, useGetPublicProductByIdQuery } from '../store/api/publicApiSlice';
+import { useCreateQuotationRequestMutation } from '../store/api/quotationApiSlice';
 import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
 const ProductDetails = () => {
@@ -41,6 +39,7 @@ const ProductDetails = () => {
     const navigate = useNavigate();
     const isLoggedIn = useSelector(selectIsAuthenticated);
     const currentUser = useSelector(selectCurrentUser);
+    const [createQuotation, { isLoading: isRequestingQuote }] = useCreateQuotationRequestMutation();
 
     // Fetch product data from backend
     const {
@@ -80,6 +79,7 @@ const ProductDetails = () => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
+    const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
 
     // Reset states when product changes
     useEffect(() => {
@@ -134,6 +134,15 @@ const ProductDetails = () => {
     // Handle quantity change
     const handleQuantityChange = (change) => {
         setQuantity(Math.max(1, Math.min(product.stock, quantity + change)));
+    };
+
+    // Handle quotation request
+    const handleQuotationRequest = () => {
+        if (!isLoggedIn) {
+            navigate('/login');
+            return;
+        }
+        setIsQuotationModalOpen(true);
     };
 
     // Handle add to cart
@@ -342,7 +351,7 @@ const ProductDetails = () => {
                                     <p className="text-neutral-600">
                                         Category: {product.category?.name || 'Uncategorized'}
                                     </p>
-                                    {product.avgRating > 0 && (
+                                    {/* {product.avgRating > 0 && (
                                         <div className="flex items-center gap-1">
                                             <div className="flex items-center">
                                                 {[...Array(5)].map((_, i) => (
@@ -360,28 +369,30 @@ const ProductDetails = () => {
                                                 {product.avgRating.toFixed(1)} ({product.numReviews} reviews)
                                             </span>
                                         </div>
-                                    )}
+                                    )} */}
                                 </div>
                             </div>
 
                             {/* Pricing */}
-                            <div className="space-y-2">
-                                <div className="flex items-baseline gap-3">
-                                    <span className="text-3xl font-bold text-neutral-900">
-                                        ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
-                                    </span>
-                                    {product.discountPrice && product.discountPrice < product.price && (
-                                        <>
-                                            <span className="text-xl text-neutral-500 line-through">
-                                                ₹{product.price?.toLocaleString('en-IN')}
-                                            </span>
-                                            <span className="px-2 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                                                {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
-                                            </span>
-                                        </>
-                                    )}
+                            {(!isLoggedIn || (isLoggedIn && currentUser?.customerType !== "B2B")) && (
+                                <div className="space-y-2">
+                                    <div className="flex items-baseline gap-3">
+                                        <span className="text-3xl font-bold text-neutral-900">
+                                            ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
+                                        </span>
+                                        {product.discountPrice && product.discountPrice < product.price && (
+                                            <>
+                                                <span className="text-xl text-neutral-500 line-through">
+                                                    ₹{product.price?.toLocaleString('en-IN')}
+                                                </span>
+                                                <span className="px-2 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Quick Specs */}
                             <div className="grid grid-cols-2 gap-4 p-4 bg-neutral-50 rounded-xl">
@@ -399,7 +410,7 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
-                        {/* Quantity & Add to Cart */}
+                        {/* Quantity & Actions */}
                         {inStock && (
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4">
@@ -427,23 +438,68 @@ const ProductDetails = () => {
                                     </span>
                                 </div>
 
-                                <Button
-                                    onClick={handleAddToCart}
-                                    disabled={isAddingToCart || !inStock}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg font-semibold"
-                                >
-                                    {isAddingToCart ? (
-                                        <>
-                                            <Loader2 size={20} className="animate-spin mr-2" />
-                                            Adding to Cart...
-                                        </>
+                                {isLoggedIn ? (
+                                    currentUser?.customerType === "B2B" ? (
+                                        <Button
+                                            onClick={handleQuotationRequest}
+                                            disabled={isRequestingQuote}
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg font-semibold"
+                                        >
+                                            {isRequestingQuote ? (
+                                                <>
+                                                    <Loader2 size={20} className="animate-spin mr-2" />
+                                                    Sending Request...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FileText size={20} className="mr-2" />
+                                                    Request Quotation
+                                                </>
+                                            )}
+                                        </Button>
                                     ) : (
                                         <>
-                                            <ShoppingCart size={20} className="mr-2" />
-                                            Add to Cart
+                                            {/* Price Display for non-B2B users */}
+                                            <div className="flex items-baseline gap-3">
+                                                <span className="text-3xl font-bold text-neutral-900">
+                                                    ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
+                                                </span>
+                                                {product.discountPrice && product.discountPrice < product.price && (
+                                                    <span className="text-lg text-neutral-500 line-through">
+                                                        ₹{product.price?.toLocaleString('en-IN')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <Button
+                                                onClick={handleAddToCart}
+                                                disabled={isAddingToCart || !inStock}
+                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg font-semibold"
+                                            >
+                                                {isAddingToCart ? (
+                                                    <>
+                                                        <Loader2 size={20} className="animate-spin mr-2" />
+                                                        Adding to Cart...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ShoppingCart size={20} className="mr-2" />
+                                                        Add to Cart
+                                                    </>
+                                                )}
+                                            </Button>
                                         </>
-                                    )}
-                                </Button>
+                                    )
+                                ) : (
+                                    <div className="text-center p-4 bg-neutral-50 rounded-lg">
+                                        <p className="text-neutral-600">Please sign in to view pricing and place orders</p>
+                                        <Button
+                                            onClick={() => navigate('/login')}
+                                            className="mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                                        >
+                                            Sign In
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -661,6 +717,13 @@ const ProductDetails = () => {
                     </div>
                 )}
             </div>
+            
+            {/* Quotation Request Modal */}
+            <QuotationRequestModal 
+                isOpen={isQuotationModalOpen}
+                onClose={() => setIsQuotationModalOpen(false)}
+                product={product}
+            />
         </div>
     );
 };

@@ -158,6 +158,10 @@ export const LazyAdminNotifications = React.lazy(() =>
   import('../pages/admin/AdminNotifications').then(module => ({ default: module.default }))
 );
 
+export const LazyQuotationDetail = React.lazy(() => 
+  import('../pages/admin/QuotationDetail').then(module => ({ default: module.default }))
+);
+
 // Wrap components with lazy loading
 export const Home = withLazyLoading(LazyHome, 'Loading homepage...');
 export const ProductDetails = withLazyLoading(LazyProductDetails, 'Loading product details...');
@@ -186,3 +190,4 @@ export const AdminCategories = withLazyLoading(LazyAdminCategories, 'Loading cat
 export const AdminUsers = withLazyLoading(LazyAdminUsers, 'Loading users management...');
 export const AdminSettings = withLazyLoading(LazyAdminSettings, 'Loading admin settings...');
 export const AdminNotifications = withLazyLoading(LazyAdminNotifications, 'Loading notifications...');
+export const QuotationDetail = withLazyLoading(LazyQuotationDetail, 'Loading quotation details...');

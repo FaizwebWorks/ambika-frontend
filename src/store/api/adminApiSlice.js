@@ -223,6 +223,14 @@ export const adminApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['AdminCustomers', 'Customer', 'Dashboard']
     }),
 
+    approveB2BUser: builder.mutation({
+      query: (userId) => ({
+        url: `/admin/users/${userId}/approve-b2b`,
+        method: 'PUT'
+      }),
+      invalidatesTags: ['AdminCustomers', 'Customer', 'Dashboard', 'AdminUsers']
+    }),
+
     rejectCustomer: builder.mutation({
       query: ({ customerId, reason }) => ({
         url: `/admin/customers/${customerId}/reject`,
@@ -412,5 +420,6 @@ export const {
   useDeleteOrderMutation,
   useGetAllUsersQuery,
   useUpdateUserRoleMutation,
-  useDeleteUserMutation
+  useDeleteUserMutation,
+  useApproveB2BUserMutation
 } = adminApiSlice;

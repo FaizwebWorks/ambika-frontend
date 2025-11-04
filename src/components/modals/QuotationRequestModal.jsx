@@ -2,14 +2,20 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useCreateQuotationRequestMutation } from '../../store/api/quotationApiSlice';
 import { Button } from '../ui/button';
-import { Dialog } from '../ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '../ui/dialog';
 
 export default function QuotationRequestModal({ 
   isOpen, 
   onClose, 
   product,
 }) {
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(product?.minOrderQuantity || 1);
   const [specifications, setSpecifications] = useState('');
   const [createQuotation, { isLoading }] = useCreateQuotationRequestMutation();
 
@@ -30,14 +36,16 @@ export default function QuotationRequestModal({
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose}>
-      <div className="p-6">
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">Request Quotation</h2>
-        
-        <div className="mb-4">
-          <h3 className="font-medium text-neutral-900">{product?.title}</h3>
-          <p className="text-sm text-neutral-600">Fill in the details to request a quotation</p>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Request Quotation</DialogTitle>
+          <DialogDescription>
+            {product?.title}
+            <br />
+            Fill in the details to request a quotation
+          </DialogDescription>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -46,7 +54,8 @@ export default function QuotationRequestModal({
             </label>
             <input
               type="number"
-              min="1"
+              min={product?.minOrderQuantity || 1}
+              max={product?.maxOrderQuantity || product?.stock}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
               className="w-full p-2 border border-neutral-300 rounded-lg"
@@ -84,7 +93,7 @@ export default function QuotationRequestModal({
             </Button>
           </div>
         </form>
-      </div>
+      </DialogContent>
     </Dialog>
   );
 }

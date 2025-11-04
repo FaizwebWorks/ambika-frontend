@@ -31,6 +31,7 @@ import {
   PrivacyPolicy,
   ProductDetails,
   Profile,
+  QuotationDetail,
   QuoteRequest,
   QuoteRequestSuccess,
   ResetPassword,
@@ -105,6 +106,7 @@ const AppRoutes = () => (
         <Route path="users" element={<AdminUsers />} />
         <Route path="notifications" element={<AdminNotifications />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="quotations/:id" element={<QuotationDetail />} />
       </Route>
     </Routes>
   </>

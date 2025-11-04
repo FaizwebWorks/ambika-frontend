@@ -1,38 +1,42 @@
-import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { Filter, Loader2, Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { selectIsAuthenticated } from "../store/slices/authSlice";
-import { useGetCategoriesQuery, useGetProductsQuery } from "../store/api/publicApiSlice";
+import { useLocation } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { ChevronDown, Filter, X, Search, Loader2 } from "lucide-react";
+import { useGetCategoriesQuery, useGetProductsQuery } from "../store/api/publicApiSlice";
+import { selectCurrentUser, selectIsAuthenticated } from "../store/slices/authSlice";
+
 
 const Categories = () => {
 	const location = useLocation();
 	const isLoggedIn = useSelector(selectIsAuthenticated);
-	
+	const currentUser = useSelector(selectCurrentUser);
+
+
+
 	// Get the category from URL query parameters
 	const urlParams = new URLSearchParams(location.search);
 	const categoryFromUrl = urlParams.get('category');
-	
+
 	// Fetch categories and products from backend
-	const { 
-		data: categoriesResponse, 
-		isLoading: categoriesLoading, 
-		error: categoriesError 
+	const {
+		data: categoriesResponse,
+		isLoading: categoriesLoading,
+		error: categoriesError
 	} = useGetCategoriesQuery();
-	
+
 	const categories = categoriesResponse?.data?.categories || [];
-	
+
 	// Add "All Products" option to categories
 	const categoriesData = [
 		{ _id: 'all', name: "All Products" },
 		...categories
 	];
-	
+
 	// Set initial category based on URL or default to "All Products"
 	const [selectedCategory, setSelectedCategory] = useState(
-		categoryFromUrl && categoriesData.some(cat => cat.name === categoryFromUrl) 
-			? categoryFromUrl 
+		categoryFromUrl && categoriesData.some(cat => cat.name === categoryFromUrl)
+			? categoryFromUrl
 			: "All Products"
 	);
 	const [selectedColor, setSelectedColor] = useState("");
@@ -42,29 +46,31 @@ const Categories = () => {
 	const filterSheetRef = useRef(null);
 	const startYRef = useRef(0);
 	const currentYRef = useRef(0);
-	
+
 	// Build query parameters for products API
 	const productQueryParams = {
-		...(selectedCategory !== "All Products" && { 
-			category: categories.find(cat => cat.name === selectedCategory)?._id 
+		...(selectedCategory !== "All Products" && {
+			category: categories.find(cat => cat.name === selectedCategory)?._id
 		}),
 		...(searchTerm && { search: searchTerm }),
 		limit: 50 // Get more products for frontend filtering
 	};
-	
-	const { 
-		data: productsResponse, 
-		isLoading: productsLoading, 
-		error: productsError 
+
+	const {
+		data: productsResponse,
+		isLoading: productsLoading,
+		error: productsError
 	} = useGetProductsQuery(productQueryParams);
-	
+
+	console.log('API Response:', productsResponse);
 	const products = productsResponse?.data?.products || [];
-	
+	console.log('Extracted Products:', products);
+
 	// Scroll to top with smooth animation
 	const scrollToTop = () => {
 		// First use immediate scroll to ensure it works
 		window.scrollTo(0, 0);
-		
+
 		// Then add smooth scroll with a small delay to handle any state updates
 		setTimeout(() => {
 			window.scrollTo({
@@ -73,7 +79,7 @@ const Categories = () => {
 			});
 		}, 10);
 	};
-	
+
 	// Handle category change with scroll to top
 	const handleCategoryChange = (category) => {
 		setSelectedCategory(category);
@@ -81,7 +87,7 @@ const Categories = () => {
 		setSelectedSize("");
 		scrollToTop();
 	};
-	
+
 	// Filter products by selected variants (frontend filtering for variants not handled by backend)
 	const filteredProducts = products.filter(
 		(p) =>
@@ -132,10 +138,10 @@ const Categories = () => {
 
 	// Update browser URL when category changes and scroll to top on category change
 	useEffect(() => {
-		const newUrl = selectedCategory !== "All Products" 
+		const newUrl = selectedCategory !== "All Products"
 			? `?category=${encodeURIComponent(selectedCategory)}`
 			: "";
-		
+
 		window.history.replaceState({}, "", `${location.pathname}${newUrl}`);
 	}, [selectedCategory, location.pathname]);
 
@@ -146,12 +152,12 @@ const Categories = () => {
 				<div className="max-w-7xl mx-auto px-4 py-6 md:px-6">
 					<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 						<h1 className="text-2xl font-semibold text-neutral-800">Shop Products</h1>
-						
+
 						{/* Search field with clear button */}
 						<div className="relative w-full md:w-64 lg:w-80">
 							<Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
-							<input 
-								type="text" 
+							<input
+								type="text"
 								placeholder="Search products..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
@@ -169,7 +175,7 @@ const Categories = () => {
 							)}
 						</div>
 					</div>
-					
+
 					<div className="flex flex-wrap items-center justify-between mt-6 gap-4">
 						<div className="flex items-center gap-2">
 							<p className="text-sm font-medium text-neutral-500">
@@ -184,7 +190,7 @@ const Categories = () => {
 									</>
 								)}
 							</p>
-							
+
 							{/* Selected filters pills */}
 							<div className="hidden md:flex flex-wrap gap-2">
 								{selectedCategory !== "All Products" && (
@@ -213,10 +219,10 @@ const Categories = () => {
 								)}
 							</div>
 						</div>
-						
+
 						<div className="flex gap-3 items-center">
 							{/* Mobile filter toggle with badge if filters active */}
-							<button 
+							<button
 								className="md:hidden flex items-center text-sm gap-2 bg-white border border-neutral-200 px-3 py-2 rounded-lg relative"
 								onClick={() => setMobileFiltersOpen(true)}
 							>
@@ -232,7 +238,7 @@ const Categories = () => {
 					</div>
 				</div>
 			</div>
-			
+
 			<div className="max-w-7xl mx-auto px-4 py-8 md:px-6">
 				<div className="flex flex-col md:flex-row gap-8">
 					{/* Desktop Sidebar with enhanced design */}
@@ -249,11 +255,10 @@ const Categories = () => {
 								{categoriesData.map((cat) => (
 									<li key={cat._id}>
 										<button
-											className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all ${
-												selectedCategory === cat.name
+											className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all ${selectedCategory === cat.name
 													? "bg-blue-50 font-medium text-blue-700 shadow-sm"
 													: "text-neutral-600 hover:bg-neutral-50"
-											}`}
+												}`}
 											onClick={() => handleCategoryChange(cat.name)}
 										>
 											{cat.name}
@@ -262,7 +267,7 @@ const Categories = () => {
 								))}
 							</ul>
 						)}
-						
+
 						{/* Color filter with better visualization */}
 						{currentVariants.color && currentVariants.color.length > 0 && (
 							<div className="mb-8">
@@ -271,11 +276,10 @@ const Categories = () => {
 									{currentVariants.color.map((color) => (
 										<button
 											key={color}
-											className={`px-3 py-1.5 rounded-full border text-xs transition-all ${
-												selectedColor === color
+											className={`px-3 py-1.5 rounded-full border text-xs transition-all ${selectedColor === color
 													? "bg-blue-600 text-white border-blue-600 shadow-sm"
 													: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
-											}`}
+												}`}
 											onClick={() => setSelectedColor(color === selectedColor ? "" : color)}
 											title={color}
 										>
@@ -285,7 +289,7 @@ const Categories = () => {
 								</div>
 							</div>
 						)}
-						
+
 						{/* Size filter with better buttons */}
 						{currentVariants.size && currentVariants.size.length > 0 && (
 							<div className="mb-8">
@@ -294,11 +298,10 @@ const Categories = () => {
 									{currentVariants.size.map((size) => (
 										<button
 											key={size}
-											className={`px-4 py-2 rounded-lg border text-sm transition-all ${
-												selectedSize === size
+											className={`px-4 py-2 rounded-lg border text-sm transition-all ${selectedSize === size
 													? "bg-blue-600 text-white border-blue-600 shadow-sm"
 													: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
-											}`}
+												}`}
 											onClick={() => setSelectedSize(size === selectedSize ? "" : size)}
 										>
 											{size}
@@ -307,15 +310,14 @@ const Categories = () => {
 								</div>
 							</div>
 						)}
-						
+
 						{/* Clear filters button */}
 						<div className="pt-2 border-t border-neutral-100">
-							<button 
-								className={`mt-4 w-full text-sm py-2.5 px-4 rounded-lg shadow-sm transition-colors ${
-									selectedCategory !== "All Products" || selectedColor || selectedSize
+							<button
+								className={`mt-4 w-full text-sm py-2.5 px-4 rounded-lg shadow-sm transition-colors ${selectedCategory !== "All Products" || selectedColor || selectedSize
 										? "bg-blue-600 hover:bg-blue-700 text-white"
 										: "bg-blue-50 text-neutral-400 cursor-not-allowed"
-								}`}
+									}`}
 								onClick={() => {
 									setSelectedCategory("All Products");
 									setSelectedColor("");
@@ -344,7 +346,7 @@ const Categories = () => {
 								</div>
 								<h3 className="text-lg font-medium text-neutral-800 mb-2">Failed to load products</h3>
 								<p className="text-neutral-500 mb-6">There was an error loading products. Please try again.</p>
-								<button 
+								<button
 									className="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
 									onClick={() => window.location.reload()}
 								>
@@ -354,8 +356,8 @@ const Categories = () => {
 						) : filteredProducts.length > 0 ? (
 							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
 								{filteredProducts.map((product) => (
-									<ProductCard 
-										key={product._id} 
+									<ProductCard
+										key={product._id}
 										product={{
 											...product,
 											id: product._id,
@@ -363,8 +365,9 @@ const Categories = () => {
 											img: product.images?.[0] || '/placeholder-product.jpg',
 											inStock: product.stock > 0,
 											stockCount: product.stock
-										}} 
-										isLoggedIn={isLoggedIn} 
+										}}
+										isLoggedIn={isLoggedIn}
+										user={currentUser}
 									/>
 								))}
 							</div>
@@ -375,7 +378,7 @@ const Categories = () => {
 								</div>
 								<h3 className="text-lg font-medium text-neutral-800 mb-2">No products match your filters</h3>
 								<p className="text-neutral-500 mb-6 max-w-md">Try changing your filter criteria or browse all our products.</p>
-								<button 
+								<button
 									className="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
 									onClick={() => {
 										setSelectedCategory("All Products");
@@ -391,9 +394,9 @@ const Categories = () => {
 					</main>
 				</div>
 			</div>
-			
+
 			{/* Mobile Bottom Sheet with improved design */}
-			<div 
+			<div
 				className={`
 					fixed inset-x-0 bottom-0 z-40 transform transition-transform duration-300 ease-in-out
 					${mobileFiltersOpen ? 'translate-y-0' : 'translate-y-full'}
@@ -408,7 +411,7 @@ const Categories = () => {
 					<div className="w-full flex justify-center py-3 bg-white">
 						<div className="w-12 h-1.5 bg-neutral-200 rounded-full"></div>
 					</div>
-					
+
 					<div className="flex-1 overflow-y-auto">
 						<div className="px-6 py-4">
 							<div className="flex justify-between items-center mb-6">
@@ -417,7 +420,7 @@ const Categories = () => {
 									<X size={20} />
 								</button>
 							</div>
-							
+
 							<h3 className="font-medium mb-4">Categories</h3>
 							{categoriesLoading ? (
 								<div className="flex items-center justify-center py-8">
@@ -428,11 +431,10 @@ const Categories = () => {
 									{categoriesData.map((cat) => (
 										<li key={cat._id}>
 											<button
-												className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-colors ${
-													selectedCategory === cat.name
+												className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-colors ${selectedCategory === cat.name
 														? "bg-blue-50 font-medium text-blue-700"
 														: "text-neutral-600 hover:bg-neutral-50"
-												}`}
+													}`}
 												onClick={() => {
 													handleCategoryChange(cat.name);
 													setMobileFiltersOpen(false);
@@ -444,7 +446,7 @@ const Categories = () => {
 									))}
 								</ul>
 							)}
-							
+
 							{/* Mobile color and size filters */}
 							{currentVariants.color && currentVariants.color.length > 0 && (
 								<div className="mb-8">
@@ -453,11 +455,10 @@ const Categories = () => {
 										{currentVariants.color.map((color) => (
 											<button
 												key={color}
-												className={`px-3 py-1.5 rounded-full border text-xs transition-all ${
-													selectedColor === color
+												className={`px-3 py-1.5 rounded-full border text-xs transition-all ${selectedColor === color
 														? "bg-blue-600 text-white border-blue-600 shadow-sm"
 														: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
-												}`}
+													}`}
 												onClick={() => setSelectedColor(color === selectedColor ? "" : color)}
 											>
 												{color}
@@ -466,7 +467,7 @@ const Categories = () => {
 									</div>
 								</div>
 							)}
-							
+
 							{currentVariants.size && currentVariants.size.length > 0 && (
 								<div className="mb-8">
 									<h4 className="font-medium mb-3 text-sm text-neutral-800">Size</h4>
@@ -474,11 +475,10 @@ const Categories = () => {
 										{currentVariants.size.map((size) => (
 											<button
 												key={size}
-												className={`px-4 py-2 rounded-lg border text-sm transition-all ${
-													selectedSize === size
+												className={`px-4 py-2 rounded-lg border text-sm transition-all ${selectedSize === size
 														? "bg-blue-600 text-white border-blue-600 shadow-sm"
 														: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
-												}`}
+													}`}
 												onClick={() => setSelectedSize(size === selectedSize ? "" : size)}
 											>
 												{size}
@@ -489,11 +489,11 @@ const Categories = () => {
 							)}
 						</div>
 					</div>
-					
+
 					{/* Fixed bottom action bar */}
 					<div className="border-t border-neutral-100 px-6 py-4 bg-white">
 						<div className="flex gap-3">
-							<button 
+							<button
 								className="flex-1 border border-neutral-300 text-neutral-800 py-3.5 rounded-lg font-medium hover:bg-neutral-50 transition-colors"
 								onClick={() => {
 									setSelectedCategory("All Products");
@@ -505,7 +505,7 @@ const Categories = () => {
 							>
 								Clear All
 							</button>
-							<button 
+							<button
 								className="flex-1 bg-blue-600 text-white py-3.5 rounded-lg font-medium hover:bg-blue-700 transition-colors"
 								onClick={() => setMobileFiltersOpen(false)}
 							>
@@ -515,10 +515,10 @@ const Categories = () => {
 					</div>
 				</div>
 			</div>
-			
+
 			{/* Mobile filters overlay backdrop */}
 			{mobileFiltersOpen && (
-				<div 
+				<div
 					className="fixed inset-0 z-30 md:hidden bg-black/20 transition-opacity"
 					onClick={() => setMobileFiltersOpen(false)}
 				></div>

@@ -1,8 +1,36 @@
 import { FileText } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { useCreateQuotationRequestMutation } from '../store/api/quotationApiSlice';
 
-const ProductCard = ({ product, isLoggedIn, user }) => (
-  <Link to={`/product/${product._id || product.id}`} className="block">
+const ProductCard = ({ product, isLoggedIn, user }) => {
+  const [createQuotation, { isLoading }] = useCreateQuotationRequestMutation();
+
+  const handleQuotationRequest = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await createQuotation({
+        productId: product._id,
+        quantity: 1,
+        notes: `Initial quotation request for ${product.title || product.name}`
+      }).unwrap();
+
+      toast.success(
+        <div className="space-y-2">
+          <h3 className="font-medium">Quotation Request Sent!</h3>
+          <p className="text-sm text-neutral-600">We'll send the quotation details to your registered email and WhatsApp shortly.</p>
+        </div>,
+        { duration: 5000 }
+      );
+    } catch (error) {
+      toast.error('Failed to send quotation request. Please try again.');
+    }
+  };
+
+  return (
+    <Link to={`/product/${product._id || product.id}`} className="block">
     <div className="bg-white rounded-lg overflow-hidden border border-neutral-100 transition-all duration-300 flex flex-col group">
       {/* Image container with proper aspect ratio */}
       <div className="relative aspect-square bg-neutral-50 overflow-hidden">
@@ -41,10 +69,26 @@ const ProductCard = ({ product, isLoggedIn, user }) => (
         {/* Price with premium typography */}
         {isLoggedIn ? (
           <div className="mt-3 space-y-1">
-            {user?.type === 'b2b' ? (
-              <div className="text-neutral-600 text-sm font-medium flex items-center space-x-1">
-                <FileText size={14} />
-                <span>Request Quotation</span>
+            {user?.customerType === 'B2B' ? (
+              <div className="mt-2">
+                <button
+                  onClick={handleQuotationRequest}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  <div className="p-2 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText size={16} className="text-blue-600" />
+                        <span className="text-blue-700 font-medium">
+                          {isLoading ? 'Sending Request...' : 'Request Quotation'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-blue-600 bg-white px-2 py-1 rounded-full border border-blue-100">B2B</span>
+                    </div>
+                    <p className="text-xs text-blue-600 mt-1">Get bulk pricing & special offers</p>
+                  </div>
+                </button>
               </div>
             ) : (
               <>
@@ -67,13 +111,13 @@ const ProductCard = ({ product, isLoggedIn, user }) => (
             )}
           </div>
         ) : (
-          <div className="mt-3 text-neutral-400 text-xs font-medium">
-            Sign in to view price
+          <div className="mt-3 text-neutral-400 text-sm font-medium hover:text-blue-600 transition-colors">
+            Sign in to {user?.type === 'b2b' ? 'request quotation' : 'view price'} →
           </div>
         )}
       </div>
     </div>
   </Link>
-);
-
+  );
+}
 export default ProductCard;

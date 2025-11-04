@@ -427,7 +427,7 @@ const Cart = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => navigate('/product')}
+                  onClick={() => navigate('/categories')}
                   className="w-full border-2 border-slate-300 text-slate-700 hover:bg-slate-50 h-10 rounded-xl font-medium"
                 >
                   Browse Products

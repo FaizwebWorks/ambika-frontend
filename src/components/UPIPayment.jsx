@@ -288,10 +288,10 @@ const UPIPayment = ({ orderId, amount }) => {
                     </div>
                 )}
 
-                <div className="mt-4 text-sm text-gray-500">
+                {/* <div className="mt-4 text-sm text-gray-500">
                     <p>Transaction ID: {paymentData.transactionId}</p>
                     <p>Please keep this for your reference</p>
-                </div>
+                </div> */}
             </div>
         </div>
     );
