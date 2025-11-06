@@ -459,17 +459,6 @@ const ProductDetails = () => {
                                         </Button>
                                     ) : (
                                         <>
-                                            {/* Price Display for non-B2B users */}
-                                            <div className="flex items-baseline gap-3">
-                                                <span className="text-3xl font-bold text-neutral-900">
-                                                    ₹{(product.discountPrice || product.price)?.toLocaleString('en-IN')}
-                                                </span>
-                                                {product.discountPrice && product.discountPrice < product.price && (
-                                                    <span className="text-lg text-neutral-500 line-through">
-                                                        ₹{product.price?.toLocaleString('en-IN')}
-                                                    </span>
-                                                )}
-                                            </div>
                                             <Button
                                                 onClick={handleAddToCart}
                                                 disabled={isAddingToCart || !inStock}

@@ -120,10 +120,8 @@ const Cart = () => {
     return total + (itemPrice * item.quantity);
   }, 0);
 
-  const shipping = subtotal > 500 ? 0 : 50; // Free shipping for orders above ₹500
-  // GST removed globally - tax forced to 0
   const tax = 0;
-  const cartTotal = subtotal + shipping; // excluded tax since it's 0
+  const cartTotal = subtotal; // No shipping charges
 
   // Handle quantity update
   const handleQuantityUpdate = async (itemId, newQuantity) => {
@@ -382,28 +380,7 @@ const Cart = () => {
 
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Free Shipping Banner */}
-        {cartItems.length > 0 && (
-          <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                  <Gift size={24} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">Premium Benefits Unlocked!</h3>
-                  <p className="text-blue-100">Free delivery on orders above ₹500</p>
-                </div>
-              </div>
-              {subtotal < 500 && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center sm:text-right">
-                  <p className="font-semibold">Add ₹{(500 - subtotal).toLocaleString('en-IN')} more</p>
-                  <p className="text-blue-100 text-sm">for free shipping!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+
 
         {cartItems.length === 0 ? (
           // Empty Cart State - Modern Design
@@ -648,31 +625,7 @@ const Cart = () => {
                     <span className="font-bold text-lg text-slate-900">₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
 
-                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span className="font-medium text-slate-700">Shipping</span>
-                    {shipping === 0 ? (
-                      <div className="text-right">
-                        <span className="font-bold text-lg text-emerald-600">Free</span>
-                        <p className="text-xs text-emerald-600">Premium delivery</p>
-                      </div>
-                    ) : (
-                      <span className="font-bold text-lg text-slate-900">₹{shipping}</span>
-                    )}
-                  </div>
 
-                  {shipping > 0 && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Truck size={16} className="text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-blue-700">Almost there!</p>
-                          <p className="text-blue-600 text-sm">Add ₹{(500 - subtotal).toLocaleString('en-IN')} more for free shipping</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Tax removed (GST now 0). If needed later, reintroduce here. */}
 
