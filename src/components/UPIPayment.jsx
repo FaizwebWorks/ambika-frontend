@@ -53,17 +53,29 @@ const UPIPayment = ({ orderId, amount }) => {
             return;
         }
 
+        // Clear any existing timer
+        if (verificationTimer.current) {
+            clearTimeout(verificationTimer.current);
+        }
+
         verificationTimer.current = setTimeout(async () => {
             try {
                 const success = await verifyPayment();
-                if (!success) {
+                if (!success && verificationAttempts < MAX_VERIFICATION_ATTEMPTS) {
                     setVerificationAttempts(prev => prev + 1);
-                    startAutoVerification(); // Continue verification only if not successful
+                    // Increase interval time with each attempt
+                    setTimeout(() => {
+                        startAutoVerification();
+                    }, VERIFICATION_INTERVAL * (verificationAttempts + 1));
                 }
             } catch (err) {
                 console.error('Auto-verification failed:', err);
-                setVerificationAttempts(prev => prev + 1);
-                startAutoVerification();
+                if (verificationAttempts < MAX_VERIFICATION_ATTEMPTS) {
+                    setVerificationAttempts(prev => prev + 1);
+                    setTimeout(() => {
+                        startAutoVerification();
+                    }, VERIFICATION_INTERVAL * (verificationAttempts + 1));
+                }
             }
         }, VERIFICATION_INTERVAL);
     }, [verificationStatus, verificationAttempts]);
@@ -88,7 +100,7 @@ const UPIPayment = ({ orderId, amount }) => {
 
             if (data.success) {
                 setVerificationStatus('completed');
-                navigate('/order-success', { 
+                navigate(`/order-success?orderId=${orderId}&total=${data.order.amount}&paymentMethod=UPI`, { 
                     state: { 
                         orderId,
                         orderNumber: data.order.orderNumber,

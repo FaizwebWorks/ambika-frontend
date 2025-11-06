@@ -1,13 +1,17 @@
+import { CheckCircle, FileText, Home, Mail, Package, Phone, Truck } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckCircle, Package, Truck, ArrowLeft, Home, FileText, Phone, Mail } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
 const OrderSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const orderId = searchParams.get('orderId');
-  const total = searchParams.get('total');
+  const { state } = useLocation();
+  
+  // Try to get values from both URL params and state
+  const orderId = searchParams.get('orderId') || state?.orderId;
+  const total = searchParams.get('total') || state?.amount;
+  const paymentMethod = searchParams.get('paymentMethod') || state?.paymentMethod || 'Cash on Delivery';
 
   useEffect(() => {
     // Auto redirect after 15 seconds
