@@ -24,9 +24,11 @@ const UPIPayment = ({ orderId, amount }) => {
     const generatePayment = async () => {
         try {
             setError(null);
-            const response = await fetch(`/api/upi-payments/generate/${orderId}`, {
+            const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
+            const response = await fetch(`${apiUrl}/upi-payments/generate/${orderId}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
             const data = await response.json();
@@ -82,7 +84,8 @@ const UPIPayment = ({ orderId, amount }) => {
 
     const verifyPayment = async (manualUpiTxnId = null) => {
         try {
-            const response = await fetch('/api/upi-payments/verify', {
+            const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
+            const response = await fetch(`${apiUrl}/upi-payments/verify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +147,8 @@ const UPIPayment = ({ orderId, amount }) => {
                 window.location.href = upiUrl;
             } else {
                 // For desktop: Show QR code for collect request
-                const qrCode = await fetch('/api/upi-payments/collect-qr', {
+                const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
+                const qrCode = await fetch(`${apiUrl}/upi-payments/collect-qr`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
