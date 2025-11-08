@@ -150,7 +150,7 @@ const AdminSettings = () => {
   //     const orderResponse = await createSubscriptionOrder({ planType }).unwrap();
       
   //     const options = {
-  //       key: orderResponse.data.razorpayKeyId,
+
   //       amount: orderResponse.data.amount,
   //       currency: orderResponse.data.currency,
   //       name: "Ambika International",
@@ -159,9 +159,7 @@ const AdminSettings = () => {
   //       handler: async function (response) {
   //         try {
   //           await verifyPayment({
-  //             razorpay_order_id: response.razorpay_order_id,
-  //             razorpay_payment_id: response.razorpay_payment_id,
-  //             razorpay_signature: response.razorpay_signature,
+
   //           }).unwrap();
             
   //           alert('Payment successful! Your subscription is now active.');
@@ -180,7 +178,7 @@ const AdminSettings = () => {
   //       },
   //     };
       
-  //     const rzp1 = new window.Razorpay(options);
+
   //     rzp1.open();
       
   //   } catch (error) {

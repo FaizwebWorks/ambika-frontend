@@ -103,7 +103,7 @@ const PrivacyPolicy = () => {
             title: 'Third-Party Services',
             icon: Users,
             content: [
-                'Payment Processors: We use secure third-party payment processors (Stripe, Razorpay) who have their own privacy policies.',
+                'Payment Processors: We use secure third-party payment processors who have their own privacy policies.',
                 'Shipping Partners: We share delivery information with courier services and logistics partners for order fulfillment.',
                 'Cloud Services: We use cloud hosting and storage services that comply with international data protection standards.',
                 'Analytics Tools: We use website analytics tools to understand user behavior and improve our services.',
