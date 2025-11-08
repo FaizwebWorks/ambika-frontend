@@ -5,7 +5,7 @@ const getNotificationApiBaseUrl = () => {
   if (import.meta.env.DEV) {
     return '/api/notifications'; // Use Vite proxy in development
   }
-  return 'https://ambika-backend-weyi.onrender.com/api/notifications';
+  return 'https://ambika-api.onrender.com/api/notifications';
 };
 
 const baseQuery = fetchBaseQuery({
