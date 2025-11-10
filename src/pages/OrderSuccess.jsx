@@ -1,6 +1,7 @@
-import { CheckCircle, FileText, Home, Mail, Package, Phone, Truck } from 'lucide-react';
+import { CheckCircle, FileText, Home, Mail, Package, Phone, Truck, IndianRupee } from 'lucide-react';
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { Button } from '../components/ui/button';
 
 const OrderSuccess = () => {
@@ -59,11 +60,25 @@ const OrderSuccess = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-600">Payment:</span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">
-                <Package size={12} />
-                Cash on Delivery
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                <IndianRupee size={12} />
+                {paymentMethod}
               </span>
             </div>
+            {state?.transactionId && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Transaction ID:</span>
+                <span className="font-mono text-sm text-neutral-800">{state.transactionId}</span>
+              </div>
+            )}
+            {state?.paidAt && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Paid On:</span>
+                <span className="text-sm text-neutral-800">
+                  {new Date(state.paidAt).toLocaleString('en-IN')}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-neutral-600">Status:</span>
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">

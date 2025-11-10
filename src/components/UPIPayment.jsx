@@ -1,57 +1,88 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useCheckUPIStatusMutation, useGenerateUPIPaymentMutation, useVerifyUPIPaymentMutation } from '../store/api/upiPaymentApiSlice';
+import { toast } from 'react-hot-toast';
+
 
 const UPIPayment = ({ orderId, amount }) => {
+    const navigate = useNavigate();
+    const { token } = useSelector((state) => state.auth);
+    const [generateUpiPayment] = useGenerateUPIPaymentMutation();
+    const [checkUpiStatus] = useCheckUPIStatusMutation();
+    const [verifyUpiPayment] = useVerifyUPIPaymentMutation();
+
     const [paymentData, setPaymentData] = useState(null);
     const [verificationStatus, setVerificationStatus] = useState('pending');
     const [error, setError] = useState(null);
     const [customerUpiId, setCustomerUpiId] = useState('');
     const [transactionId, setTransactionId] = useState('');
     const [verificationAttempts, setVerificationAttempts] = useState(0);
-    const navigate = useNavigate();
-    const { token } = useSelector((state) => state.auth);
-    const MAX_VERIFICATION_ATTEMPTS = 3;
+    
+    const MAX_VERIFICATION_ATTEMPTS = 10;
     const VERIFICATION_INTERVAL = 5000; // 5 seconds
 
     useEffect(() => {
-        generatePayment();
+        if (orderId && amount) {
+            console.log('Initializing payment with orderId:', orderId, 'amount:', amount);
+            generatePayment();
+        } else {
+            console.log('Missing orderId or amount', { orderId, amount });
+        }
         return () => clearTimeout(verificationTimer.current);
-    }, [orderId]);
+    }, [orderId, amount]);
 
     const verificationTimer = useRef(null);
 
+
     const generatePayment = async () => {
         try {
-            setError(null);
-            const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
-            const response = await fetch(`${apiUrl}/upi-payments/generate/${orderId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-
-            if (!data.success) {
-                throw new Error(data.message);
+            if (!orderId || !amount) {
+                console.error('Missing required parameters:', { orderId, amount });
+                setError('Missing order details. Please try again.');
+                return;
             }
 
-            setPaymentData(data.data);
-            // Start auto-verification after payment is generated
-            startAutoVerification();
+            setError(null);
+            setVerificationStatus('pending');
+            setVerificationAttempts(0);
+            
+            // Clear any existing verification timer
+            if (verificationTimer.current) {
+                clearTimeout(verificationTimer.current);
+            }
+
+            const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
+            console.log('Generating payment for order:', orderId, 'amount:', amount);
+            
+            const response = await generateUpiPayment(orderId).unwrap();
+            console.log('Payment generation response:', response);
+
+            setPaymentData(response);
+            
+            // Don't start verification immediately, wait for user to make payment
+            if (!customerUpiId) {
+                // For QR code display, wait for a bit before starting verification
+                setTimeout(() => {
+                    console.log('Starting verification for QR payment...');
+                    setVerificationAttempts(0);
+                    startAutoVerification();
+                }, 10000); // Give user 10 seconds to scan and pay
+            }
         } catch (err) {
             setError(err.message);
         }
     };
 
-    const startAutoVerification = useCallback(() => {
+    
+    const startAutoVerification = useCallback(async () => {
         if (verificationStatus === 'completed') {
+            console.log('Payment already verified');
             return;
         }
 
         if (verificationAttempts >= MAX_VERIFICATION_ATTEMPTS) {
-            // Show manual verification option
+            console.log('Max verification attempts reached');
             return;
         }
 
@@ -62,105 +93,193 @@ const UPIPayment = ({ orderId, amount }) => {
 
         verificationTimer.current = setTimeout(async () => {
             try {
-                const success = await verifyPayment();
-                if (!success && verificationAttempts < MAX_VERIFICATION_ATTEMPTS) {
+                if (!paymentData || !orderId || !amount) {
+                    console.log('Missing required data:', { 
+                        hasPaymentData: !!paymentData, 
+                        hasOrderId: !!orderId, 
+                        hasAmount: !!amount 
+                    });
+                    return;
+                }
+
+                console.log(`Starting verification attempt ${verificationAttempts + 1}/${MAX_VERIFICATION_ATTEMPTS}`);
+                console.log('Payment data:', paymentData);
+
+                // First check UPI status
+                const statusResult = await checkUpiStatus({
+                    orderId,
+                    transactionId: paymentData.transactionId,
+                    amount: amount
+                }).unwrap();
+
+                console.log('Payment status:', statusResult);
+
+                console.log('Status check result:', statusResult);
+                
+                if (statusResult.status === 'SUCCESS' || statusResult.status === 'COMPLETED') {
+                    console.log('Payment marked as successful, verifying...');
+                    try {
+                        // Verify the payment
+                        const verificationData = {
+                            orderId,
+                            transactionId: paymentData.transactionId,
+                            amount: amount
+                        };
+                        
+                        const verificationResult = await verifyUpiPayment(verificationData).unwrap();
+                        console.log('Verification result:', verificationResult);
+
+                        if (verificationResult.success) {
+                            console.log('Payment verified successfully!');
+                            setVerificationStatus('completed');
+                            toast.success('Payment successful!');
+                            
+                            // Navigate to success page
+                            navigate(`/order-success?orderId=${orderId}&total=${amount}&paymentMethod=UPI`, { 
+                                state: { 
+                                    orderId,
+                                    transactionId: paymentData.transactionId,
+                                    amount: amount,
+                                    paymentMethod: 'UPI',
+                                    paidAt: new Date().toISOString()
+                                },
+                                replace: true
+                            });
+                            return;
+                        }
+                    } catch (verifyErr) {
+                        console.error('Verification error:', verifyErr);
+                    }
+                } else {
+                    console.log('Payment status:', statusResult.status);
+                }
+
+                // Schedule next verification attempt
+                if (verificationAttempts < MAX_VERIFICATION_ATTEMPTS) {
                     setVerificationAttempts(prev => prev + 1);
-                    // Increase interval time with each attempt
-                    setTimeout(() => {
-                        startAutoVerification();
-                    }, VERIFICATION_INTERVAL * (verificationAttempts + 1));
+                    const nextInterval = VERIFICATION_INTERVAL;
+                    console.log(`Scheduling next verification in ${nextInterval/1000} seconds...`);
+                    startAutoVerification();
+                } else {
+                    console.log('Max verification attempts reached');
+                    setError('Payment verification timed out. Please enter your UPI transaction ID below to verify manually.');
                 }
             } catch (err) {
                 console.error('Auto-verification failed:', err);
+                
+                // On error, retry with increased interval
+                const nextInterval = VERIFICATION_INTERVAL * Math.pow(1.5, verificationAttempts);
                 if (verificationAttempts < MAX_VERIFICATION_ATTEMPTS) {
                     setVerificationAttempts(prev => prev + 1);
-                    setTimeout(() => {
-                        startAutoVerification();
-                    }, VERIFICATION_INTERVAL * (verificationAttempts + 1));
+                    setTimeout(startAutoVerification, nextInterval);
                 }
             }
         }, VERIFICATION_INTERVAL);
-    }, [verificationStatus, verificationAttempts]);
+    }, [verificationStatus, verificationAttempts, orderId, amount, paymentData]);
 
     const verifyPayment = async (manualUpiTxnId = null) => {
         try {
-            const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
-            const response = await fetch(`${apiUrl}/upi-payments/verify`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    orderId,
-                    transactionId: paymentData.transactionId,
-                    upiTransactionId: manualUpiTxnId || transactionId,
-                    upiId: customerUpiId
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                setVerificationStatus('completed');
-                navigate(`/order-success?orderId=${orderId}&total=${data.order.amount}&paymentMethod=UPI`, { 
-                    state: { 
-                        orderId,
-                        orderNumber: data.order.orderNumber,
-                        transactionId: data.order.payment.transactionId,
-                        amount: data.order.amount,
-                        paymentMethod: 'UPI',
-                        paidAt: data.order.payment.paidAt
-                    }
-                });
-            } else {
-                if (!manualUpiTxnId) {
-                    // Don't show error for auto-verification attempts
-                    return false;
-                }
-                setVerificationStatus('failed');
-                setError(data.message || 'Payment verification failed. Please try again.');
+            if (!paymentData) {
+                throw new Error('Payment data is missing');
             }
-            return data.success;
+
+            const verificationData = {
+                orderId,
+                transactionId: paymentData.transactionId,
+                amount: amount,
+                upiTransactionId: manualUpiTxnId || paymentData.transactionId
+            };
+
+            console.log('Verifying payment:', verificationData);
+            
+            // First check status
+            const statusResult = await checkUpiStatus({
+                orderId,
+                transactionId: paymentData.transactionId
+            }).unwrap();
+
+            console.log('Payment status result:', statusResult);
+
+            if (statusResult.status === 'SUCCESS') {
+                // Verify the payment if status is success
+                const result = await verifyUpiPayment(verificationData).unwrap();
+                console.log('Verification result:', result);
+
+                if (result.success) {
+                    clearTimeout(verificationTimer.current);
+                    setVerificationStatus('completed');
+                    toast.success('Payment verified successfully!');
+                    
+                    // Navigate to success page
+                    const successPath = `/order-success?orderId=${orderId}&total=${amount}&paymentMethod=UPI`;
+                    console.log('Navigating to:', successPath);
+                    
+                    navigate(successPath, { 
+                        state: { 
+                            orderId,
+                            transactionId: paymentData.transactionId,
+                            amount: amount,
+                            paymentMethod: 'UPI',
+                            paidAt: new Date().toISOString()
+                        },
+                        replace: true // Use replace to prevent going back to payment page
+                    });
+                    return true;
+                }
+            }
+
+            // If manual verification and failed
+            if (manualUpiTxnId) {
+                setVerificationStatus('failed');
+                setError('Payment verification failed. Please check your UPI transaction ID and try again.');
+            }
+            return false;
         } catch (err) {
+            console.error('Verification error:', err);
             if (!manualUpiTxnId) {
                 return false;
             }
             setVerificationStatus('failed');
-            setError(err.message);
+            setError('Payment verification failed. Please try again later.');
             return false;
         }
     };
 
     const handleUpiIdPayment = async () => {
-        if (!customerUpiId) {
+        if (!customerUpiId.trim()) {
             setError('Please enter your UPI ID');
             return;
         }
 
         try {
-            // Create UPI collect request
-            const upiUrl = `upi://collect?pa=${customerUpiId}&pn=${encodeURIComponent(paymentData.merchantName)}&am=${amount}&tn=${encodeURIComponent(`Order ${orderId}`)}&tr=${paymentData.transactionId}`;
+            setError(null);
             
+            if (!paymentData || !paymentData.transactionId) {
+                throw new Error('Payment details not available. Please try again.');
+            }
+
             // For mobile devices
             if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                // Generate UPI URL
+                const upiUrl = `upi://pay?pa=${paymentData.merchantUPI}&pn=${encodeURIComponent(paymentData.merchantName)}&am=${amount}&tn=${encodeURIComponent(`Order ${orderId}`)}&tr=${paymentData.transactionId}`;
                 window.location.href = upiUrl;
             } else {
-                // For desktop: Show QR code for collect request
+                // For desktop: Show QR code
                 const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
-                const qrCode = await fetch(`${apiUrl}/upi-payments/collect-qr`, {
+                const response = await fetch(`${apiUrl}/upi-payments/qr`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        upiId: customerUpiId,
                         amount,
                         orderId,
                         transactionId: paymentData.transactionId
                     })
-                }).then(res => res.json());
+                });
+                
+                const qrCode = await response.json();
 
                 if (qrCode.success) {
                     setPaymentData(prev => ({
@@ -204,6 +323,7 @@ const UPIPayment = ({ orderId, amount }) => {
                 <div className="mb-6 text-center">
                     <p className="text-gray-600 mb-2">Amount to Pay:</p>
                     <p className="text-2xl font-bold">₹{amount}</p>
+                    <p className="text-xs text-gray-500 mt-1">(Includes 1% service fee)</p>
                 </div>
 
                 {/* Payment Method Selection */}
@@ -243,7 +363,7 @@ const UPIPayment = ({ orderId, amount }) => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Enter your UPI ID</label>
                                 <input
                                     type="text"
-                                    value={customerUpiId}
+                                    value={customerUpiId.trim()}
                                     onChange={(e) => setCustomerUpiId(e.target.value)}
                                     placeholder="yourname@upi"
                                     className="w-full p-2 border rounded"
@@ -252,7 +372,7 @@ const UPIPayment = ({ orderId, amount }) => {
                             <button
                                 onClick={handleUpiIdPayment}
                                 className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
-                                disabled={!customerUpiId}
+                                disabled={!customerUpiId.trim()}
                             >
                                 Pay Now
                             </button>
