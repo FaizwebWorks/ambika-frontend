@@ -4,7 +4,13 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 const getApiBaseUrl = () => {
   // Use environment variable if available
   if (import.meta.env.VITE_BACKEND_URL) {
-    return import.meta.env.VITE_BACKEND_URL;
+    // Allow user to set either the API root (e.g. https://api.example.com) or the full /api path.
+    let base = import.meta.env.VITE_BACKEND_URL;
+    // Normalize: ensure base ends with '/api' so endpoints like '/upi-payments/status' resolve correctly
+    if (!base.endsWith('/api')) {
+      base = base.replace(/\/+$/,'') + '/api';
+    }
+    return base;
   }
   
   // Fallback logic
@@ -13,7 +19,7 @@ const getApiBaseUrl = () => {
   }
   
   // Default production URL (update this when deploying)
-  return 'https://https://ambika-api.onrender.com/api';
+  return 'https://ambika-api.onrender.com/api';
 };
 
 // Base API slice with RTK Query

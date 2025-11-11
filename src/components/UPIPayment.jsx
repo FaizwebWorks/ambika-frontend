@@ -18,9 +18,10 @@ const UPIPayment = ({ orderId, amount }) => {
     const [customerUpiId, setCustomerUpiId] = useState('');
     const [transactionId, setTransactionId] = useState('');
     const [verificationAttempts, setVerificationAttempts] = useState(0);
+    const [manualPaymentInfo, setManualPaymentInfo] = useState(null);
     
     const MAX_VERIFICATION_ATTEMPTS = 10;
-    const VERIFICATION_INTERVAL = 5000; // 5 seconds
+    const VERIFICATION_INTERVAL = 3000; // 3 seconds
 
     useEffect(() => {
         if (orderId && amount) {
@@ -46,6 +47,7 @@ const UPIPayment = ({ orderId, amount }) => {
             setError(null);
             setVerificationStatus('pending');
             setVerificationAttempts(0);
+            setManualPaymentInfo(null);
             
             // Clear any existing verification timer
             if (verificationTimer.current) {
@@ -59,23 +61,21 @@ const UPIPayment = ({ orderId, amount }) => {
             console.log('Payment generation response:', response);
 
             setPaymentData(response);
-            
-            // Don't start verification immediately, wait for user to make payment
-            if (!customerUpiId) {
-                // For QR code display, wait for a bit before starting verification
-                setTimeout(() => {
-                    console.log('Starting verification for QR payment...');
-                    setVerificationAttempts(0);
-                    startAutoVerification();
-                }, 10000); // Give user 10 seconds to scan and pay
-            }
+            // Normalize response if nested under `data`
+            // (RTK transformResponse should already return response.data, but be defensive)
+            const normalized = response?.data ? response.data : response;
+            setPaymentData(normalized);
+            console.log('Normalized paymentData set:', normalized);
+
+            // Don't call the verification function here because the closure may be stale.
+            // A dedicated `useEffect` will watch `paymentData` and schedule auto-verification
+            // after a short delay (10s) so the user has time to scan the QR / complete payment.
         } catch (err) {
             setError(err.message);
         }
     };
 
-    
-    const startAutoVerification = useCallback(async () => {
+      const startAutoVerification = useCallback(async () => {
         if (verificationStatus === 'completed') {
             console.log('Payment already verified');
             return;
@@ -89,6 +89,7 @@ const UPIPayment = ({ orderId, amount }) => {
         // Clear any existing timer
         if (verificationTimer.current) {
             clearTimeout(verificationTimer.current);
+            verificationTimer.current = null;
         }
 
         verificationTimer.current = setTimeout(async () => {
@@ -106,11 +107,12 @@ const UPIPayment = ({ orderId, amount }) => {
                 console.log('Payment data:', paymentData);
 
                 // First check UPI status
-                const statusResult = await checkUpiStatus({
+                const statusPayload = {
                     orderId,
                     transactionId: paymentData.transactionId,
                     amount: amount
-                }).unwrap();
+                };
+                const statusResult = await checkUpiStatus(statusPayload).unwrap();
 
                 console.log('Payment status:', statusResult);
 
@@ -123,7 +125,8 @@ const UPIPayment = ({ orderId, amount }) => {
                         const verificationData = {
                             orderId,
                             transactionId: paymentData.transactionId,
-                            amount: amount
+                            amount: amount,
+                            upiId: customerUpiId.trim() || undefined
                         };
                         
                         const verificationResult = await verifyUpiPayment(verificationData).unwrap();
@@ -131,6 +134,10 @@ const UPIPayment = ({ orderId, amount }) => {
 
                         if (verificationResult.success) {
                             console.log('Payment verified successfully!');
+                            if (verificationTimer.current) {
+                                clearTimeout(verificationTimer.current);
+                                verificationTimer.current = null;
+                            }
                             setVerificationStatus('completed');
                             toast.success('Payment successful!');
                             
@@ -159,7 +166,9 @@ const UPIPayment = ({ orderId, amount }) => {
                     setVerificationAttempts(prev => prev + 1);
                     const nextInterval = VERIFICATION_INTERVAL;
                     console.log(`Scheduling next verification in ${nextInterval/1000} seconds...`);
-                    startAutoVerification();
+                    verificationTimer.current = setTimeout(() => {
+                        startAutoVerification();
+                    }, nextInterval);
                 } else {
                     console.log('Max verification attempts reached');
                     setError('Payment verification timed out. Please enter your UPI transaction ID below to verify manually.');
@@ -171,11 +180,45 @@ const UPIPayment = ({ orderId, amount }) => {
                 const nextInterval = VERIFICATION_INTERVAL * Math.pow(1.5, verificationAttempts);
                 if (verificationAttempts < MAX_VERIFICATION_ATTEMPTS) {
                     setVerificationAttempts(prev => prev + 1);
-                    setTimeout(startAutoVerification, nextInterval);
+                    verificationTimer.current = setTimeout(() => {
+                        startAutoVerification();
+                    }, nextInterval);
                 }
             }
         }, VERIFICATION_INTERVAL);
-    }, [verificationStatus, verificationAttempts, orderId, amount, paymentData]);
+    }, [verificationStatus, verificationAttempts, orderId, amount, paymentData, customerUpiId, checkUpiStatus, verifyUpiPayment, navigate]);
+
+    // When paymentData becomes available, schedule automatic verification.
+    // This avoids invoking a possibly stale `startAutoVerification` from inside
+    // the generator where closures may capture old state.
+    useEffect(() => {
+        const transactionId = paymentData?.transactionId;
+        if (!transactionId || verificationStatus === 'completed') {
+            return;
+        }
+
+        console.log('paymentData set — scheduling auto verification in 10s', { transactionId });
+        setVerificationAttempts(0);
+
+        const initialTimer = setTimeout(() => {
+            try {
+                startAutoVerification();
+            } catch (err) {
+                console.error('Failed to start auto verification from effect:', err);
+            }
+        }, 10000);
+
+        return () => {
+            clearTimeout(initialTimer);
+        };
+    }, [paymentData?.transactionId, verificationStatus, startAutoVerification]);
+
+    console.log('Payment Data:', paymentData);
+    console.log("Order id:", orderId)
+    console.log("Amount:", amount)
+
+    
+  
 
     const verifyPayment = async (manualUpiTxnId = null) => {
         try {
@@ -187,7 +230,8 @@ const UPIPayment = ({ orderId, amount }) => {
                 orderId,
                 transactionId: paymentData.transactionId,
                 amount: amount,
-                upiTransactionId: manualUpiTxnId || paymentData.transactionId
+                upiTransactionId: manualUpiTxnId || paymentData.transactionId,
+                upiId: customerUpiId.trim() || undefined
             };
 
             console.log('Verifying payment:', verificationData);
@@ -195,7 +239,8 @@ const UPIPayment = ({ orderId, amount }) => {
             // First check status
             const statusResult = await checkUpiStatus({
                 orderId,
-                transactionId: paymentData.transactionId
+                transactionId: paymentData.transactionId,
+                amount: amount
             }).unwrap();
 
             console.log('Payment status result:', statusResult);
@@ -266,7 +311,7 @@ const UPIPayment = ({ orderId, amount }) => {
             } else {
                 // For desktop: Show QR code
                 const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
-                const response = await fetch(`${apiUrl}/upi-payments/qr`, {
+                const response = await fetch(`${apiUrl}/upi-payments/collect-qr`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -275,25 +320,40 @@ const UPIPayment = ({ orderId, amount }) => {
                     body: JSON.stringify({
                         amount,
                         orderId,
-                        transactionId: paymentData.transactionId
+                        transactionId: paymentData.transactionId,
+                        upiId: customerUpiId.trim()
                     })
                 });
                 
                 const qrCode = await response.json();
 
-                if (qrCode.success) {
+                if (response.ok && qrCode.success) {
+                    setManualPaymentInfo({
+                        qrCode: qrCode.data.qrCode,
+                        upiUrl: qrCode.data.upiUrl,
+                        merchantUpi: qrCode.data.merchantUPI,
+                        customerUpiId: qrCode.data.customerUpiId
+                    });
                     setPaymentData(prev => ({
                         ...prev,
                         qrCode: qrCode.data.qrCode
                     }));
+                    toast.success('UPI payment link generated. Open your UPI app to complete payment.');
+
+                    // Attempt to open the payment intent in a new tab for desktop browsers
+                    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        window.open(qrCode.data.upiUrl, '_blank');
+                    }
+                } else {
+                    throw new Error(qrCode?.message || 'Failed to generate UPI QR code');
                 }
             }
             
-            // Start verification process
+            // Start verification process — schedule via paymentData effect to avoid stale closures
             setVerificationAttempts(0);
-            startAutoVerification();
         } catch (err) {
-            setError('Failed to initiate UPI payment. Please try again.');
+            setManualPaymentInfo(null);
+            setError(err.message || 'Failed to initiate UPI payment. Please try again.');
         }
     };
 
@@ -331,13 +391,19 @@ const UPIPayment = ({ orderId, amount }) => {
                     <div className="flex justify-center gap-4 mb-4">
                         <button 
                             className={`px-4 py-2 rounded-full ${!customerUpiId ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                            onClick={() => setCustomerUpiId('')}
+                            onClick={() => {
+                                setCustomerUpiId('');
+                                setManualPaymentInfo(null);
+                            }}
                         >
                             Scan QR
                         </button>
                         <button 
                             className={`px-4 py-2 rounded-full ${customerUpiId ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                            onClick={() => setCustomerUpiId(' ')}
+                            onClick={() => {
+                                setCustomerUpiId(' ');
+                                setManualPaymentInfo(null);
+                            }}
                         >
                             Enter UPI ID
                         </button>
@@ -376,6 +442,31 @@ const UPIPayment = ({ orderId, amount }) => {
                             >
                                 Pay Now
                             </button>
+                        </div>
+                    )}
+
+                    {customerUpiId !== '' && manualPaymentInfo && (
+                        <div className="mt-4 space-y-3 rounded border border-gray-200 bg-gray-50 p-4 text-center">
+                            <p className="text-sm text-gray-600">Scan this QR with your UPI app or open the link below to approve the payment request.</p>
+                            <img
+                                src={manualPaymentInfo.qrCode || paymentData.qrCode}
+                                alt="UPI Payment QR Code"
+                                className="mx-auto max-w-[200px]"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => window.open(manualPaymentInfo.upiUrl, '_blank')}
+                                className="w-full rounded bg-blue-500 py-2 text-white hover:bg-blue-600"
+                            >
+                                Open in UPI App
+                            </button>
+                            <div className="text-xs text-gray-500">
+                                <p>Paying to: {manualPaymentInfo.merchantUpi}</p>
+                                {manualPaymentInfo.customerUpiId && (
+                                    <p>Requested for: {manualPaymentInfo.customerUpiId}</p>
+                                )}
+                                <p className="mt-1">Once the payment is completed, we will verify it automatically.</p>
+                            </div>
                         </div>
                     )}
                 </div>
