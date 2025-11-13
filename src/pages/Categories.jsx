@@ -62,9 +62,9 @@ const Categories = () => {
 		error: productsError
 	} = useGetProductsQuery(productQueryParams);
 
-	console.log('API Response:', productsResponse);
+		// console.log('API Response:', productsResponse);
 	const products = productsResponse?.data?.products || [];
-	console.log('Extracted Products:', products);
+		// console.log('Extracted Products:', products);
 
 	// Scroll to top with smooth animation
 	const scrollToTop = () => {

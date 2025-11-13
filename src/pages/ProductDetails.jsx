@@ -234,7 +234,7 @@ const ProductDetails = () => {
                 });
             } catch (error) {
                 // User cancelled sharing or error occurred
-                console.log('Sharing cancelled or failed');
+                // console.log('Sharing cancelled or failed');
             }
         } else {
             // Fallback: copy to clipboard

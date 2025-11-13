@@ -34,8 +34,8 @@ const AdminCategories = () => {
   
   // Debug: Log the API response structure
   if (categoriesResponse && !Array.isArray(categories)) {
-    console.log('Categories API Response:', categoriesResponse);
-    console.log('Extracted categories:', categories);
+  // console.log('Categories API Response:', categoriesResponse);
+  // console.log('Extracted categories:', categories);
   }
   
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();

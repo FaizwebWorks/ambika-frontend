@@ -125,8 +125,8 @@ const OrderSummary = () => {
     }
     
     // Debug cart data
-    console.log('Cart Response:', cartResponse);
-    console.log('Cart Items:', cartItems);
+  // console.log('Cart Response:', cartResponse);
+  // console.log('Cart Items:', cartItems);
     
     if (cartItems.length === 0 && !cartLoading) {
       toast.error('Your cart is empty. Please add items first.');

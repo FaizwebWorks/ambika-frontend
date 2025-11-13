@@ -18,9 +18,9 @@ const QuotationDetail = () => {
 
   const [respondToQuotation] = useRespondToQuotationMutation();
 
-  console.log('API Response:', data);
+  // console.log('API Response:', data);
   const quotation = data?.data?.quotation;
-  console.log('Quotation Data:', quotation);
+  // console.log('Quotation Data:', quotation);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -48,11 +48,11 @@ const QuotationDetail = () => {
   const handleRespond = async (newStatus) => {
     try {
       setIsSubmitting(true);
-      console.log('Sending response:', {
-        id,
-        status: newStatus,
-        unitPrice: quotation?.product?.price,
-      });
+      // console.log('Sending response:', {
+      //   id,
+      //   status: newStatus,
+      //   unitPrice: quotation?.product?.price,
+      // });
       
       await respondToQuotation({
         id,
