@@ -28,7 +28,7 @@ const AdminRoutes = () => {
         <Route path="quotations" element={<QuotationRequests />} />
         <Route path="quotations/:id" element={<QuotationDetail />} />
         <Route path="users" element={<AdminUsers />} />
-        <Route path="settings" element={<AdminSettings />} />
+        {/* <Route path="settings" element={<AdminSettings />} /> */}
         <Route path="notifications" element={<AdminNotifications />} />
       </Route>
     </Routes>

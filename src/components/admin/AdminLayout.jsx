@@ -32,7 +32,7 @@ const AdminLayout = () => {
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Users', href: '/admin/users', icon: User },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
+    // { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   const isActive = (path) => {
