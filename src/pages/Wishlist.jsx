@@ -55,7 +55,7 @@ const Wishlist = () => {
     
     // If there's a mismatch, it means we have deleted products in wishlist
     if (originalCount > 0 && filteredCount < originalCount) {
-      console.log(`Found ${originalCount - filteredCount} deleted products in wishlist, consider running cleanup`);
+  // console.log(`Found ${originalCount - filteredCount} deleted products in wishlist, consider running cleanup`);
     }
   }, [wishlistResponse?.data?.items?.length, wishlistItems.length]);
 

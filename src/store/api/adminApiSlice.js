@@ -29,14 +29,14 @@ export const adminApiSlice = apiSlice.injectEndpoints({
 
     createProduct: builder.mutation({
       query: (data) => {
-        console.log('AdminApiSlice - createProduct input data:', data);
+  // console.log('AdminApiSlice - createProduct input data:', data);
         
         let formData;
         
         // If data is already FormData (from ProductForm), use it directly
         if (data instanceof FormData) {
           formData = data;
-          console.log('Using existing FormData');
+          // console.log('Using existing FormData');
         } else {
           // Otherwise, create FormData from object (for other uses)
           formData = new FormData();
@@ -59,9 +59,9 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         }
         
         // Log FormData contents
-        console.log('FormData entries for product:');
+  // console.log('FormData entries for product:');
         for (let [key, value] of formData.entries()) {
-          console.log(key, value);
+          // console.log(key, value);
         }
         
         return {
@@ -76,7 +76,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
               headers.set('authorization', `Bearer ${token}`);
             }
             // DO NOT set Content-Type - let browser handle FormData boundary
-            console.log('PrepareHeaders called for createProduct');
+            // console.log('PrepareHeaders called for createProduct');
             return headers;
           }
         };
@@ -86,7 +86,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
 
     updateProduct: builder.mutation({
       query: (payload) => {
-        console.log('AdminApiSlice - updateProduct input payload:', payload);
+  // console.log('AdminApiSlice - updateProduct input payload:', payload);
         
         let formData, id;
         
@@ -126,9 +126,9 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         }
         
         // Log FormData contents
-        console.log('FormData entries for product update:');
+  // console.log('FormData entries for product update:');
         for (let [key, value] of formData.entries()) {
-          console.log(key, value);
+          // console.log(key, value);
         }
         
         return {
@@ -143,7 +143,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
               headers.set('authorization', `Bearer ${token}`);
             }
             // DO NOT set Content-Type - let browser handle FormData boundary
-            console.log('PrepareHeaders called for updateProduct');
+            // console.log('PrepareHeaders called for updateProduct');
             return headers;
           }
         };
@@ -261,22 +261,22 @@ export const adminApiSlice = apiSlice.injectEndpoints({
 
     createCategory: builder.mutation({
       query: (data) => {
-        console.log('AdminApiSlice - createCategory input data:', data);
+  // console.log('AdminApiSlice - createCategory input data:', data);
         const formData = new FormData();
         Object.keys(data).forEach(key => {
           if (key === 'image' && data[key]) {
             formData.append('image', data[key]);
-            console.log('Added image to FormData:', data[key]);
+            // console.log('Added image to FormData:', data[key]);
           } else if (data[key] !== undefined) {
             formData.append(key, String(data[key]));
-            console.log(`Added ${key} to FormData:`, String(data[key]));
+            // console.log(`Added ${key} to FormData:`, String(data[key]));
           }
         });
         
         // Log FormData contents
-        console.log('FormData entries:');
+  // console.log('FormData entries:');
         for (let [key, value] of formData.entries()) {
-          console.log(key, value);
+          // console.log(key, value);
         }
         
         return {

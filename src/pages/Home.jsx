@@ -94,7 +94,7 @@ const Home = () => {
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsAuthenticated);
   const currentUser = useSelector(selectCurrentUser);
-  console.log("Current User:", currentUser?.customerType);
+  // console.log("Current User:", currentUser?.customerType);
   
   // Fetch top 3 products from API
   const { data: productsResponse, isLoading: productsLoading, error: productsError } = useGetProductsQuery({

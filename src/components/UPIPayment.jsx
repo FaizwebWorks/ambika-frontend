@@ -25,10 +25,10 @@ const UPIPayment = ({ orderId, amount }) => {
 
     useEffect(() => {
         if (orderId && amount) {
-            console.log('Initializing payment with orderId:', orderId, 'amount:', amount);
+            // console.log('Initializing payment with orderId:', orderId, 'amount:', amount);
             generatePayment();
         } else {
-            console.log('Missing orderId or amount', { orderId, amount });
+            // console.log('Missing orderId or amount', { orderId, amount });
         }
         return () => clearTimeout(verificationTimer.current);
     }, [orderId, amount]);
@@ -55,17 +55,17 @@ const UPIPayment = ({ orderId, amount }) => {
             }
 
             const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
-            console.log('Generating payment for order:', orderId, 'amount:', amount);
+            // console.log('Generating payment for order:', orderId, 'amount:', amount);
             
             const response = await generateUpiPayment(orderId).unwrap();
-            console.log('Payment generation response:', response);
+            // console.log('Payment generation response:', response);
 
             setPaymentData(response);
             // Normalize response if nested under `data`
             // (RTK transformResponse should already return response.data, but be defensive)
             const normalized = response?.data ? response.data : response;
             setPaymentData(normalized);
-            console.log('Normalized paymentData set:', normalized);
+            // console.log('Normalized paymentData set:', normalized);
 
             // Don't call the verification function here because the closure may be stale.
             // A dedicated `useEffect` will watch `paymentData` and schedule auto-verification
@@ -77,12 +77,12 @@ const UPIPayment = ({ orderId, amount }) => {
 
       const startAutoVerification = useCallback(async () => {
         if (verificationStatus === 'completed') {
-            console.log('Payment already verified');
+            // console.log('Payment already verified');
             return;
         }
 
         if (verificationAttempts >= MAX_VERIFICATION_ATTEMPTS) {
-            console.log('Max verification attempts reached');
+            // console.log('Max verification attempts reached');
             return;
         }
 
@@ -95,16 +95,16 @@ const UPIPayment = ({ orderId, amount }) => {
         verificationTimer.current = setTimeout(async () => {
             try {
                 if (!paymentData || !orderId || !amount) {
-                    console.log('Missing required data:', { 
-                        hasPaymentData: !!paymentData, 
-                        hasOrderId: !!orderId, 
-                        hasAmount: !!amount 
-                    });
+                    // console.log('Missing required data:', { 
+                    //     hasPaymentData: !!paymentData, 
+                    //     hasOrderId: !!orderId, 
+                    //     hasAmount: !!amount 
+                    // });
                     return;
                 }
 
-                console.log(`Starting verification attempt ${verificationAttempts + 1}/${MAX_VERIFICATION_ATTEMPTS}`);
-                console.log('Payment data:', paymentData);
+                // console.log(`Starting verification attempt ${verificationAttempts + 1}/${MAX_VERIFICATION_ATTEMPTS}`);
+                // console.log('Payment data:', paymentData);
 
                 // First check UPI status
                 const statusPayload = {
@@ -114,12 +114,12 @@ const UPIPayment = ({ orderId, amount }) => {
                 };
                 const statusResult = await checkUpiStatus(statusPayload).unwrap();
 
-                console.log('Payment status:', statusResult);
+                // console.log('Payment status:', statusResult);
 
-                console.log('Status check result:', statusResult);
+                // console.log('Status check result:', statusResult);
                 
                 if (statusResult.status === 'SUCCESS' || statusResult.status === 'COMPLETED') {
-                    console.log('Payment marked as successful, verifying...');
+                    // console.log('Payment marked as successful, verifying...');
                     try {
                         // Verify the payment
                         const verificationData = {
@@ -130,10 +130,10 @@ const UPIPayment = ({ orderId, amount }) => {
                         };
                         
                         const verificationResult = await verifyUpiPayment(verificationData).unwrap();
-                        console.log('Verification result:', verificationResult);
+                        // console.log('Verification result:', verificationResult);
 
                         if (verificationResult.success) {
-                            console.log('Payment verified successfully!');
+                            // console.log('Payment verified successfully!');
                             if (verificationTimer.current) {
                                 clearTimeout(verificationTimer.current);
                                 verificationTimer.current = null;
@@ -158,19 +158,19 @@ const UPIPayment = ({ orderId, amount }) => {
                         console.error('Verification error:', verifyErr);
                     }
                 } else {
-                    console.log('Payment status:', statusResult.status);
+                    // console.log('Payment status:', statusResult.status);
                 }
 
                 // Schedule next verification attempt
                 if (verificationAttempts < MAX_VERIFICATION_ATTEMPTS) {
                     setVerificationAttempts(prev => prev + 1);
                     const nextInterval = VERIFICATION_INTERVAL;
-                    console.log(`Scheduling next verification in ${nextInterval/1000} seconds...`);
+                    // console.log(`Scheduling next verification in ${nextInterval/1000} seconds...`);
                     verificationTimer.current = setTimeout(() => {
                         startAutoVerification();
                     }, nextInterval);
                 } else {
-                    console.log('Max verification attempts reached');
+                    // console.log('Max verification attempts reached');
                     setError('Payment verification timed out. Please enter your UPI transaction ID below to verify manually.');
                 }
             } catch (err) {
@@ -197,7 +197,7 @@ const UPIPayment = ({ orderId, amount }) => {
             return;
         }
 
-        console.log('paymentData set — scheduling auto verification in 10s', { transactionId });
+    // console.log('paymentData set — scheduling auto verification in 10s', { transactionId });
         setVerificationAttempts(0);
 
         const initialTimer = setTimeout(() => {
@@ -213,9 +213,9 @@ const UPIPayment = ({ orderId, amount }) => {
         };
     }, [paymentData?.transactionId, verificationStatus, startAutoVerification]);
 
-    console.log('Payment Data:', paymentData);
-    console.log("Order id:", orderId)
-    console.log("Amount:", amount)
+    // console.log('Payment Data:', paymentData);
+    // console.log("Order id:", orderId)
+    // console.log("Amount:", amount)
 
     
   
@@ -234,7 +234,7 @@ const UPIPayment = ({ orderId, amount }) => {
                 upiId: customerUpiId.trim() || undefined
             };
 
-            console.log('Verifying payment:', verificationData);
+            // console.log('Verifying payment:', verificationData);
             
             // First check status
             const statusResult = await checkUpiStatus({
@@ -243,12 +243,12 @@ const UPIPayment = ({ orderId, amount }) => {
                 amount: amount
             }).unwrap();
 
-            console.log('Payment status result:', statusResult);
+            // console.log('Payment status result:', statusResult);
 
             if (statusResult.status === 'SUCCESS') {
                 // Verify the payment if status is success
                 const result = await verifyUpiPayment(verificationData).unwrap();
-                console.log('Verification result:', result);
+                // console.log('Verification result:', result);
 
                 if (result.success) {
                     clearTimeout(verificationTimer.current);
@@ -257,7 +257,7 @@ const UPIPayment = ({ orderId, amount }) => {
                     
                     // Navigate to success page
                     const successPath = `/order-success?orderId=${orderId}&total=${amount}&paymentMethod=UPI`;
-                    console.log('Navigating to:', successPath);
+                    // console.log('Navigating to:', successPath);
                     
                     navigate(successPath, { 
                         state: { 
