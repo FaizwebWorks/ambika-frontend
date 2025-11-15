@@ -462,6 +462,10 @@ const OrderSummary = () => {
                         <div>
                           <p className="font-medium text-neutral-800">UPI Payment</p>
                           <p className="text-sm text-neutral-600">Pay using any UPI app</p>
+                          <p className="mt-2 text-xs text-orange-600">
+                            Automatic UPI verification is not available yet. After paying you will need to share the transaction ID with support for manual confirmation.
+                            We currently recommend selecting Cash on Delivery.
+                          </p>
                         </div>
                       </div>
                       {paymentMethod === 'upi' && (
