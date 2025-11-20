@@ -580,7 +580,7 @@ const OrderSummary = () => {
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold text-neutral-800">UPI Payment</h3>
-                            <p className="text-sm text-neutral-500">Secure and instant payment</p>
+                            <p className="text-sm text-neutral-500">Pay using any UPI app, then enter your transaction ID below to verify and place your order.</p>
                           </div>
                         </div>
                       </div>
@@ -608,7 +608,6 @@ const OrderSummary = () => {
                   </div>
 
                   {/* UPI Payment Component */}
-                  {/* Scrollable Content Area */}
                   <div className="flex-1 overflow-y-auto">
                     <div className="p-6">
                       <UPIPayment
@@ -629,7 +628,7 @@ const OrderSummary = () => {
                     <div className="flex items-center justify-center gap-2">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
+                    </svg>
                       <span className="text-sm text-neutral-600">End-to-end encrypted payment</span>
                     </div>
                   </div>

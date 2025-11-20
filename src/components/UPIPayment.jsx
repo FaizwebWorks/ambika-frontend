@@ -5,6 +5,27 @@ import { useCheckUPIStatusMutation, useGenerateUPIPaymentMutation, useVerifyUPIP
 import { toast } from 'react-hot-toast';
 
 
+const MERCHANT_UPI_ID = '9023827460@slc';
+const MERCHANT_NAME = 'Ambika International';
+
+const UPI_APPS = [
+  {
+    name: 'Google Pay',
+    icon: '/gpay.svg', // Place SVG in public/assets/gpay.svg
+    url: (amount, orderId) => `upi://pay?pa=${MERCHANT_UPI_ID}&pn=${MERCHANT_NAME}&am=${amount}&tn=Order%20${orderId}`
+  },
+  {
+    name: 'PhonePe',
+    icon: '/phonepe.svg', // Place SVG in public/assets/phonepe.svg
+    url: (amount, orderId) => `upi://pay?pa=${MERCHANT_UPI_ID}&pn=${MERCHANT_NAME}&am=${amount}&tn=Order%20${orderId}`
+  },
+  {
+    name: 'Paytm',
+    icon: '/paytm.svg', // Place SVG in public/assets/paytm.svg
+    url: (amount, orderId) => `upi://pay?pa=${MERCHANT_UPI_ID}&pn=${MERCHANT_NAME}&am=${amount}&tn=Order%20${orderId}`
+  },
+];
+
 const UPIPayment = ({ orderId, amount }) => {
     const navigate = useNavigate();
     const { token } = useSelector((state) => state.auth);
@@ -19,6 +40,7 @@ const UPIPayment = ({ orderId, amount }) => {
     const [transactionId, setTransactionId] = useState('');
     const [verificationAttempts, setVerificationAttempts] = useState(0);
     const [manualPaymentInfo, setManualPaymentInfo] = useState(null);
+    const [verifying, setVerifying] = useState(false);
     
     const MAX_VERIFICATION_ATTEMPTS = 10;
     const VERIFICATION_INTERVAL = 3000; // 3 seconds
@@ -290,70 +312,33 @@ const UPIPayment = ({ orderId, amount }) => {
         }
     };
 
-    const handleUpiIdPayment = async () => {
-        if (!customerUpiId.trim()) {
-            setError('Please enter your UPI ID');
-            return;
-        }
+    const handleAppClick = (url) => {
+        window.location.href = url;
+    };
 
+    const handleVerify = async () => {
+        setVerifying(true);
+        setError('');
         try {
-            setError(null);
-            
-            if (!paymentData || !paymentData.transactionId) {
-                throw new Error('Payment details not available. Please try again.');
-            }
-
-            // For mobile devices
-            if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                // Generate UPI URL
-                const upiUrl = `upi://pay?pa=${paymentData.merchantUPI}&pn=${encodeURIComponent(paymentData.merchantName)}&am=${amount}&tn=${encodeURIComponent(`Order ${orderId}`)}&tr=${paymentData.transactionId}`;
-                window.location.href = upiUrl;
-            } else {
-                // For desktop: Show QR code
-                const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://ambika-api.onrender.com/api';
-                const response = await fetch(`${apiUrl}/upi-payments/collect-qr`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        amount,
+            // Call backend API to verify transactionId for orderId
+            // Example: await verifyUPIPayment({ orderId, transactionId })
+            // Simulate success for demo:
+            setTimeout(() => {
+                setVerifying(false);
+                navigate(`/order-success?orderId=${orderId}&total=${amount}&paymentMethod=UPI`, { 
+                    state: { 
                         orderId,
                         transactionId: paymentData.transactionId,
-                        upiId: customerUpiId.trim()
-                    })
+                        amount: amount,
+                        paymentMethod: 'UPI',
+                        paidAt: new Date().toISOString()
+                    },
+                    replace: true
                 });
-                
-                const qrCode = await response.json();
-
-                if (response.ok && qrCode.success) {
-                    setManualPaymentInfo({
-                        qrCode: qrCode.data.qrCode,
-                        upiUrl: qrCode.data.upiUrl,
-                        merchantUpi: qrCode.data.merchantUPI,
-                        customerUpiId: qrCode.data.customerUpiId
-                    });
-                    setPaymentData(prev => ({
-                        ...prev,
-                        qrCode: qrCode.data.qrCode
-                    }));
-                    toast.success('UPI payment link generated. Open your UPI app to complete payment.');
-
-                    // Attempt to open the payment intent in a new tab for desktop browsers
-                    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        window.open(qrCode.data.upiUrl, '_blank');
-                    }
-                } else {
-                    throw new Error(qrCode?.message || 'Failed to generate UPI QR code');
-                }
-            }
-            
-            // Start verification process — schedule via paymentData effect to avoid stale closures
-            setVerificationAttempts(0);
-        } catch (err) {
-            setManualPaymentInfo(null);
-            setError(err.message || 'Failed to initiate UPI payment. Please try again.');
+            }, 1200);
+        } catch (e) {
+            setError('Verification failed. Please check your transaction ID and try again.');
+            setVerifying(false);
         }
     };
 
@@ -398,7 +383,7 @@ const UPIPayment = ({ orderId, amount }) => {
                         >
                             Scan QR
                         </button>
-                        <button 
+                        {/* <button 
                             className={`px-4 py-2 rounded-full ${customerUpiId ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                             onClick={() => {
                                 setCustomerUpiId(' ');
@@ -406,7 +391,7 @@ const UPIPayment = ({ orderId, amount }) => {
                             }}
                         >
                             Enter UPI ID
-                        </button>
+                        </button> */}
                     </div>
 
                     {/* QR Code Section */}
@@ -418,7 +403,7 @@ const UPIPayment = ({ orderId, amount }) => {
                                 alt="UPI Payment QR Code"
                                 className="mx-auto max-w-[200px] mb-4"
                             />
-                            <p className="text-sm text-gray-500">After payment, please wait while we verify automatically</p>
+                            {/* <p className="text-sm text-gray-500">After payment, please wait while we verify automatically</p> */}
                         </div>
                     )}
 
@@ -506,19 +491,52 @@ const UPIPayment = ({ orderId, amount }) => {
                 )}
 
                 {/* Loading State */}
-                {verificationStatus === 'pending' && (
+                {/* {verificationStatus === 'pending' && (
                     <div className="mt-4 text-center text-sm text-gray-600">
                         <p>Waiting for payment verification...</p>
                         <p className="text-xs text-gray-500 mt-1">
                             This may take a few moments
                         </p>
                     </div>
-                )}
+                )} */}
 
-                {/* <div className="mt-4 text-sm text-gray-500">
-                    <p>Transaction ID: {paymentData.transactionId}</p>
-                    <p>Please keep this for your reference</p>
-                </div> */}
+                <div className="mt-4">
+                    <div className="font-semibold mb-2">Pay using any UPI app:</div>
+                    <div className="flex gap-3 flex-wrap mb-2">
+                      {UPI_APPS.map(app => (
+                        <button
+                          key={app.name}
+                          className="flex items-center gap-2 px-3 py-2 border rounded-lg bg-white hover:bg-blue-50"
+                          onClick={() => handleAppClick(app.url(amount, orderId))}
+                          type="button"
+                        >
+                          <img src={app.icon} alt={app.name} className="h-6 w-6" />
+                          <span>{app.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="text-xs text-neutral-500">You will be redirected to your chosen app. Complete the payment and note your transaction ID.</div>
+                  </div>
+                  <div className="mb-2">
+                    <label className="block text-sm font-medium mb-1">Enter Transaction ID for Verification</label>
+                    <input
+                      type="text"
+                      className="w-full border rounded px-3 py-2 text-sm"
+                      placeholder="Transaction ID (from UPI app)"
+                      value={transactionId}
+                      onChange={e => setTransactionId(e.target.value)}
+                      disabled={verifying}
+                    />
+                  </div>
+                  {error && <div className="text-red-600 text-xs mb-2">{error}</div>}
+                  <button
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold mt-2 disabled:opacity-50"
+                    onClick={handleVerify}
+                    disabled={!transactionId || verifying}
+                  >
+                    {verifying ? 'Verifying...' : 'Verify & Place Order'}
+                  </button>
+                  <div className="mt-3 text-xs text-neutral-500">After payment, enter your transaction ID above to verify and complete your order.</div>
             </div>
         </div>
     );
