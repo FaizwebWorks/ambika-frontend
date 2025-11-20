@@ -20,44 +20,29 @@ const Contact = () => {
     });
   };
 
+  const WHATSAPP_NUMBER = '+919879195322'; // Sales number
+
+  const buildWhatsappUrl = (form) => {
+    const msg = `Inquiry from Ambika International:%0A%0AName: ${form.name}%0AEmail: ${form.email}%0APhone: ${form.phone}%0ASubject: ${form.subject}%0AMessage: ${form.message}`;
+    return `https://wa.me/${WHATSAPP_NUMBER.replace('+','')}/?text=${msg}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setFormState({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
-
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 5000);
-    }, 1000);
-
-    // Actual form submission would go here
-    // const response = await fetch('/api/contact', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(formState),
-    // });
-    // if (response.ok) {
-    //   setIsSubmitting(false);
-    //   setIsSubmitted(true);
-    //   setFormState({ name: '', email: '', phone: '', subject: '', message: '' });
-    // } else {
-    //   setIsSubmitting(false);
-    //   // Handle error
-    // }
+    // Open WhatsApp with pre-filled message
+    window.open(buildWhatsappUrl(formState), '_blank');
+    setIsSubmitting(false);
+    setIsSubmitted(true);
+    setFormState({
+      name: '',
+      email: '',
+      phone: '',
+      subject: '',
+      message: ''
+    });
+    setTimeout(() => setIsSubmitted(false), 5000);
   };
 
   return (
@@ -228,8 +213,8 @@ const Contact = () => {
                 <div>
                   <h3 className="font-medium text-neutral-800 mb-1">Email</h3>
                   <p className="text-neutral-600">
-                    Sales: <a href="mailto:sales@ambikainternational.com" className="text-blue-600 hover:underline">sales@ambikainternational.com</a><br />
-                    Info: <a href="mailto:info@ambikainternational.com" className="text-blue-600 hover:underline">info@ambikainternational.com</a>
+                    Sales: <a href="mailto:sales@ambikainternational.com" className="text-blue-600 hover:underline">ambika.international30@gmail.com</a><br />
+                    Info: <a href="mailto:info@ambikainternational.com" className="text-blue-600 hover:underline">ambikaint2021@gmail.com</a>
                   </p>
                 </div>
               </div>
