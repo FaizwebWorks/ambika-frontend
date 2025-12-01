@@ -5,7 +5,7 @@ import { useCheckUPIStatusMutation, useGenerateUPIPaymentMutation, useVerifyUPIP
 import { toast } from 'react-hot-toast';
 
 
-const MERCHANT_UPI_ID = '9023827460@slc';
+const MERCHANT_UPI_ID = 'rinkeshvaghasiya89-1@okicici';
 const MERCHANT_NAME = 'Ambika International';
 
 const UPI_APPS = [

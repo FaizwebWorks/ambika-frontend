@@ -240,7 +240,7 @@ const Contact = () => {
                 For large wholesale orders or custom product requirements, please contact our dedicated business team.
               </p>
               <a
-                href="mailto:wholesale@ambikainternational.com"
+                href="mailto:ambika.international30@gmail.com"
                 className="inline-flex items-center gap-2 py-2.5 px-5 bg-blue-50 rounded-md text-blue-600 font-medium hover:bg-blue-100 transition-all group"
               >
                 Contact Wholesale Team

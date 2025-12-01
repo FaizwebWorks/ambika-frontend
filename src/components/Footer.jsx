@@ -49,7 +49,7 @@ const Footer = () => (
                     <div>
                         <h3 className="font-medium text-xs tracking-wider text-neutral-900 mb-5 uppercase">Support</h3>
                         <ul className="space-y-3">
-                            <FooterLink to="/faq">FAQ</FooterLink>
+                            {/* <FooterLink to="/faq">FAQ</FooterLink> */}
                             <FooterLink to="/terms-of-use">Terms of Use</FooterLink>
                             <FooterLink to="/privacy-policy">Privacy Policy</FooterLink>
                         </ul>
@@ -61,7 +61,7 @@ const Footer = () => (
                         <ul className="space-y-3">
                             <FooterLink to="/about">About Us</FooterLink>
                             <FooterLink to="/contact">Contact</FooterLink>
-                            <FooterLink to="/careers">Careers</FooterLink>
+                            {/* <FooterLink to="/careers">Careers</FooterLink> */}
                         </ul>
                     </div>
                     
@@ -70,7 +70,7 @@ const Footer = () => (
                         <h3 className="font-medium text-xs tracking-wider text-neutral-900 mb-5 uppercase">Shop</h3>
                         <ul className="space-y-3">
                             <FooterLink to="/profile">My Account</FooterLink>
-                            <FooterLink to="/checkout">Checkout</FooterLink>
+                            {/* <FooterLink to="/checkout">Checkout</FooterLink> */}
                             <FooterLink to="/cart">Cart</FooterLink>
                         </ul>
                     </div>

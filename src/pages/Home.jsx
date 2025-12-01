@@ -535,7 +535,7 @@ const Home = () => {
       </div>
       
       {/* Newsletter Section */}
-      <div className="w-full py-16 bg-white border-t border-neutral-100">
+      {/* <div className="w-full py-16 bg-white border-t border-neutral-100">
         <div className="max-w-xl mx-auto px-4 text-center">
           <h3 className="text-2xl font-medium text-neutral-800">Stay Updated</h3>
           <p className="text-neutral-500 mt-3 mb-6">
@@ -555,7 +555,7 @@ const Home = () => {
             By subscribing, you agree to our Privacy Policy. No spam, unsubscribe anytime.
           </p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
