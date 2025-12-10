@@ -91,7 +91,7 @@ const Register = () => {
                 type="text"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="johndoe"
+                placeholder="Enter your username"
                 required
                 className="w-full px-4 py-2.5 rounded-lg border border-neutral-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all text-base"
               />
@@ -110,7 +110,7 @@ const Register = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="name@company.com"
+                placeholder="Enter your email address"
                 required
                 className="w-full px-4 py-2.5 rounded-lg border border-neutral-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all text-base"
               />

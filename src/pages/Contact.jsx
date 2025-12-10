@@ -91,7 +91,7 @@ const Contact = () => {
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-300 focus:outline-none transition-all"
-                      placeholder="John Doe"
+                      placeholder="Enter your name"
                     />
                   </div>
                   <div>
@@ -106,7 +106,7 @@ const Contact = () => {
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-300 focus:outline-none transition-all"
-                      placeholder="john@example.com"
+                      placeholder="Enter your email"
                     />
                   </div>
                 </div>
@@ -122,7 +122,7 @@ const Contact = () => {
                     value={formState.phone}
                     onChange={handleChange}
                     className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-300 focus:outline-none transition-all"
-                    placeholder="+91 98765 43210"
+                    placeholder="Ener your phone number"
                   />
                 </div>
 
@@ -296,7 +296,7 @@ const Contact = () => {
       </div>
 
       {/* FAQ Teaser */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      {/* <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="bg-gradient-to-r from-blue-50 to-neutral-50 rounded-2xl p-8 md:p-12 text-center">
           <h2 className="text-2xl font-medium text-neutral-800 mb-3">Have More Questions?</h2>
           <p className="text-neutral-600 mb-6 max-w-2xl mx-auto">
@@ -309,7 +309,7 @@ const Contact = () => {
             View FAQ
           </a>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
