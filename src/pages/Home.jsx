@@ -155,6 +155,7 @@ const Home = () => {
     window.scrollTo(0, 0);
   };
   
+  
   return (
     <div className="home-page w-full z-30">
       <ScrollToTop />
