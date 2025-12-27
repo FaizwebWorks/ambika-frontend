@@ -40,7 +40,7 @@ import {
 } from "../components/LazyComponents.jsx";
 import { AlertTriangle } from "lucide-react";
 
-const isSiteDisabled = true;
+const isSiteDisabled = false;
 
 const SiteDisabled = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-100 via-blue-50 to-neutral-100 px-4">
