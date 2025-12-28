@@ -7,6 +7,7 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminOrders from '../pages/admin/AdminOrders';
 import AdminProducts from '../pages/admin/AdminProducts';
 import AdminSettings from '../pages/admin/AdminSettings';
+import AdminPayments from '../pages/admin/AdminPayments';
 import AdminUsers from '../pages/admin/AdminUsers';
 import QuotationDetail from '../pages/admin/QuotationDetail';
 import QuotationRequests from '../pages/admin/QuotationRequests';
@@ -25,6 +26,7 @@ const AdminRoutes = () => {
         <Route path="orders/:id" element={<AdminOrders />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="categories/:id" element={<AdminCategories />} />
+        <Route path="payments" element={<AdminPayments />} />
         <Route path="quotations" element={<QuotationRequests />} />
         <Route path="quotations/:id" element={<QuotationDetail />} />
         <Route path="users" element={<AdminUsers />} />

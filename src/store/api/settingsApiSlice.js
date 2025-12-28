@@ -57,6 +57,16 @@ export const settingsApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Settings'],
     }),
+
+    // Update payment visibility settings (UPI / COD)
+    updatePaymentSettings: builder.mutation({
+      query: (data) => ({
+        url: '/settings/payments',
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Settings'],
+    }),
     
     // Get admin profile
     getAdminProfile: builder.query({
@@ -98,6 +108,7 @@ export const settingsApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetSettingsQuery,
   useUpdateGeneralSettingsMutation,
+  useUpdatePaymentSettingsMutation,
   useUpdateNotificationSettingsMutation,
   useUpdateSecuritySettingsMutation,
   useUpdateSystemSettingsMutation,

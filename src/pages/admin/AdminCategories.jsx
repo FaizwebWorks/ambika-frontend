@@ -24,17 +24,26 @@ import {
 const AdminCategories = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, category: null });
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
 
-  // API hooks
-  const { data: categoriesResponse, isLoading, error, refetch } = useGetAdminCategoriesQuery();
+  // API hooks (pass pagination/search/sort params)
+  const { data: categoriesResponse, isLoading, error, refetch } = useGetAdminCategoriesQuery({
+    page,
+    limit,
+    search: searchTerm,
+    sort: sortBy,
+    order: 'asc'
+  });
 
-  // Extract categories array from API response
+  // Extract categories array and pagination from API response
   const categories = categoriesResponse?.data?.categories || categoriesResponse?.categories || [];
+  const pagination = categoriesResponse?.data?.pagination || { current: page, pages: 1, total: Array.isArray(categories) ? categories.length : 0, hasNext: false, hasPrev: false };
 
   // Debug: Log the API response structure
   if (categoriesResponse && !Array.isArray(categories)) {
@@ -60,13 +69,6 @@ const AdminCategories = () => {
     setShowForm(true);
   };
 
-  /*************  ✨ Windsurf Command ⭐  *************/
-  /**
-   * Handle form submission to either create a new category or update an existing one
-   * @param {Object} formData category data to be saved
-   * @returns {Promise<void>}
-   */
-  /*******  5b3b1fe1-8476-49e3-aa13-9e39bbb43533  *******/
   const handleFormSubmit = async (formData) => {
     try {
       if (editingCategory) {
@@ -129,7 +131,7 @@ const AdminCategories = () => {
       case 'name':
         return a.name.localeCompare(b.name);
       case 'products':
-        return (b.productCount || 0) - (a.productCount || 0);
+        return (b.stats?.productCount || b.productCount || 0) - (a.stats?.productCount || a.productCount || 0);
       case 'recent':
         return new Date(b.updatedAt) - new Date(a.updatedAt);
       default:
@@ -138,9 +140,9 @@ const AdminCategories = () => {
   });
 
   // Calculate summary stats
-  const totalCategories = Array.isArray(categories) ? categories.length : 0;
+  const totalCategories = pagination?.total ?? (Array.isArray(categories) ? categories.length : 0);
   const activeCategories = Array.isArray(categories) ? categories.filter(cat => cat.isActive).length : 0;
-  const totalProducts = Array.isArray(categories) ? categories.reduce((sum, cat) => sum + (cat.productCount || 0), 0) : 0;
+  const totalProducts = Array.isArray(categories) ? categories.reduce((sum, cat) => sum + (cat.stats?.productCount ?? cat.productCount ?? 0), 0) : 0;
 
   // Show form if needed
   if (showForm) {
@@ -196,7 +198,7 @@ const AdminCategories = () => {
           <CustomDropdown
             options={sortOptions}
             value={sortBy}
-            onChange={setSortBy}
+            onChange={(val) => { setSortBy(val); setPage(1); }}
             placeholder="Sort by Name"
             className="min-w-[160px]"
           />
@@ -294,7 +296,7 @@ const AdminCategories = () => {
                 type="text"
                 placeholder="Search categories..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                 className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none"
               />
             </div>
@@ -357,7 +359,7 @@ const AdminCategories = () => {
 
                 <div className="grid grid-cols-1 gap-4 mb-4">
                   <div>
-                    <p className="text-2xl font-semibold text-neutral-900">{category.productCount || 0}</p>
+                    <p className="text-2xl font-semibold text-neutral-900">{category?.stats?.productCount || 0}</p>
                     <p className="text-xs text-neutral-600">Products</p>
                   </div>
                 </div>
@@ -416,7 +418,7 @@ const AdminCategories = () => {
                   </td>
 
                   <td className="p-4 text-sm text-neutral-900">
-                    {category.productCount || 0}
+                    {category.stats?.productCount ?? category.productCount ?? 0}
                   </td>
 
                   <td className="p-4">
@@ -487,6 +489,36 @@ const AdminCategories = () => {
       )}
 
       {/* Confirmation Modal */}
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-6">
+        <div className="text-sm text-neutral-600">Page {pagination.current} of {pagination.pages} — {pagination.total} items</div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPage(prev => Math.max(1, prev - 1))}
+            disabled={pagination.current <= 1}
+            className="px-3 py-1 rounded border disabled:opacity-50"
+          >Prev</button>
+          {Array.from({ length: pagination.pages }).map((_, i) => {
+            const pageNum = i + 1;
+            // show only nearby pages for brevity
+            if (pagination.pages > 7 && Math.abs(pageNum - pagination.current) > 3 && pageNum !== 1 && pageNum !== pagination.pages) {
+              return null;
+            }
+            return (
+              <button
+                key={pageNum}
+                onClick={() => setPage(pageNum)}
+                className={`px-3 py-1 rounded border ${pageNum === pagination.current ? 'bg-blue-600 text-white' : ''}`}
+              >{pageNum}</button>
+            );
+          })}
+          <button
+            onClick={() => setPage(prev => Math.min(pagination.pages, prev + 1))}
+            disabled={!pagination.hasNext}
+            className="px-3 py-1 rounded border disabled:opacity-50"
+          >Next</button>
+        </div>
+      </div>
       <ConfirmationModal
         isOpen={deleteModal.show}
         onClose={() => setDeleteModal({ show: false, category: null })}

@@ -21,6 +21,7 @@ import {
   AdminProducts,
   AdminSettings,
   AdminUsers,
+  AdminPayments,
   Cart,
   Categories,
   Contact,
@@ -150,6 +151,7 @@ const AppRoutes = () => {
           <Route path="users" element={<AdminUsers />} />
           <Route path="notifications" element={<AdminNotifications />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="payments" element={<AdminPayments />} />
           <Route path="quotations/:id" element={<QuotationDetail />} />
         </Route>
       </Routes>

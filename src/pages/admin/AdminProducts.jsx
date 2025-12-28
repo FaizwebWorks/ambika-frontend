@@ -57,8 +57,9 @@ const AdminProducts = () => {
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
   const products = productsData?.data?.products || [];
-  const totalProducts = productsData?.data?.total || 0;
-  const totalPages = productsData?.data?.totalPages || 1;``
+  // Read pagination fields returned by backend (data.pagination)
+  const totalProducts = productsData?.data?.pagination?.total || productsData?.data?.total || 0;
+  const totalPages = productsData?.data?.pagination?.pages || productsData?.data?.totalPages || 1;
   const categories = categoriesData?.data?.categories || [];
 
   // Create category options for filter
@@ -471,20 +472,34 @@ const AdminProducts = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-neutral-600">
-            Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalProducts)} of {totalProducts} products
+            {(() => {
+              const pageSize = 10;
+              const from = ((currentPage - 1) * pageSize) + 1;
+              const to = Math.min(currentPage * pageSize, totalProducts);
+              return `Showing ${from} to ${to} of ${totalProducts} products`;
+            })()}
           </p>
+
           <div className="flex items-center space-x-2">
-            <button 
+            <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className="px-3 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
-            
-            {[...Array(Math.min(5, totalPages))].map((_, i) => {
-              const page = Math.max(1, Math.min(currentPage - 2 + i, totalPages - 4 + i));
-              return (
+
+            {(() => {
+              // compute smart page window (max 5 pages)
+              const maxButtons = 5;
+              const total = Number(totalPages) || 1;
+              let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+              let end = Math.min(total, start + maxButtons - 1);
+              // adjust start when near the end
+              start = Math.max(1, Math.min(start, Math.max(1, end - maxButtons + 1)));
+              const buttons = [];
+              for (let p = start; p <= end; p++) buttons.push(p);
+              return buttons.map((page) => (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
@@ -496,10 +511,10 @@ const AdminProducts = () => {
                 >
                   {page}
                 </button>
-              );
-            })}
-            
-            <button 
+              ));
+            })()}
+
+            <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
               className="px-3 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"

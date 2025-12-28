@@ -41,7 +41,6 @@ const ProductForm = ({
     if (product) {
       // Process specifications
       let processedSpecs = product.specifications || [];
-      console.log('Product specifications:', processedSpecs);
 
       // Also handle features properly
       let featuresText = '';
@@ -52,7 +51,6 @@ const ProductForm = ({
           featuresText = product.features;
         }
       }
-      console.log('Processed features text:', featuresText);
 
       setFormData({
         title: product.title || '',
@@ -212,10 +210,6 @@ const ProductForm = ({
       return;
     }
     
-    console.log('ProductForm - Form data before submission:', formData);
-    console.log('ProductForm - Images to upload:', images);
-    console.log('ProductForm - Images to remove:', removeImages);
-    
     const formDataToSubmit = new FormData();
     
     // Add basic fields
@@ -245,19 +239,11 @@ const ProductForm = ({
     // Append images
     images.forEach((image, index) => {
       formDataToSubmit.append('images', image);
-      console.log(`Added image ${index + 1} to FormData:`, image.name);
     });
     
     // Append images to remove (for updates)
     if (removeImages.length > 0) {
       formDataToSubmit.append('removeImages', JSON.stringify(removeImages));
-      console.log('Added removeImages to FormData:', JSON.stringify(removeImages));
-    }
-    
-    // Log all FormData entries
-    console.log('ProductForm - Final FormData entries:');
-    for (let [key, value] of formDataToSubmit.entries()) {
-      console.log(key, value);
     }
     
     onSubmit(formDataToSubmit);

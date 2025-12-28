@@ -87,7 +87,6 @@ const CategoryForm = ({ onSubmit, initialData = null, isLoading = false, onCance
         submitData.image = formData.image;
       }
 
-      console.log('Submitting form data:', submitData);
       onSubmit(submitData);
     }
   };

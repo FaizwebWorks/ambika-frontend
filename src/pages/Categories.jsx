@@ -27,11 +27,12 @@ const Categories = () => {
 
 	const categories = categoriesResponse?.data?.categories || [];
 
-	// Add "All Products" option to categories
-	const categoriesData = [
-		{ _id: 'all', name: "All Products" },
-		...categories
-	];
+// Compute total products and add "All Products" option to categories (show counts)
+const totalProducts = Array.isArray(categories) ? categories.reduce((sum, c) => sum + (c.productCount || 0), 0) : 0;
+const categoriesData = [
+  { _id: 'all', name: "All Products", productCount: totalProducts },
+  ...categories
+];
 
 	// Set initial category based on URL or default to "All Products"
 	const [selectedCategory, setSelectedCategory] = useState(
@@ -261,7 +262,10 @@ const Categories = () => {
 												}`}
 											onClick={() => handleCategoryChange(cat.name)}
 										>
-											{cat.name}
+											<div className="flex justify-between items-center">
+												<span>{cat.name}</span>
+												<span className="text-sm text-neutral-500">{cat?.productCount ?? 0}</span>
+											</div>
 										</button>
 									</li>
 								))}

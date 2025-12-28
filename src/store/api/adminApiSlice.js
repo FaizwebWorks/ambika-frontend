@@ -243,13 +243,29 @@ export const adminApiSlice = apiSlice.injectEndpoints({
     // Categories APIs
     getAdminCategories: builder.query({
       query: (params = {}) => {
+        // If caller explicitly requests admin pagination (page or admin flag), call admin endpoint.
+        const isAdminRequest = params && (params.admin === true || params.page !== undefined || params.limit !== undefined);
+
+        if (isAdminRequest) {
+          const normalized = { page: 1, limit: 10, sort: 'name', order: 'asc', ...params };
+          const searchParams = new URLSearchParams();
+          Object.keys(normalized).forEach(key => {
+            if (normalized[key] !== undefined && normalized[key] !== '') {
+              searchParams.append(key, normalized[key]);
+            }
+          });
+          return `/admin/categories?${searchParams.toString()}`;
+        }
+
+        // Fallback to public categories endpoint for non-admin callers (returns full list or filtered)
         const searchParams = new URLSearchParams();
         Object.keys(params).forEach(key => {
           if (params[key] !== undefined && params[key] !== '') {
             searchParams.append(key, params[key]);
           }
         });
-        return `/categories?${searchParams.toString()}`;
+        const qs = searchParams.toString();
+        return `/categories${qs ? `?${qs}` : ''}`;
       },
       providesTags: ['AdminCategories']
     }),
