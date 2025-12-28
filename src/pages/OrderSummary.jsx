@@ -7,6 +7,7 @@ import {
   Shield,
   Truck
 } from 'lucide-react';
+import { useGetSettingsQuery } from '../store/api/settingsApiSlice';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
@@ -103,6 +104,19 @@ const OrderSummary = () => {
       }
     }
   }, [addresses, selectedAddressId]);
+
+  // Read settings to determine which payment methods are available on site
+  const { data: settingsResp } = useGetSettingsQuery();
+  const paymentsVisibility = settingsResp?.data?.payments || { upi: true, cod: true };
+
+  // If selected paymentMethod becomes unavailable, clear it
+  useEffect(() => {
+    if (paymentMethod) {
+      if ((paymentMethod === 'upi' && !paymentsVisibility.upi) || (paymentMethod === 'cod' && !paymentsVisibility.cod)) {
+        setPaymentMethod('');
+      }
+    }
+  }, [paymentsVisibility, paymentMethod]);
   
   // Use real addresses from API
   const availableAddresses = addresses;
@@ -440,7 +454,8 @@ const OrderSummary = () => {
               
               <div className="space-y-3">
                 {/* UPI Payment Option */}
-                <label className="block">
+                {paymentsVisibility.upi && (
+                  <label className="block">
                   <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                     paymentMethod === 'upi' 
                       ? 'border-blue-500 bg-blue-50' 
@@ -473,10 +488,12 @@ const OrderSummary = () => {
                       )}
                     </div>
                   </div>
-                </label>
+                  </label>
+                )}
 
                 {/* Cash on Delivery Option */}
-                <label className="block">
+                {paymentsVisibility.cod && (
+                  <label className="block">
                   <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                     paymentMethod === 'cod' 
                       ? 'border-blue-500 bg-blue-50' 
@@ -503,7 +520,8 @@ const OrderSummary = () => {
                       )}
                     </div>
                   </div>
-                </label>
+                  </label>
+                )}
 
                 {/* <label className="block">
                   <div className="p-4 border-2 rounded-lg opacity-50 cursor-not-allowed border-neutral-200 bg-neutral-100">

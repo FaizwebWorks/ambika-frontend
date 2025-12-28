@@ -20,10 +20,23 @@ const AdminPayments = () => {
   }, [settings]);
 
   const toggle = (key) => {
+    // Prevent disabling both methods — require at least one enabled
+    const otherKey = key === 'upi' ? 'cod' : 'upi';
+    if (payments[key] && !payments[otherKey]) {
+      toast.error('At least one payment method must be enabled');
+      return;
+    }
+
     setPayments(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleSave = async () => {
+    // Safety: ensure at least one payment method is enabled before saving
+    if (!payments.upi && !payments.cod) {
+      toast.error('Enable at least one payment method before saving');
+      return;
+    }
+
     try {
       await updatePaymentSettings({ payments }).unwrap();
       toast.success('Payment visibility updated');
