@@ -365,10 +365,10 @@ const AdminCustomers = () => {
             ))}
           </select>
 
-          <button className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+          {/* <button className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
             <Filter size={20} />
             <span className="hidden sm:inline">More Filters</span>
-          </button>
+          </button> */}
         </div>
       </div>
 

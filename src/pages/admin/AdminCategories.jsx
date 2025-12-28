@@ -7,6 +7,8 @@ import {
   Search,
   Trash2
 } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
+
 import { useState } from 'react';
 import CategoryForm from '../../components/admin/CategoryForm';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
@@ -25,19 +27,21 @@ const AdminCategories = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, category: null });
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
+
 
   // API hooks
   const { data: categoriesResponse, isLoading, error, refetch } = useGetAdminCategoriesQuery();
-  
+
   // Extract categories array from API response
   const categories = categoriesResponse?.data?.categories || categoriesResponse?.categories || [];
-  
+
   // Debug: Log the API response structure
   if (categoriesResponse && !Array.isArray(categories)) {
-  // console.log('Categories API Response:', categoriesResponse);
-  // console.log('Extracted categories:', categories);
+    // console.log('Categories API Response:', categoriesResponse);
+    // console.log('Extracted categories:', categories);
   }
-  
+
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
   const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation();
@@ -56,13 +60,13 @@ const AdminCategories = () => {
     setShowForm(true);
   };
 
-/*************  ✨ Windsurf Command ⭐  *************/
+  /*************  ✨ Windsurf Command ⭐  *************/
   /**
    * Handle form submission to either create a new category or update an existing one
    * @param {Object} formData category data to be saved
    * @returns {Promise<void>}
    */
-/*******  5b3b1fe1-8476-49e3-aa13-9e39bbb43533  *******/
+  /*******  5b3b1fe1-8476-49e3-aa13-9e39bbb43533  *******/
   const handleFormSubmit = async (formData) => {
     try {
       if (editingCategory) {
@@ -85,7 +89,7 @@ const AdminCategories = () => {
 
   const confirmDeleteCategory = async () => {
     if (!deleteModal.category) return;
-    
+
     try {
       await deleteCategory(deleteModal.category._id).unwrap();
       setDeleteModal({ show: false, category: null });
@@ -114,7 +118,7 @@ const AdminCategories = () => {
     { value: 'recent', label: 'Sort by Recent' }
   ];
 
-  const filteredCategories = Array.isArray(categories) ? categories.filter(category => 
+  const filteredCategories = Array.isArray(categories) ? categories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     category.description?.toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
@@ -168,8 +172,8 @@ const AdminCategories = () => {
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p className="text-red-700">Error loading categories: {error?.data?.message || error.message}</p>
-          <button 
-            onClick={refetch} 
+          <button
+            onClick={refetch}
             className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >
             Try Again
@@ -187,7 +191,7 @@ const AdminCategories = () => {
           <h1 className="text-2xl font-semibold text-neutral-900">Categories</h1>
           <p className="text-neutral-600 mt-1">Organize your products into categories</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <CustomDropdown
             options={sortOptions}
@@ -196,8 +200,8 @@ const AdminCategories = () => {
             placeholder="Sort by Name"
             className="min-w-[160px]"
           />
-          
-          <button 
+
+          <button
             onClick={handleAddCategory}
             disabled={isCreating || isUpdating}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -214,6 +218,29 @@ const AdminCategories = () => {
               </>
             )}
           </button>
+
+
+          <div className="flex items-center gap-2 border border-neutral-200 rounded-lg p-1 bg-white">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-md transition ${viewMode === 'grid'
+                ? 'bg-blue-600 text-white'
+                : 'text-neutral-600 hover:bg-neutral-100'
+                }`}
+            >
+              <LayoutGrid size={18} />
+            </button>
+
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-md transition ${viewMode === 'list'
+                ? 'bg-blue-600 text-white'
+                : 'text-neutral-600 hover:bg-neutral-100'
+                }`}
+            >
+              <List size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -273,78 +300,163 @@ const AdminCategories = () => {
             </div>
           </div>
 
-          <button className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+          {/* <button className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
             <Filter size={20} />
             <span className="hidden sm:inline">More Filters</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedCategories.map((category) => (
-          <div key={category._id} className="bg-white rounded-lg border border-neutral-100 overflow-hidden hover:shadow-lg transition-shadow">
-            {/* Category Image */}
-            <div className="relative h-48 bg-neutral-100">
-              {category.image ? (
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package size={48} className="text-neutral-400" />
+      {viewMode === 'grid' ? (
+        /* GRID VIEW */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedCategories.map((category) => (
+            <div key={category._id} className="bg-white rounded-lg border border-neutral-100 overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="relative h-48 bg-neutral-100">
+                {category.image ? (
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package size={48} className="text-neutral-400" />
+                  </div>
+                )}
+                <div className="absolute top-4 right-4 flex items-center space-x-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(category.isActive)}`}>
+                    {category.isActive ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
-              )}
-              <div className="absolute top-4 right-4 flex items-center space-x-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(category.isActive)}`}>
-                  {category.isActive ? 'Active' : 'Inactive'}
-                </span>
+              </div>
+
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-neutral-900 mb-1">{category.name}</h3>
+                    <p className="text-sm text-neutral-600 leading-relaxed">{category.description || 'No description'}</p>
+                  </div>
+                  <div className="flex items-center space-x-1 ml-4">
+                    <button
+                      onClick={() => handleEditCategory(category)}
+                      className="p-1.5 text-neutral-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      disabled={isDeleting}
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCategory(category._id)}
+                      className="p-1.5 text-neutral-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      disabled={isDeleting}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 mb-4">
+                  <div>
+                    <p className="text-2xl font-semibold text-neutral-900">{category.productCount || 0}</p>
+                    <p className="text-xs text-neutral-600">Products</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
+                  <p className="text-xs text-neutral-500">
+                    Updated {formatDate(category.updatedAt)}
+                  </p>
+                </div>
               </div>
             </div>
+          ))}
+        </div>
+      ) : (
+        /* LIST VIEW */
+        <div className="bg-white rounded-lg border border-neutral-100 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-neutral-50 border-b">
+              <tr className="text-left text-sm text-neutral-600">
+                <th className="p-4">Category</th>
+                <th className="p-4">Products</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Updated</th>
+                <th className="p-4 text-right">Actions</th>
+              </tr>
+            </thead>
 
-            {/* Category Content */}
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-1">{category.name}</h3>
-                  <p className="text-sm text-neutral-600 leading-relaxed">{category.description || 'No description'}</p>
-                </div>
-                <div className="flex items-center space-x-1 ml-4">
-                  <button 
-                    onClick={() => handleEditCategory(category)}
-                    className="p-1.5 text-neutral-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                    disabled={isDeleting}
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteCategory(category._id)}
-                    className="p-1.5 text-neutral-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    disabled={isDeleting}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
+            <tbody>
+              {sortedCategories.map((category) => (
+                <tr
+                  key={category._id}
+                  className="border-b last:border-none hover:bg-neutral-50 transition"
+                >
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-neutral-100 rounded-lg overflow-hidden">
+                        {category.image ? (
+                          <img
+                            src={category.image}
+                            alt={category.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <Package size={20} className="text-neutral-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-neutral-900">{category.name}</p>
+                        <p className="text-sm text-neutral-600 line-clamp-1">
+                          {category.description || 'No description'}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
 
-              <div className="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                  <p className="text-2xl font-semibold text-neutral-900">{category.productCount || 0}</p>
-                  <p className="text-xs text-neutral-600">Products</p>
-                </div>
-              </div>
+                  <td className="p-4 text-sm text-neutral-900">
+                    {category.productCount || 0}
+                  </td>
 
-              <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
-                <p className="text-xs text-neutral-500">
-                  Updated {formatDate(category.updatedAt)}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+                  <td className="p-4">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        category.isActive
+                      )}`}
+                    >
+                      {category.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+
+                  <td className="p-4 text-sm text-neutral-600">
+                    {formatDate(category.updatedAt)}
+                  </td>
+
+                  <td className="p-4 text-right">
+                    <div className="inline-flex items-center gap-2">
+                      <button
+                        onClick={() => handleEditCategory(category)}
+                        className="p-2 text-neutral-600 hover:text-green-600 hover:bg-green-50 rounded-lg"
+                      >
+                        <Edit size={16} />
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteCategory(category._id)}
+                        className="p-2 text-neutral-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
 
       {/* Empty state */}
       {sortedCategories.length === 0 && (
@@ -354,7 +466,7 @@ const AdminCategories = () => {
           <p className="text-neutral-600 mb-4">
             {searchTerm ? 'Try adjusting your search criteria' : 'Get started by adding your first category'}
           </p>
-          <button 
+          <button
             onClick={handleAddCategory}
             disabled={isCreating || isUpdating}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"

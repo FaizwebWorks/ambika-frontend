@@ -187,10 +187,10 @@ const AdminDashboard = () => {
             <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
           
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+          {/* <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
             <Download size={16} />
             <span className="hidden sm:inline">Export</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
