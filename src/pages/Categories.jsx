@@ -40,6 +40,8 @@ const categoriesData = [
 			? categoryFromUrl
 			: "All Products"
 	);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(10);
 	const [selectedColor, setSelectedColor] = useState("");
 	const [selectedSize, setSelectedSize] = useState("");
 	const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -48,13 +50,16 @@ const categoriesData = [
 	const startYRef = useRef(0);
 	const currentYRef = useRef(0);
 
-	// Build query parameters for products API
+	// Build query parameters for products API (server-side pagination)
 	const productQueryParams = {
 		...(selectedCategory !== "All Products" && {
 			category: categories.find(cat => cat.name === selectedCategory)?._id
 		}),
 		...(searchTerm && { search: searchTerm }),
-		limit: 50 // Get more products for frontend filtering
+		...(selectedColor && { color: selectedColor }),
+		...(selectedSize && { size: selectedSize }),
+		page,
+		limit: pageSize
 	};
 
 	const {
@@ -65,6 +70,9 @@ const categoriesData = [
 
 		// console.log('API Response:', productsResponse);
 	const products = productsResponse?.data?.products || [];
+	const pagination = productsResponse?.data?.pagination || {};
+	const currentPage = pagination.current || page;
+	const totalItems = pagination.totalItems ?? productsResponse?.data?.pagination?.totalItems ?? products.length;
 		// console.log('Extracted Products:', products);
 
 	// Scroll to top with smooth animation
@@ -81,11 +89,12 @@ const categoriesData = [
 		}, 10);
 	};
 
-	// Handle category change with scroll to top
+	// Handle category change with scroll to top and reset page
 	const handleCategoryChange = (category) => {
 		setSelectedCategory(category);
 		setSelectedColor("");
 		setSelectedSize("");
+		setPage(1);
 		scrollToTop();
 	};
 
@@ -161,7 +170,7 @@ const categoriesData = [
 								type="text"
 								placeholder="Search products..."
 								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
+								onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
 								className="w-full pl-10 pr-10 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none transition-all"
 							/>
 							{/* Clear search button */}
@@ -187,7 +196,8 @@ const categoriesData = [
 									</span>
 								) : (
 									<>
-										<span className="hidden md:inline">Showing</span> {filteredProducts.length} products
+										<span className="hidden md:inline">Showing</span>{' '}
+										{productsResponse?.data?.pagination?.totalItems ?? filteredProducts.length} products
 									</>
 								)}
 							</p>
@@ -358,6 +368,7 @@ const categoriesData = [
 								</button>
 							</div>
 						) : filteredProducts.length > 0 ? (
+							<>
 							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
 								{filteredProducts.map((product) => (
 									<ProductCard
@@ -375,6 +386,40 @@ const categoriesData = [
 									/>
 								))}
 							</div>
+
+							{/* Pagination controls */}
+							<div className="mt-6 flex items-center justify-between">
+								<div className="text-sm text-neutral-600">
+									Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems}
+								</div>
+								<div className="flex items-center gap-2">
+									<button
+										onClick={() => { if (currentPage > 1) { setPage(currentPage - 1); scrollToTop(); } }}
+										disabled={currentPage <= 1}
+										className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+									>
+										Previous
+									</button>
+									<span className="px-3 py-1 border rounded text-sm">{currentPage} / {pagination.total || 1}</span>
+									<button
+										onClick={() => { if (!pagination.total || currentPage < pagination.total) { setPage(currentPage + 1); scrollToTop(); } }}
+										disabled={pagination.total ? currentPage >= pagination.total : false}
+										className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+									>
+										Next
+									</button>
+									<select
+										value={pageSize}
+										onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+										className="ml-2 border rounded px-2 py-1 text-sm"
+									>
+										<option value={10}>10</option>
+										<option value={20}>20</option>
+										<option value={50}>50</option>
+									</select>
+								</div>
+							</div>
+							</>
 						) : (
 							<div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-xl border border-neutral-100">
 								<div className="w-16 h-16 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
