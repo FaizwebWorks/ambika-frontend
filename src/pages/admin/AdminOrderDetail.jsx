@@ -1,6 +1,10 @@
 import { AlertTriangle, ArrowLeft, CheckCircle, ClipboardList, Clock, CreditCard, IndianRupee, MapPin, Package, RefreshCw, Truck, User2, XCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useGetAdminOrderByIdQuery } from '../../store/api/adminApiSlice';
+import { useGetAdminOrderByIdQuery, useUpdateOrderStatusMutation } from '../../store/api/adminApiSlice';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import OrderActions from '../../components/admin/OrderActions';
+import { generateAndDownloadInvoice } from '../../lib/invoice';
 
 const statusIcons = {
   delivered: <CheckCircle size={16} className="text-green-600" />,
@@ -37,6 +41,8 @@ const AdminOrderDetail = () => {
   const { data, isLoading, error, refetch } = useGetAdminOrderByIdQuery(id);
   const order = data?.data?.order;
 
+  const [updateOrderStatus, { isLoading: isUpdating }] = useUpdateOrderStatusMutation();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -49,7 +55,25 @@ const AdminOrderDetail = () => {
             <p className="text-neutral-600 mt-1">Full information for order #{order?.orderNumber || id?.slice(-8)}</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <OrderActions
+            order={order}
+            isUpdating={isUpdating}
+            onStatusChange={async (newStatus) => {
+              if (!order) return;
+              if (newStatus === order.status) return;
+              try {
+                await updateOrderStatus({ id: order._id, status: newStatus }).unwrap();
+                toast.success('Order status updated');
+                refetch();
+              } catch (err) {
+                console.error('Failed to update status', err);
+                toast.error(err?.data?.message || 'Failed to update status');
+              }
+            }}
+            onDownload={() => generateAndDownloadInvoice(order)}
+          />
+
           <button onClick={refetch} className="flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 text-sm">
             <RefreshCw size={16} /> Refresh
           </button>

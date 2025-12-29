@@ -162,6 +162,20 @@ const AdminOrders = () => {
     });
   };
 
+  // Generate a simple HTML invoice and trigger download
+  // Use shared invoice generator via dynamic import (no require in browser)
+  const downloadInvoice = async (order) => {
+    if (!order) return;
+    try {
+      const mod = await import('../../lib/invoice');
+      const fn = mod.generateAndDownloadInvoice || mod.default;
+      if (typeof fn === 'function') fn(order);
+    } catch (err) {
+      console.error('Failed to load invoice generator', err);
+      toast.error('Invoice download failed');
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -419,9 +433,13 @@ const AdminOrders = () => {
                                 <div className="border-t border-neutral-100 mt-1 pt-1">
                                   <button
                                     onClick={() => {
-                                      // Handle download invoice
                                       setOpenDropdown(null);
-                                      toast.success('Invoice download started');
+                                      try {
+                                        downloadInvoice(order);
+                                      } catch (err) {
+                                        console.error('Invoice download failed', err);
+                                        toast.error('Invoice download failed');
+                                      }
                                     }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
                                   >
@@ -547,7 +565,12 @@ const AdminOrders = () => {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setOpenDropdown(null);
-                                      toast.success('Invoice download started');
+                                      try {
+                                        downloadInvoice(order);
+                                      } catch (err) {
+                                        console.error('Invoice download failed', err);
+                                        toast.error('Invoice download failed');
+                                      }
                                     }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors text-left"
                                     role="menuitem"
