@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useCheckUPIStatusMutation, useGenerateUPIPaymentMutation, useVerifyUPIPaymentMutation } from '../store/api/upiPaymentApiSlice';
+import { useCheckUPIStatusMutation, useGenerateUPIPaymentMutation, useVerifyUPIPaymentMutation, useGenerateCollectQRMutation } from '../store/api/upiPaymentApiSlice';
 import { toast } from 'react-hot-toast';
 
 
@@ -32,6 +32,7 @@ const UPIPayment = ({ orderId, amount }) => {
     const [generateUpiPayment] = useGenerateUPIPaymentMutation();
     const [checkUpiStatus] = useCheckUPIStatusMutation();
     const [verifyUpiPayment] = useVerifyUPIPaymentMutation();
+    const [generateCollectQR] = useGenerateCollectQRMutation();
 
     const [paymentData, setPaymentData] = useState(null);
     const [verificationStatus, setVerificationStatus] = useState('pending');
@@ -316,29 +317,51 @@ const UPIPayment = ({ orderId, amount }) => {
         window.location.href = url;
     };
 
+    const handleUpiIdPayment = async () => {
+        // Called when user enters their UPI ID and presses Pay Now
+        if (!customerUpiId || !paymentData) {
+            setError('Please enter a valid UPI ID');
+            return;
+        }
+
+        try {
+            setError(null);
+            const payload = {
+                upiId: customerUpiId.trim(),
+                amount: amount,
+                orderId,
+                transactionId: paymentData.transactionId,
+            };
+
+            const resp = await generateCollectQR(payload).unwrap();
+            // normalize
+            const normalized = resp?.data ? resp.data : resp;
+            setManualPaymentInfo(normalized);
+            // Start auto verification after user opens app / scans QR
+            setTimeout(() => startAutoVerification(), 3000);
+        } catch (err) {
+            console.error('Collect QR error:', err);
+            setError(err.message || 'Failed to generate payment request for UPI ID');
+        }
+    };
+
     const handleVerify = async () => {
+        // Use the unified verify flow. If user provided a manual transactionId in input,
+        // pass that to the verifyPayment helper, otherwise try to verify using the
+        // generated paymentData.transactionId.
         setVerifying(true);
         setError('');
         try {
-            // Call backend API to verify transactionId for orderId
-            // Example: await verifyUPIPayment({ orderId, transactionId })
-            // Simulate success for demo:
-            setTimeout(() => {
-                setVerifying(false);
-                navigate(`/order-success?orderId=${orderId}&total=${amount}&paymentMethod=UPI`, { 
-                    state: { 
-                        orderId,
-                        transactionId: paymentData.transactionId,
-                        amount: amount,
-                        paymentMethod: 'UPI',
-                        paidAt: new Date().toISOString()
-                    },
-                    replace: true
-                });
-            }, 1200);
-        } catch (e) {
-            setError('Verification failed. Please check your transaction ID and try again.');
+            const manualId = transactionId?.trim() || null;
+            const ok = await verifyPayment(manualId);
             setVerifying(false);
+            if (!ok) {
+                setError('Verification failed. Please check the transaction ID or try again.');
+            }
+        } catch (e) {
+            console.error('Handle verify error:', e);
+            setVerifying(false);
+            setError('Verification failed. Please try again.');
         }
     };
 

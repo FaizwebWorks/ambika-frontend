@@ -41,6 +41,20 @@ export const upiPaymentApiSlice = apiSlice.injectEndpoints({
             },
         }),
 
+        generateCollectQR: builder.mutation({
+            query: (data) => ({
+                url: '/upi-payments/collect-qr',
+                method: 'POST',
+                body: data,
+            }),
+            transformResponse: (response) => {
+                if (!response.success) {
+                    throw new Error(response.message || 'Failed to generate collect QR');
+                }
+                return response.data;
+            },
+        }),
+
         checkUPIStatus: builder.mutation({
             query: ({ orderId, transactionId }) => ({
                 url: '/upi-payments/status',
@@ -61,4 +75,5 @@ export const {
     useGenerateUPIPaymentMutation,
     useVerifyUPIPaymentMutation,
     useCheckUPIStatusMutation,
+    useGenerateCollectQRMutation,
 } = upiPaymentApiSlice;
