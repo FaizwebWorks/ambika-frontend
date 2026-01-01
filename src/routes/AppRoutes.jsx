@@ -39,6 +39,7 @@ import {
   TermsOfUse,
   Wishlist
 } from "../components/LazyComponents.jsx";
+import VerifyEmail from "../pages/VerifyEmail";
 import { AlertTriangle } from "lucide-react";
 
 const isSiteDisabled = false;
@@ -130,6 +131,7 @@ const AppRoutes = () => {
               <OrderSuccess />
             </ProtectedRoute>
           } />
+          <Route path="verify-email" element={<VerifyEmail />} />
         </Route>
 
         {/* Password Reset Routes */}

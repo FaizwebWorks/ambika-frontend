@@ -107,20 +107,10 @@ const RegisterB2B = () => {
     try {
       const result = await registerB2B(formData).unwrap();
       
-      // Store credentials
-      dispatch(setCredentials({
-        user: result.user,
-        token: result.token
-      }));
-
-      // Show success message
-      toast.success(result.message || 'B2B registration successful!', {
-        duration: 4000,
-        position: 'top-center',
-      });
-
-      // Navigate to dashboard or appropriate page
-      navigate('/');
+      // Do not auto-login or create final account yet. PreUser created and verification email sent.
+      toast.success('Verification email sent — please check your inbox.', { duration: 6000, position: 'top-center' });
+      toast('Your account will be activated after you verify the email. Admin approval is still required for B2B accounts.', { duration: 9000, position: 'top-center' });
+      navigate('/login');
       
     } catch (error) {
       console.error('Registration failed:', error);

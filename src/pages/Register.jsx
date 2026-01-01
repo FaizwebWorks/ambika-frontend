@@ -48,12 +48,11 @@ const Register = () => {
       const result = await register(formData).unwrap();
       
       if (result.success) {
-        dispatch(setCredentials({
-          user: result.user,
-          token: result.token
-        }));
-        toast.success(`Welcome, ${result.user?.name || result.user?.username || 'User'}! Account created successfully. 🎉`);
-        navigate('/'); // Redirect to home page
+        // Do not auto-login. Account is created only after email verification.
+        toast.success('Verification email sent — please check your inbox.', { duration: 6000 });
+        toast('Your account will be activated after you verify the email. You will be able to login then.', { duration: 8000 });
+        // Optionally navigate user to login page so they know where to sign in after verification
+        navigate('/login');
       }
     } catch (err) {
       console.error('Registration error:', err);
